@@ -1,0 +1,4 @@
+ignore/
+downloads/
+*.out
+*.h5
