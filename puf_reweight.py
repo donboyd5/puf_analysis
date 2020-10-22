@@ -377,6 +377,7 @@ so = {'xlb': 0, 'xub': 100, 'max_iter': 100}
 so = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'max_iter': 500}
 
 # THIS IS IT BELOW
+# This is important
 so = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
 rw4 = prob.reweight(method='lsq', solver_options=so)
 rw4.sspd
