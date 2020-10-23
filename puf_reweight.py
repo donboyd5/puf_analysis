@@ -436,14 +436,19 @@ def stub_opt(df):
 
     x0 = np.ones(wh.size)
 
-    rwp = rw.Reweight(wh, xmat, targets_stub)
-    x, info = rwp.reweight(xlb=0.1, xub=10,
-                           crange=.0001,
-                           ccgoal=10, objgoal=100,
-                           max_iter=50)
-    print(info['status_msg'])
+    prob = mw.Microweight(wh=wh, xmat=xmat, targets=targets_stub)
 
-    df['x'] = x
+    opts = None
+    rw = prob.reweight(method='lsq', options=opts)
+
+    # rwp = rw.Reweight(wh, xmat, targets_stub)
+    # x, info = rwp.reweight(xlb=0.1, xub=10,
+    #                        crange=.0001,
+    #                        ccgoal=10, objgoal=100,
+    #                        max_iter=50)
+    # print(info['status_msg'])
+
+    df['x'] = rw.g
     return df
 
 
@@ -475,16 +480,15 @@ dfnew.info()
 
 
 # %% save file
-PUF_RWTD = HDFDIR + 'puf2018_reweighted' + '.h5'
-PUF_RWTD_CSV = HDFDIR + 'puf2018_reweighted' + '.csv'
+PUF_RWTD = HDFDIR + 'puf2018_reweighted_2020-10-23' + '.h5'
+PUF_RWTD_CSV = HDFDIR + 'puf2018_reweighted_2020-10-23' + '.csv'
 
-%time dfnew.to_hdf(PUF_RWTD, 'data')  # 1 sec
-
-%time dfnew.to_csv(PUF_RWTD_CSV, index=None)  # 1 sec
+dfnew.to_hdf(PUF_RWTD, 'data')  # 1 sec
+dfnew.to_csv(PUF_RWTD_CSV, index=None)  # a few secs
 
 # get file
-%time dfnew = pd.read_hdf(PUF_RWTD)  # 235 ms
-%time dfcsv = pd.read_csv(PUF_RWTD_CSV)  # 235 ms
+dfnew = pd.read_hdf(PUF_RWTD)  # 235 ms
+dfcsv = pd.read_csv(PUF_RWTD_CSV)  # 235 ms
 
 
 
