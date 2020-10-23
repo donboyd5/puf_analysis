@@ -170,7 +170,7 @@ targets_long['variable'].value_counts()
 
 
 # %% get advanced puf file
-%time puf_2018 = pd.read_hdf(PUF_HDF)  # 1 sec
+puf_2018 = pd.read_hdf(PUF_HDF)  # 1 sec
 puf_2018.tail()
 puf_2018.columns.sort_values().tolist()  # show all column names
 
@@ -298,9 +298,7 @@ pufbase.IRS_STUB.count()
 pufbase.IRS_STUB.value_counts()
 # pufbase['IRS_STUB'].value_counts()
 
-
 targets_long
-
 
 # prepare all targets
 targets_all = irscomp.pivot(index='irsstub', columns='variable', values='irs')
@@ -319,7 +317,7 @@ targcols = ['nret_all', 'nret_mars2', 'nret_mars1',
             'c00100', 'e00200', 'e00300', 'e00600',
             'irapentot', 'c01000', 'e02400']
 
-stub = 2
+stub = 10
 # pufstub = pufbase.loc[pufbase['IRS_STUB'] ==  stub]
 pufstub = pufbase.query('IRS_STUB == @stub')
 
@@ -341,66 +339,70 @@ np.square(pdiff0).sum()
 
 prob = mw.Microweight(wh=wh, xmat=xmat, targets=targets_stub)
 
-uo = {'crange': 0.0001, 'xlb': 0, 'xub':1e5, 'quiet': False}
-uo = {'crange': 0.0001, 'xlb': 0, 'xub':50, 'quiet': False}
-rw1b = prob.reweight(method='ipopt', user_options=uo)
-rw1b.sspd
-rw1b.elapsed_seconds
-pdiff1b = (rw1b.targets_opt - targets_stub) / targets_stub * 100
+opts = {'crange': 0.0001, 'xlb': 0, 'xub':1e5, 'quiet': False}
+opts = {'crange': 0.001, 'xlb': 0, 'xub':50, 'quiet': False}
+opts = None
+rw1 = prob.reweight(method='ipopt', options=opts)
+rw1.sspd
+rw1.elapsed_seconds
+rw1.pdiff
+rw1.opts
 
 # so = {'increment': 1e-3, 'autoscale': False}  # best 1819
-so = {'increment': .00001}
-# so = {'increment': .00001, 'autoscale': False}
-so = {'increment': 1e-6, 'autoscale': True}
-so = {'increment': 1e-3, 'autoscale': False}
-so = {'increment': 1e-4, 'autoscale': False}
-so = {'increment': 1e-6, 'autoscale': True, 'objective': 'QUADRATIC'}
-rw2 = prob.reweight(method='empcal', solver_options=so)
+# opts = {'increment': .00001}
+# opts = {'increment': .00001, 'autoscale': False}
+# opts = {'increment': 1e-6, 'autoscale': True}
+# opts = {'increment': 1e-3, 'autoscale': False}
+# opts = {'increment': 1e-6, 'autoscale': True, 'objective': 'QUADRATIC'}
+opts = {'increment': 1e-4, 'autoscale': False}
+opts = None
+rw2 = prob.reweight(method='empcal', options=opts)
 rw2.sspd
-rw2 = prob.reweight(method='empcal')
-rw2.sspd
+rw2.pdiff
+rw2.opts
 
-pdiff = (rw2.targets_opt - targets_stub) / targets_stub * 100
 pdiff0
-pdiff
-pdiff1b
-np.square(pdiff).sum()
-np.square(pdiff1b).sum()
+np.square(pdiff0).sum()
 
 rw3 = prob.reweight(method='rake')
-rw3 = prob.reweight(method='rake', user_options={'max_rake_iter': 20})
+rw3 = prob.reweight(method='rake', options={'max_rake_iter': 20})
 rw3.sspd
 
-so = {'xlb': 0.01, 'xub': 100, 'tol': 1e-8, 'max_iter': 150}
-so = {'xlb': 0.0, 'xub': 1e5, 'tol': 1e-7, 'max_iter': 100}
-so = {'xlb': 0, 'xub': 100, 'max_iter': 100}
-so = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'max_iter': 500}
+opts = {'xlb': 0.01, 'xub': 100, 'tol': 1e-8, 'max_iter': 150}
+opts = {'xlb': 0.0, 'xub': 1e5, 'tol': 1e-7, 'max_iter': 100}
+opts = {'xlb': 0, 'xub': 100, 'max_iter': 100}
+opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'max_iter': 500}
 
 # THIS IS IT BELOW
 # This is important
-so = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
-rw4 = prob.reweight(method='lsq', solver_options=so)
+opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
+opts = None
+rw4 = prob.reweight(method='lsq', options=opts)
 rw4.sspd
+rw4.pdiff
+rw4.opts
+np.quantile(rw4.g, qtiles)
 
-rw5 = prob.reweight(method='minNLP')
+# don't bother with minNLP
+# rw5 = prob.reweight(method='minNLP')
+# rw5.sspd
+# rw5.opts
+
 
 # distribution of g values
-np.quantile(rw1a.g, qtiles)
-np.quantile(rw1b.g, qtiles)
+np.quantile(rw1.g, qtiles)
 np.quantile(rw2.g, qtiles)
 np.quantile(rw3.g, qtiles)  # HUGE g
 np.quantile(rw4.g, qtiles)
 
 # time
-rw1a.elapsed_seconds
-rw1b.elapsed_seconds
+rw1.elapsed_seconds
 rw2.elapsed_seconds
 rw3.elapsed_seconds
 rw4.elapsed_seconds
 
 # sum of squared percentage differences
-rw1a.sspd
-rw1b.sspd
+rw1.sspd
 rw2.sspd
 rw3.sspd
 rw4.sspd
