@@ -8,9 +8,12 @@ Created on Thu Oct 15 04:29:41 2020
 # %% imports
 import pandas as pd
 
+
 # %% filenames and urls
 WEBDIR = 'https://www.irs.gov/pub/irs-soi/'
 HT2_2018 = "18in55cmagi.csv"
+
+DATADIR = r'C:\programs_python\puf_analysis\data/'
 
 
 # %% agi stubs
@@ -21,7 +24,7 @@ IRS_AGI_STUBS = [-9e99, 1.0, 5e3, 10e3, 15e3, 20e3, 25e3, 30e3, 40e3, 50e3,
 HT2_AGI_STUBS = [-9e99, 1.0, 10e3, 25e3, 50e3, 75e3, 100e3,
                  200e3, 500e3, 1e6, 9e99]
 
-h2stubs = pd.DataFrame([
+ht2stubs = pd.DataFrame([
     [0, 'All income ranges'],
     [1, 'Under $1'],
     [2, '$1 under $10,000'],
@@ -34,6 +37,8 @@ h2stubs = pd.DataFrame([
     [9, '$500,000 under $1,000,000'],
     [10, '$1,000,000 or more']],
     columns=['h2stub', 'h2range'])
+
+irsstubs = pd.read_csv(DATADIR + 'irsstub_labels.csv')
 
 
 # %% target varnames (puf names and HT2 names and my names)

@@ -21,6 +21,7 @@ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-
 import sys
 import taxcalc as tc
 import pandas as pd
+# import tables
 import numpy as np
 from bokeh.io import show, output_notebook
 
@@ -378,6 +379,7 @@ opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'max_iter': 500}
 opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
 opts = None
 rw4 = prob.reweight(method='lsq', options=opts)
+rw4.elapsed_seconds
 rw4.sspd
 rw4.pdiff
 rw4.opts

@@ -7,10 +7,13 @@ Created on Wed Oct 21 07:40:08 2020
 
 # %% imports
 import sys
+import os
+import numpy as np
+
 # this is sufficient
 sys.path.append('c:/programs_python/weighting/')  # needed
 import src.microweight as mw
-
+import src.make_test_problems as mtp
 # not needed:
 # sys.path.append('c:/programs_python/')
 # sys.path.append('c:/programs_python/weighting/src/')
@@ -19,13 +22,8 @@ import src.microweight as mw
 # import microweight as mw
 
 # import os
-import numpy as np
 
-import src.microweight as mw
-
-from ...weighting.src import microweight as mw
-
-import make_test_problems as mtp
+# %% more
 # from ..weighting.src import microweight
 print(sys.path)
 os.getcwd()

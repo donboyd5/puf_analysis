@@ -10,13 +10,13 @@ import pandas as pd
 
 
 # %% constants
-WEBDIR = 'https://www.irs.gov/pub/irs-soi/'
-DOWNDIR = 'C:/programs_python/weighting/puf/downloads/'
-DATADIR = 'C:/programs_python/weighting/puf/data/'
-PUFDIR = 'C:/programs_python/weighting/puf/'
+WEBDIR = 'https://www.irs.gov/pub/irs-soi/'  # static files
+DOWNDIR = 'C:/programs_python/puf_analysis/downloads/'
+DATADIR = 'C:/programs_python/puf_analysis/data/'
+# PUFDIR = 'C:/programs_python/weighting/puf/'
 
 
-# %% ONETIME:  IRS Table urls
+# %% ONETIME:  2017 IRS Table urls
 # Main url: https://www.irs.gov/statistics/soi-tax-stats-individual-statistical-tables-by-size-of-adjusted-gross-income
 
 # Tables from SOI Individual Complete Report (Publication 1304)
@@ -25,7 +25,57 @@ PUFDIR = 'C:/programs_python/weighting/puf/'
 
 #  Table 1.1 Selected Income and Tax Items
 #  By Size and Accumulated Size of Adjusted Gross Income
-TAB11 = '18in11si.xls'
+TAB11_2017 = '17in11si.xls'
+
+#  Table 1.2 Adjusted Gross Income, Exemptions, Deductions, and Tax Items
+#  By Size of Adjusted Gross Income and Marital Status
+TAB12_2017 = '17in12ms.xls'
+
+#  Table 1.4 Sources of Income, Adjustments Deductions and Exemptions, and Tax Items
+#  By Size of Adjusted Gross Income
+TAB14_2017 = '17in14ar.xls'
+
+#  Table 1.4A Returns with Income or Loss from Sales of Capital Assets Reported on Form1040, Schedule D
+#  By Size of Adjusted Gross Income
+TAB14A_2017 = '17in14acg.xls'
+
+#  Table 1.6 Number of Returns
+#  By Size of Adjusted Gross Income, Marital Status, and Age of Taxpayer
+TAB16_2017 = '17in16ag.xls'
+
+# Category 2: Individual Income Tax Returns with Exemptions and Itemized Deductions
+
+#  Table 2.1 Individual Income Tax Returns with Itemized Deductions:
+#  Sources of Income, Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items
+#  By Size of Adjusted Gross Income
+TAB21_2017 = '17in21id.xls'
+
+#  Table 2.5 Individual Income Tax Returns with Earned Income Credit
+#  By Size of Adjusted Gross Income
+#  https://www.irs.gov/pub/irs-soi/18in25ic.xls
+TAB25_2017 = '17in25ic.xls'
+
+# Category 3: Individual Income Tax Returns with Tax Computation
+#  Table 3.2 Individual Income Tax Returns with Total Income Tax:
+#  Total Income Tax as a Percentage of Adjusted Gross Income
+TAB32_2017 = '17in32tt.xls'
+
+files_2017 = [TAB11_2017, TAB12_2017, TAB14_2017, TAB14A_2017,
+              TAB16_2017, TAB21_2017, TAB25_2017, TAB32_2017]
+
+
+
+
+# %% ONETIME:  2018 IRS Table urls
+# Main url: https://www.irs.gov/statistics/soi-tax-stats-individual-statistical-tables-by-size-of-adjusted-gross-income
+
+# Tables from SOI Individual Complete Report (Publication 1304)
+
+# Category 1: Individual Income Tax Returns Filed and Sources of Income
+
+#  Table 1.1 Selected Income and Tax Items
+#  By Size and Accumulated Size of Adjusted Gross Income
+TAB11_2018 = '18in11si.xls'
 TAB11d = {'src': '18in11si.xls',
           'firstrow': 10,
           'lastrow': 29,
@@ -34,41 +84,44 @@ TAB11d = {'src': '18in11si.xls',
 
 #  Table 1.2 Adjusted Gross Income, Exemptions, Deductions, and Tax Items
 #  By Size of Adjusted Gross Income and Marital Status
-TAB12 = '18in12ms.xls'
+TAB12_2018 = '18in12ms.xls'
 
 #  Table 1.4 Sources of Income, Adjustments Deductions and Exemptions, and Tax Items
 #  By Size of Adjusted Gross Income
-TAB14 = '18in14ar.xls'
+TAB14_2018 = '18in14ar.xls'
 
 #  Table 1.4A Returns with Income or Loss from Sales of Capital Assets Reported on Form1040, Schedule D
 #  By Size of Adjusted Gross Income
-TAB14A = '18in14acg.xls'
+TAB14A_2018 = '18in14acg.xls'
 
 #  Table 1.6 Number of Returns
 #  By Size of Adjusted Gross Income, Marital Status, and Age of Taxpayer
-TAB16 = '18in16ag.xls'
+TAB16_2018 = '18in16ag.xls'
 
 # Category 2: Individual Income Tax Returns with Exemptions and Itemized Deductions
 
 #  Table 2.1 Individual Income Tax Returns with Itemized Deductions:
 #  Sources of Income, Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items
 #  By Size of Adjusted Gross Income
-TAB21 = '18in21id.xls'
+TAB21_2018 = '18in21id.xls'
 
 #  Table 2.5 Individual Income Tax Returns with Earned Income Credit
 #  By Size of Adjusted Gross Income
 #  https://www.irs.gov/pub/irs-soi/18in25ic.xls
-TAB25 = '18in25ic.xls'
+TAB25_2018 = '18in25ic.xls'
 
 # Category 3: Individual Income Tax Returns with Tax Computation
 #  Table 3.2 Individual Income Tax Returns with Total Income Tax:
 #  Total Income Tax as a Percentage of Adjusted Gross Income
-TAB32 = '18in32tt.xls'
+TAB32_2018 = '18in32tt.xls'
 
-files = [TAB11, TAB12, TAB14, TAB14A, TAB16, TAB21, TAB25, TAB32]
+files_2018 = [TAB11_2018, TAB12_2018, TAB14_2018, TAB14A_2018, TAB16_2018,
+              TAB21_2018, TAB25_2018, TAB32_2018]
 
 
 # %% ONETIME:  download and save files
+
+files = files_2017
 
 for f in files:
     print(f)
@@ -108,19 +161,21 @@ def xlrange(io, sheet_name=0,
 # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
 
 # get the names and info for tables we want data from
-fn = r'C:\programs_python\weighting\puf\data\soitables.xlsx'
+fn = r'C:\programs_python\puf_analysis\data\soitables.xlsx'
 tabs = pd.read_excel(io=fn, sheet_name='national')
 tabmaps = pd.read_excel(io=fn, sheet_name='tablemaps')
 
 # loop through the tables listed in tabs
 # tab = 'tab14'
 tabs.table
-tabsuse = tabs.table.drop([3])  # not ready to use tab21
+# tabsuse = tabs.table.drop([3])  # not ready to use tab21
+tabsuse = tabs.table
 
 tablist = []
+tab = tabsuse[3]
 for tab in tabsuse:
     # get info describing a specific table
-    tabd = tabs[tabs['table'] == tab]
+    tabd = tabs[tabs['table'] == tab]  # df row with table description
     tabinfo = pd.merge(tabd, tabmaps, on='table')
 
     # get the table data using this info
