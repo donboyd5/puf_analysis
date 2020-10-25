@@ -33,15 +33,6 @@ irstot = pd.read_csv(IRSDAT)
 irstot
 
 
-# %% ONETIME save irs income range mapping
-# create irsstub and incrange mapping
-# incrange for irsstub 0 and 1 doesn't have consistent text values so set them
-# irstot.loc[irstot['irsstub'] == 0, 'incrange'] = 'All returns'
-# irstot.loc[irstot['irsstub'] == 1, 'incrange'] = 'No adjusted gross income'
-# incmap = irstot[['irsstub', 'incrange']].drop_duplicates()
-# incmap
-# incmap.to_csv(DATADIR + 'irsstub_labels.csv', index=False)
-
 
 # %% next
 
