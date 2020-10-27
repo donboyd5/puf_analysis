@@ -25,7 +25,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,0,All returns,cggross,859894631000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,0,All returns,cgloss,16779101000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,0,All returns,exemptint,60058772000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,0,All returns,exemptions,1155506023000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,0,All returns,iradist,286496949000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,0,All returns,itemded,1402091664000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,0,All returns,n_exemptions,292661182.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -101,7 +100,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,1,"Under $5,000",cggross,19771923000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,1,"Under $5,000",cgloss,1641623000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,1,"Under $5,000",exemptint,2266853000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,1,"Under $5,000",exemptions,42126105000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,1,"Under $5,000",iradist,3912538000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,1,"Under $5,000",itemded,4536477000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,1,"Under $5,000",n_exemptions,10405362.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -177,7 +175,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,2,"$5,000 under $10,000",cggross,879902000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,2,"$5,000 under $10,000",cgloss,547009000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,2,"$5,000 under $10,000",exemptint,173600000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,2,"$5,000 under $10,000",exemptions,48169834000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,2,"$5,000 under $10,000",iradist,2755971000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,2,"$5,000 under $10,000",itemded,6468705000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,2,"$5,000 under $10,000",n_exemptions,11895997.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -253,7 +250,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,3,"$10,000 under $15,000",cggross,1475473000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,3,"$10,000 under $15,000",cgloss,516537000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,3,"$10,000 under $15,000",exemptint,347104000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,3,"$10,000 under $15,000",exemptions,72890985000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,3,"$10,000 under $15,000",iradist,4185806000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,3,"$10,000 under $15,000",itemded,10199342000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,3,"$10,000 under $15,000",n_exemptions,18000014.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -329,7 +325,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,4,"$15,000 under $20,000",cggross,1325812000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,4,"$15,000 under $20,000",cgloss,441066000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,4,"$15,000 under $20,000",exemptint,289515000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,4,"$15,000 under $20,000",exemptions,74580904000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,4,"$15,000 under $20,000",iradist,4855306000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,4,"$15,000 under $20,000",itemded,11804069000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,4,"$15,000 under $20,000",n_exemptions,18417054.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -405,7 +400,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,5,"$20,000 under $25,000",cggross,1712450000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,5,"$20,000 under $25,000",cgloss,415082000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,5,"$20,000 under $25,000",exemptint,459698000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,5,"$20,000 under $25,000",exemptions,71980229000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,5,"$20,000 under $25,000",iradist,5774035000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,5,"$20,000 under $25,000",itemded,15659343000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,5,"$20,000 under $25,000",n_exemptions,17775700.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -481,7 +475,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,6,"$25,000 under $30,000",cggross,1508109000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,6,"$25,000 under $30,000",cgloss,437005000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,6,"$25,000 under $30,000",exemptint,606481000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,6,"$25,000 under $30,000",exemptions,64189893000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,6,"$25,000 under $30,000",iradist,5290890000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,6,"$25,000 under $30,000",itemded,17961510000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,6,"$25,000 under $30,000",n_exemptions,15851270.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -557,7 +550,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,7,"$30,000 under $40,000",cggross,3799333000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,7,"$30,000 under $40,000",cgloss,821100000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,7,"$30,000 under $40,000",exemptint,1025279000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,7,"$30,000 under $40,000",exemptions,114973334000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,7,"$30,000 under $40,000",iradist,11230187000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,7,"$30,000 under $40,000",itemded,41892357000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,7,"$30,000 under $40,000",n_exemptions,28391761.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -633,7 +625,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,8,"$40,000 under $50,000",cggross,4655431000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,8,"$40,000 under $50,000",cgloss,702183000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,8,"$40,000 under $50,000",exemptint,1148689000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,8,"$40,000 under $50,000",exemptions,92561612000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,8,"$40,000 under $50,000",iradist,11227910000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,8,"$40,000 under $50,000",itemded,50145473000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,8,"$40,000 under $50,000",n_exemptions,22857637.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -709,7 +700,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,9,"$50,000 under $75,000",cggross,13508802000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,9,"$50,000 under $75,000",cgloss,2039924000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,9,"$50,000 under $75,000",exemptint,3278497000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,9,"$50,000 under $75,000",exemptions,175218787000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,9,"$50,000 under $75,000",iradist,33614710000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,9,"$50,000 under $75,000",itemded,143420695000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,9,"$50,000 under $75,000",n_exemptions,43269539.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -785,7 +775,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,10,"$75,000 under $100,000",cggross,18527349000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,10,"$75,000 under $100,000",cgloss,1940970000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,10,"$75,000 under $100,000",exemptint,3183252000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,10,"$75,000 under $100,000",exemptions,127249067000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,10,"$75,000 under $100,000",iradist,38662104000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,10,"$75,000 under $100,000",itemded,151060610000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,10,"$75,000 under $100,000",n_exemptions,31422125.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -861,7 +850,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,11,"$100,000 under $200,000",cggross,66274073000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,11,"$100,000 under $200,000",cgloss,4040570000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,11,"$100,000 under $200,000",exemptint,10009538000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,11,"$100,000 under $200,000",exemptions,212168518000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,11,"$100,000 under $200,000",iradist,94232018000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,11,"$100,000 under $200,000",itemded,398135836000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,11,"$100,000 under $200,000",n_exemptions,52407492.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -937,7 +925,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,12,"$200,000 under $500,000",cggross,109971765000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,12,"$200,000 under $500,000",cgloss,2397176000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,12,"$200,000 under $500,000",exemptint,12323198000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,12,"$200,000 under $500,000",exemptions,59396755000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,12,"$200,000 under $500,000",iradist,54407317000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,12,"$200,000 under $500,000",itemded,256190091000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,12,"$200,000 under $500,000",n_exemptions,17616156.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -1013,7 +1000,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,13,"$500,000 under $1,000,000",cggross,79424756000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,13,"$500,000 under $1,000,000",cgloss,551502000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,13,"$500,000 under $1,000,000",exemptint,7175409000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,13,"$500,000 under $1,000,000",exemptions,0.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,13,"$500,000 under $1,000,000",iradist,10838110000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,13,"$500,000 under $1,000,000",itemded,83566974000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,13,"$500,000 under $1,000,000",n_exemptions,2941202.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -1089,7 +1075,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,14,"$1,000,000 under $1,500,000",cggross,42974938000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,14,"$1,000,000 under $1,500,000",cgloss,134937000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,14,"$1,000,000 under $1,500,000",exemptint,3092532000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,14,"$1,000,000 under $1,500,000",exemptions,0.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,14,"$1,000,000 under $1,500,000",iradist,2105403000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,14,"$1,000,000 under $1,500,000",itemded,31639413000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,14,"$1,000,000 under $1,500,000",n_exemptions,642405.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -1165,7 +1150,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,15,"$1,500,000 under $2,000,000",cggross,29813179000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,15,"$1,500,000 under $2,000,000",cgloss,54399000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,15,"$1,500,000 under $2,000,000",exemptint,2097211000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,15,"$1,500,000 under $2,000,000",exemptions,0.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,15,"$1,500,000 under $2,000,000",iradist,886635000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,15,"$1,500,000 under $2,000,000",itemded,18178588000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,15,"$1,500,000 under $2,000,000",n_exemptions,257715.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -1241,7 +1225,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,16,"$2,000,000 under $5,000,000",cggross,93502832000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,16,"$2,000,000 under $5,000,000",cgloss,73683000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,16,"$2,000,000 under $5,000,000",exemptint,5032411000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,16,"$2,000,000 under $5,000,000",exemptions,0.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,16,"$2,000,000 under $5,000,000",iradist,1450987000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,16,"$2,000,000 under $5,000,000",itemded,45302872000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,16,"$2,000,000 under $5,000,000",n_exemptions,365060.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -1317,7 +1300,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,17,"$5,000,000 under $10,000,000",cggross,68993824000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,17,"$5,000,000 under $10,000,000",cgloss,16068000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,17,"$5,000,000 under $10,000,000",exemptint,2587451000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,17,"$5,000,000 under $10,000,000",exemptions,0.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,17,"$5,000,000 under $10,000,000",iradist,529937000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,17,"$5,000,000 under $10,000,000",itemded,25576403000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,17,"$5,000,000 under $10,000,000",n_exemptions,88507.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions
@@ -1393,7 +1375,6 @@ src,common_stub,incrange,variable,value,table_description,column_description
 17in14ar.xls,18,"$10,000,000 or more",cggross,301774681000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable
 17in14ar.xls,18,"$10,000,000 or more",cgloss,8267000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable
 17in14ar.xls,18,"$10,000,000 or more",exemptint,4962054000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Tax-exempt interest
-17in14ar.xls,18,"$10,000,000 or more",exemptions,0.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Exemption amount
 17in14ar.xls,18,"$10,000,000 or more",iradist,537086000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income", Individual Retirement Arrangements (IRA) distributions
 17in14ar.xls,18,"$10,000,000 or more",itemded,90352905000.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total itemized deductions
 17in14ar.xls,18,"$10,000,000 or more",n_exemptions,56186.0,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of exemptions

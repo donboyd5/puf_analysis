@@ -381,10 +381,11 @@ targets_remap.query(qx)[vars].sort_values(['variable', 'src'])
 # looks ok except for very minor taxac differences
 # any target version should be ok
 
-# get unduplicated data
+# get unduplicated data CAUTION update for 2018 if using that year
 qx1 = '((variable not in @dupvars) or '
-qx2 = '(variable in @dupvars and src=="17in11si.xls"))'
-qx = qx1 + qx2
+qx2 = '(variable in @dupvars and src=="17in11si.xls")) or'
+qx3 = '(variable=="exemption" and src=="17in12ms.xls")'
+qx = qx1 + qx2 + qx3
 qx
 vars = ['variable', 'common_stub', 'value']
 targets_undup = targets_remap.query(qx)

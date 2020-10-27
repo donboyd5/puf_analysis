@@ -32,6 +32,9 @@ PUF_HDF = HDFDIR + BASE_NAME + '.h5'  # hdf5 is lightning fast
 IRSDAT = DATADIR + 'targets2017_collapsed.csv'
 irstot = pd.read_csv(IRSDAT)
 irstot
+irstot.info()
+irstot.count()
+vars = irstot.variable.value_counts().sort_index()
 
 
 # %% develop usable targets
