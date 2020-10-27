@@ -260,7 +260,7 @@ idincmap
 idincmap.to_csv(DATADIR + 'irsstub_itemded_labels.csv', index=False)
 
 
-# %% ONETIME: collapse data to a common set of income ranges
+# %% ONETIME: save common_stub labels
 
 # common_stub	irs stubs	item stubs
 # 0	0	0
@@ -282,11 +282,6 @@ idincmap.to_csv(DATADIR + 'irsstub_itemded_labels.csv', index=False)
 # 16	17	20
 # 17	18	21
 # 18	19	22
-
-# df['col1'].map(di)
-# define a dictionary that maps the two income range definitions to a common definition
-YEAR = '2017'
-targets_all = pd.read_csv(DATADIR + 'targets' + YEAR + '.csv')
 
 STUB_DATA = '''common_stub;incrange
 0; All returns
@@ -313,68 +308,105 @@ STUB_DATA = '''common_stub;incrange
 common_stub = pd.read_table(StringIO(STUB_DATA), sep=';')
 common_stub['incrange'] = common_stub['incrange'].str.strip()
 
-# df['col1'].map(di)
-# define a dictionary that maps the two income range definitions to a common definition
+common_stub.to_csv(DATADIR + 'irsstub_common_labels.csv', index=False)
 
-# z['c'] = z.apply(lambda row: 0 if row['b'] in (0,1) else row['a'] / math.log(row['b']), axis=1)
-# df['desired_output'] = df['data'].apply(lambda x: 'true' if x <= 2.5 else 'false')
 
-# di = {}
+# %% ONETIME: clean data and collapse to the common set of income ranges
+# see https://kanoki.org/2019/04/06/pandas-map-dictionary-values-with-dataframe-columns/
 
-# SLOW -- what is better
-def f_nonitem(row):
-    if row['irsstub'] == 0:
-        return 0
-    elif row['irsstub'] <= 2:
-        return 1
-    else:
-        return row['irsstub'] - 1
+# get targets, delete duplicates, remap stubs, drop unneeded columns
+# remap the stubs so that we can collapse
+YEAR = '2017'
+targets_remap = pd.read_csv(DATADIR + 'targets' + YEAR + '.csv').drop(['incrange'], axis=1)
+targets_remap.columns
+targets_remap.info()
+targets_remap['value'] = pd.to_numeric(targets_remap['value'], errors='coerce')
+targets_remap.value.max()
 
-def f_item(row):
-    if row['irsstub'] <= 6:
-        return row['irsstub']
-    elif row['irsstub'] <= 8:
-        return 7
-    elif row['irsstub'] <= 10:
-        return 8
-    elif row['irsstub'] <= 13:
-        return 9
-    else:
-        return row['irsstub'] - 4
+# drop targets for which I haven't yet set column descriptions as we won't
+# use them
+mask = targets_remap.variable.str.len() <= 2  # Excel column names will have length 2
+targets_remap = targets_remap[~mask]
+targets_remap = targets_remap.dropna(axis=0, subset=['column_description'])
+targets_remap
+targets_remap.columns
 
-# redefine the stubs
-targets_collapsed = targets_all.copy()
-targets_collapsed['common_stub'] = -99
-item_mask = targets_collapsed.table_description.str.contains('Table 2.1')
-targets_collapsed.loc[~item_mask, 'common_stub'] = targets_collapsed.apply(f_nonitem, axis=1)
-targets_collapsed.loc[item_mask, 'common_stub'] = targets_collapsed.apply(f_item, axis=1)
+# create dicts to redefine stubs, keys are non-id or id stubs, values are common stubs
+# non-itemized mapping
+keys = range(0, 20)
+values = range(-1, 19)  # for income stubs, default common is 1 less than inc stub
+nonid_map = dict(zip(keys, values))
+nonid_map[0] = 0
+nonid_map[1] = 1
+nonid_map[2] = 1
+nonid_map
+
+# itemized mapping
+keys = range(0, 23)
+values = tuple(range(0, 7)) + (7, 7, 8, 8, 9, 9, 9) + tuple(range(10, 19))
+values
+id_map = dict(zip(keys, values))
+id_map
+
+# identifier for itemized-deduction table, which has different stubs
+item_mask = targets_remap.table_description.str.contains('Table 2.1')
+targets_remap.loc[~item_mask, 'common_stub'] = targets_remap.irsstub.map(nonid_map)
+targets_remap.loc[item_mask, 'common_stub'] = targets_remap.irsstub.map(id_map)
+targets_remap = targets_remap.astype({'common_stub': int})
 
 # check
-check = targets_collapsed.copy()
+check = targets_remap.copy()
 check['type'] = 'non_item'
 check.loc[item_mask, 'type'] = 'item'
 # check = check[['common_stub', 'type', 'irsstub', 'value']].groupby(['common_stub', 'type', 'irsstub']).agg(['count'])
 check = check[['type', 'irsstub', 'common_stub', 'value']].groupby(['type', 'irsstub', 'common_stub']).agg(['count'])
+check
 
-# collapsed
-targets_collapsed.columns
+# drop duplicate records, unnecessary columns, and collapse
+targets_remap.columns
+
+# quick check to make sure duplicate variables have same values
+# get unique combinations of src, variable
+check = targets_remap[targets_remap.common_stub == 0][['src', 'variable']]
+# indexes of duplicated combinations
+idups = check.duplicated(subset='variable', keep=False)
+check[idups].sort_values(['variable', 'src'])
+dupvars = check[idups]['variable'].unique()
+dupvars
+
+# now check the stub 0 values of the variables that have duplicated values
+qx = 'variable in @dupvars and common_stub==0'
+vars = ['variable', 'column_description', 'src', 'value']
+targets_remap.query(qx)[vars].sort_values(['variable', 'src'])
+# looks ok except for very minor taxac differences
+# any target version should be ok
+
+# get unduplicated data
+qx1 = '((variable not in @dupvars) or '
+qx2 = '(variable in @dupvars and src=="17in11si.xls"))'
+qx = qx1 + qx2
+qx
+vars = ['variable', 'common_stub', 'value']
+targets_undup = targets_remap.query(qx)
+targets_undup[['variable', 'value']].groupby(['variable']).agg(['count'])
+
+# collapse without irsstub
+# data.groupby('month')[['duration']].sum()
 aggcols = ['src', 'common_stub', 'variable', 'table_description', 'column_description']
-keepcols = aggcols + ['value']
-targets_collapsed = targets_collapsed.groupby(aggcols)['value'].sum().reset_index()
+targets_collapsed = targets_undup.groupby(aggcols)[['value']].sum().reset_index()  # [[]] keeps data frame
+targets_collapsed.columns
 
-# get the income range labels, reorder columns, and save
-common_stub
-targets_collapsed = pd.merge(targets_collapsed, common_stub, on=['common_stub'])
+# get the income range labels, reorder columns, put dollars in thousands, and save
+common_stub_labels = pd.read_csv(DATADIR + 'irsstub_common_labels.csv')
+targets_collapsed = pd.merge(targets_collapsed, common_stub_labels, on=['common_stub'])
 savecols = ['src', 'common_stub', 'incrange', 'variable', 'value', 'table_description', 'column_description']
 targets_collapsed = targets_collapsed[savecols]
+
+# multiply dollar amounts by 1000
+dollar_xmask = targets_collapsed.variable.str.contains('nret_|n_')
+dollar_xmask.sum()
+dollar_xmask[range(26, 30)]
+targets_collapsed.loc[~dollar_xmask, 'value'] = targets_collapsed.loc[~dollar_xmask, 'value'] * 1000
 targets_collapsed.to_csv(DATADIR + 'targets' + YEAR + '_collapsed.csv', index=False)
-
-
-# %% test parsing
-
-# are reported totals close enough to sums of values that we can drop reported?
-# df.iloc[1:, 1:].sum()
-# df.iloc[0]
-# df.iloc[1:, 1:].sum() - df.iloc[0]  # yes
 
 

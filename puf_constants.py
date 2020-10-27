@@ -10,7 +10,9 @@ import pandas as pd
 
 
 # %% filenames and urls
+# https://www.irs.gov/statistics/soi-tax-stats-historic-table-2
 WEBDIR = 'https://www.irs.gov/pub/irs-soi/'
+HT2_2017 = "18in55cmagi.csv"
 HT2_2018 = "18in55cmagi.csv"
 
 DATADIR = r'C:\programs_python\puf_analysis\data/'
@@ -20,6 +22,11 @@ DATADIR = r'C:\programs_python\puf_analysis\data/'
 
 IRS_AGI_STUBS = [-9e99, 1.0, 5e3, 10e3, 15e3, 20e3, 25e3, 30e3, 40e3, 50e3,
                  75e3, 100e3, 200e3, 500e3, 1e6, 1.5e6, 2e6, 5e6, 10e6, 9e99]
+
+# common stubs is the common grouping between two different IRS stubs
+COMMON_STUBS = [-9e99, 5e3, 10e3, 15e3, 20e3, 25e3, 30e3, 40e3, 50e3,
+                 75e3, 100e3, 200e3, 500e3, 1e6, 1.5e6, 2e6, 5e6, 10e6, 9e99]
+
 
 HT2_AGI_STUBS = [-9e99, 1.0, 10e3, 25e3, 50e3, 75e3, 100e3,
                  200e3, 500e3, 1e6, 9e99]
@@ -38,7 +45,10 @@ ht2stubs = pd.DataFrame([
     [10, '$1,000,000 or more']],
     columns=['h2stub', 'h2range'])
 
-irsstubs = pd.read_csv(DATADIR + 'irsstub_labels.csv')
+# use the common IRS stubs, which are the LCD of the main irsstubs and the
+# itemized deduction IRS stubs
+# irsstubs = pd.read_csv(DATADIR + 'irsstub_labels.csv')
+irsstubs = pd.read_csv(DATADIR + 'irsstub_common_labels.csv')
 
 
 # %% target varnames (puf names and HT2 names and my names)
