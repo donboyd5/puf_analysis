@@ -90,7 +90,7 @@ PUFHT2_XWALK = {
     'c05800_n': 'N05800',  # Regular tax before credits amount
     'c09600': 'A09600',  # AMT amount
     'c09600_n': 'N09600',  # AMT number
-    'e00700': 'A00700',  # SALT amount
+    'e00700': 'A00700',  # SALT amount djb NO NO NO
     'e00700_n': 'N00700',  # SALT number
     # check pensions
     # irapentot: IRAs and pensions total e01400 + e01500

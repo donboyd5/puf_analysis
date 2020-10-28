@@ -34,7 +34,108 @@ irstot = pd.read_csv(IRSDAT)
 irstot
 irstot.info()
 irstot.count()
-vars = irstot.variable.value_counts().sort_index()
+irsvars = irstot.variable.value_counts().sort_index()
+
+
+# %% get the puf
+puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-10-26.h5')  # 1 sec
+puf['common_stub'] = pd.cut(
+    puf['c00100'],
+    pc.COMMON_STUBS,
+    labels=range(1, 19),
+    right=False)
+puf.info
+
+
+# %% get nz counts and weighted sums of most puf variables
+# get the subset of variables we want
+pufvars = puf.columns
+keepcols = ('pid', 'common_stub', 's006', 'c00100', 'e00200', 'e00300',
+            'e00600', 'e01500')
+pufsub = puf.loc[:, keepcols]
+
+# make a long file with weighted values
+puflong = pufsub.melt(id_vars=('pid', 'common_stub', 's006'))
+puflong['nnz'] = (puflong.value != 0) * puflong.s006
+puflong['wsum'] = puflong.value * puflong.s006
+
+# get the sums by income range, add grand sums, add stub names
+pufsums = puflong.groupby(['common_stub', 'variable'])[['nnz', 'wsum']].sum().reset_index()
+grand_sums = pufsums.groupby(['variable']).sum().reset_index()
+grand_sums['common_stub'] = 0
+pufsums = pufsums.append(grand_sums)
+pufsums = pd.merge(pufsums, pc.irsstubs, on=['common_stub'])
+pufsums = pufsums.sort_values(['variable', 'common_stub'])
+# reorder vars
+vars = ['common_stub', 'incrange', 'variable', 'nnz', 'wsum']
+pufsums = pufsums[vars]
+
+
+# %% make long pufsums and map pufnames to irstot names
+pufsumslong = pufsums.melt(id_vars=('common_stub', 'incrange', 'variable'), var_name='measure')
+pufsumslong['puf_varmeas'] = pufsumslong.variable + '_' + pufsumslong.measure
+pufsumslong.puf_varmeas.value_counts()
+
+vmap = {'c00100_nnz': 'nret_all',
+        'c00100_wsum': 'agi',
+        'e00200_nnz': 'nret_wages',
+        'e00200_wsum': 'wages',
+        'e00300_nnz': 'nret_taxint',
+        'e00300_wsum': 'taxint',
+        'e00600_nnz': 'nret_orddiv',
+        'e00600_wsum': 'orddiv',
+        'e01500_nnz': 'nret_pensions',
+        'e01500_wsum': 'pensions'}
+
+pufsumslong['irsvar'] = pufsumslong.puf_varmeas.map(vmap)
+pufsumslong
+
+
+# %% merge targets and pufsums, calc differences
+irstot.info()
+pufsumslong.info()
+pufsumslong.puf_varmeas.value_counts()
+comp = pd.merge(irstot.rename(columns={'variable': 'irsvar', 'value': 'irs'}),
+                pufsumslong.rename(columns={'variable': 'pufvar', 'value': 'puf'}),
+                on=['common_stub', 'incrange', 'irsvar'])
+comp['diff'] = comp['puf'] - comp['irs']
+comp['pdiff'] = comp['diff'] / comp['irs'] * 100
+# reorder
+mainvars = ['common_stub', 'incrange', 'irsvar', 'puf_varmeas',
+            'irs', 'puf', 'diff', 'pdiff']
+infovars = ['column_description', 'table_description', 'src']
+comp = comp[mainvars + infovars]
+comp.info()
+
+
+# %% print or write results 
+# ['src']
+s = comp.copy()[mainvars + infovars]
+s['pdiff'] = s['pdiff'] / 100.0
+format_mapping = {'irs': '{:,.0f}',
+                  'puf': '{:,.0f}',
+                  'diff': '{:,.0f}',
+                  'pdiff': '{:.1%}'}
+for key, value in format_mapping.items():
+    s[key] = s[key].apply(value.format)
+
+vlist = comp.irsvar.unique().sort()
+vlist = comp.puf_varmeas.unique().tolist()
+vlist.sort()
+vlist
+
+for var in vlist:
+    print('\n\n')
+    s2 = s[s.puf_varmeas==var]
+    print(s2)
+
+tfile = open(r'c:\temp\irs_puf_compare.txt', 'a')
+tfile.truncate(0)
+for var in vlist:
+    tfile.write('\n\n\n')
+    s2 = s[s.puf_varmeas==var]
+    tfile.write(s2.to_string())
+tfile.close()
 
 
 # %% develop usable targets
@@ -129,9 +230,5 @@ targets_long['variable'].value_counts()
 # alternative: here is the numpy equivalent to R ifelse
 # targets_long['value'] = np.where(condition, targets_long['value'] * 1000, targets_long['value'])
 
-
-# %% prepare puf for comparison
-# puf2017_2020-10-26.h5
-IGNOREDIR
 
 
