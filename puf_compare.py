@@ -37,6 +37,41 @@ irstot.count()
 irsvars = irstot.variable.value_counts().sort_index()
 
 
+# %% create cgnet and nret_cgnet
+# cgnet = cggross - cgloss, we will match against c01000
+# we will calculate nret_cgnet ASSUMING it is the same as nret_cggross
+cgvars = ['cggross', 'cgloss', 'nret_cggross']
+capgains = irstot.query('variable in @cgvars')
+idvars = ['src', 'common_stub', 'incrange', 'table_description']
+keepvars = idvars + ['variable', 'value']
+cgwide = capgains.loc[:, keepvars].pivot(index=idvars, columns=['variable'], values='value')
+cgwide['cgnet'] = cgwide.cggross - cgwide.cgloss
+cgwide = cgwide.rename(columns={'nret_cggross': 'nret_cgnet'}).reset_index()
+cgwide = cgwide.drop(columns=['cggross', 'cgloss'])
+cglong = cgwide.melt(id_vars=idvars)
+
+# set column_description
+# faster approach
+ret_lab = 'Number of returns with capital gains net taxable ASSUMED = nret_cggross'
+val_lab = 'Capital gains net taxable CALCULATED as gross - loss'
+cglong.loc[cglong['variable'] == 'nret_cgnet', 'column_description'] = ret_lab
+cglong.loc[cglong['variable'] == 'cgnet', 'column_description'] =val_lab
+
+# alternative easy to understand but slow approach
+# def f(row):
+#     # not vectorized, only good for small data frames
+#     if row['variable'] == 'cgnet':
+#         label = 'Capital gains net taxable CALCULATED as gross - loss'
+#     elif row['variable'] == 'nret_cgnet':
+#         label = 'Number of returns with capital gains net taxable ASSUMED = nret_cggross'
+#     return label
+# cglong['column_description'] = cglong.apply(f, axis=1)
+
+
+# %% update irstot
+irstot = irstot.append(cglong)
+
+
 # %% get the puf
 puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-10-26.h5')  # 1 sec
 puf['common_stub'] = pd.cut(
@@ -47,11 +82,127 @@ puf['common_stub'] = pd.cut(
 puf.info
 
 
+# %% scratch area helper functions
+def wsum(var):
+    val = (puf[var] * puf['s006']).sum()
+    return val
+
+def nret(var):
+    val = ((puf[var] != 0)* puf['s006']).sum()
+    return val
+
+def irsn(irsvar):
+    irsvar = 'nret_' + irsvar
+    q = 'common_stub==0 and variable==@irsvar'
+    val = irstot.query(q)[['value']]
+    return val.iat[0,0]
+
+def irssum(irsvar):
+    q = 'common_stub==0 and variable==@irsvar'
+    val = irstot.query(q)[['value']]
+    return val.iat[0,0]
+
+# %% scratch medical deductions
+# e17500 Description: Itemizable medical and dental expenses. WARNING: this variable is zero below the floor in PUF data.
+# c17000 Sch A: Medical expenses deducted (component of pre-limitation c21060 total)
+# I don't understand why c17000 is called component of pre-limitation -- it does appear to be limited
+# e17500_capped Sch A: Medical expenses, capped as a decimal fraction of AGI
+# irs 17in21id.xls pre-limit total 155,408,904  10,171,257
+# irs 17in21id.xls limited 102,533,387  10,171,257
+
+var = 'e17500' # 200,511,523,398  17,563,931 
+var = 'c17000'  # 96,675,292,760  9,725,100
+var = 'e17500_capped'  # 200,511,523,398 17,563,931
+print(f'{wsum(var):,.0f}')
+print(f'{nret(var):,.0f}')
+
+# seems like I should match c17000 against the limited deduction in the irs data
+
+
+# %% scratch SALT
+var = 'c01000'
+var = 'c01000'
+var = 'e18500_capped'
+var = 'c18300'
+
+print(f'{wsum(var):,.0f}')
+print(f'{nret(var):,.0f}')
+
+# SALT
+# irs values  nrets
+# irs 17in21id.xls taxes paid deduction 624,820,806  46,431,232
+# irs 17in21id.xls income tax  368,654,631
+# irs 17in21id.xls sales tax   20,734,779
+# irs 17in21id.xls real estate 222,237,629
+# irs 17in21id.xls personal property taxes 10,679,233
+# irs 17in21id.xls other taxes 2,514,534
+
+# puf values (2017)
+# note: c21060 is Itemized deductions before phase-out (zero for non-itemizers)
+# c18300 Sch A: State and local taxes plus real estate taxes deducted (component of pre-limitation c21060 total)
+# 585,382,051,977 46,042,217
+
+# e18400 Itemizable state and local income/sales taxes
+# 526,195,784,967
+
+# e18400_capped Sch A: State and local income taxes deductible, capped as a decimal fraction of AGI
+# 526,195,784,967
+
+# e18500 Itemizable real-estate taxes paid  285,719,544,931  
+# e18500_capped Sch A: State and local real estate taxes deductible, capped as a decimal fraction of AGI
+# 285,719,544,931
+
+
+# %% scratch interest paid deduction
+irsvar = 'id_mortgage' # 292,557,787,000 33,746,351
+irsvar = 'id_intpaid' #  313,944,112,000  34,327,403
+print(f'{irsn(irsvar):,.0f}')
+print(f'{irssum(irsvar):,.0f}')
+
+# e19200 Description: Itemizable interest paid
+# c19200 Sch A: Interest deducted (component of pre-limitation c21060 total)
+# e19200_capped Sch A: Interest deduction deductible, capped as a decimal fraction of AGI
+var = 'e19200' #  424,406,109,267  55,333,072
+var = 'c19200' # 357,486,840,616  36,146,781
+var = 'e19200_capped'  # 424,406,109,267 55,333,072
+print(f'{wsum(var):,.0f}')
+print(f'{nret(var):,.0f}')
+# seems like I should link c19200 to id_intpaid
+
+
+# %% scratch charitable contributions
+ 
+irsvar = 'id_contributions'
+print(f'{irsn(irsvar):,.0f}')  # 37,979,015
+print(f'{irssum(irsvar):,.0f}') # 256,064,685,000
+    
+# e19800 Itemizable charitable giving: cash/check contributions. WARNING: this variable is already capped in PUF data.
+# e20100 Itemizable charitable giving: other than cash/check contributions. WARNING: this variable is already capped in PUF data.
+# c19700 Sch A: Charity contributions deducted (component of pre-limitation c21060 total)
+# e19800_capped Sch A: Charity cash contributions deductible, capped as a decimal fraction of AGI
+# e20100_capped Sch A: Charity noncash contributions deductible, capped as a decimal fraction of AGI
+var = 'e19800'  # 212,635,455,351   101,903,175
+var = 'e20100'  # 64,207,135,577   56,359,659
+var = 'c19700' # 211,099,226,362 38,613,998
+var = 'e20100_capped' # 64,207,135,577  56,359,659
+print(f'{wsum(var):,.0f}')
+print(f'{nret(var):,.0f}')
+# seems like we could use the sum of these e19800, e20100 as roughly equiv of id_contributions?
+# for now match c19700 to id_contributions ??
+
+
 # %% get nz counts and weighted sums of most puf variables
 # get the subset of variables we want
+
+# c18300 appears to be the SALT concept that corresponds to the uncapped deduction and comes a little
+# close to what is in the irs spreadsheet
+# c18300 Sch A: State and local taxes plus real estate taxes deducted (component of pre-limitation c21060 total)
+
 pufvars = puf.columns
 keepcols = ('pid', 'common_stub', 's006', 'c00100', 'e00200', 'e00300',
-            'e00600', 'e01500')
+            'e00600', 'c01000', 'e01500', 'e02400', 'c02500',
+            # itemized deductions
+            'c17000', 'c18300', 'c19200', 'c19700')
 pufsub = puf.loc[:, keepcols]
 
 # make a long file with weighted values
@@ -76,7 +227,8 @@ pufsumslong = pufsums.melt(id_vars=('common_stub', 'incrange', 'variable'), var_
 pufsumslong['puf_varmeas'] = pufsumslong.variable + '_' + pufsumslong.measure
 pufsumslong.puf_varmeas.value_counts()
 
-vmap = {'c00100_nnz': 'nret_all',
+vmap = {# agi income components
+        'c00100_nnz': 'nret_all',
         'c00100_wsum': 'agi',
         'e00200_nnz': 'nret_wages',
         'e00200_wsum': 'wages',
@@ -84,8 +236,24 @@ vmap = {'c00100_nnz': 'nret_all',
         'e00300_wsum': 'taxint',
         'e00600_nnz': 'nret_orddiv',
         'e00600_wsum': 'orddiv',
+        'c01000_nnz': 'nret_cgnet',
+        'c01000_wsum': 'cgnet',
         'e01500_nnz': 'nret_pensions',
-        'e01500_wsum': 'pensions'}
+        'e01500_wsum': 'pensions',
+        'e02400_nnz': 'nret_socsectot',
+        'e02400_wsum': 'socsectot',
+        'c02500_nnz': 'nret_socsectaxable',
+        'c02500_wsum': 'socsectaxable',
+        # itemized deductions
+        'c17000_nnz': 'nret_id_medical_capped',
+        'c17000_wsum': 'id_medical_capped',
+        'c18300_nnz': 'nret_id_taxpaid',
+        'c18300_wsum': 'id_taxpaid',
+        'c19200_nnz': 'nret_id_intpaid',
+        'c19200_wsum': 'id_intpaid',
+        'c19700_nnz': 'nret_id_contributions',
+        'c19700_wsum': 'id_contributions'
+        }
 
 pufsumslong['irsvar'] = pufsumslong.puf_varmeas.map(vmap)
 pufsumslong
@@ -107,10 +275,16 @@ infovars = ['column_description', 'table_description', 'src']
 comp = comp[mainvars + infovars]
 comp.info()
 
+comp.puf_varmeas.value_counts()
+
 
 # %% print or write results 
-# ['src']
+
 s = comp.copy()[mainvars + infovars]
+# define custom sort order
+s['puf_varmeas'] = pd.Categorical(s['puf_varmeas'], categories=vmap.keys())
+s = s.sort_values(by=['puf_varmeas', 'common_stub'])
+
 s['pdiff'] = s['pdiff'] / 100.0
 format_mapping = {'irs': '{:,.0f}',
                   'puf': '{:,.0f}',
@@ -119,26 +293,35 @@ format_mapping = {'irs': '{:,.0f}',
 for key, value in format_mapping.items():
     s[key] = s[key].apply(value.format)
 
-vlist = comp.irsvar.unique().sort()
-vlist = comp.puf_varmeas.unique().tolist()
-vlist.sort()
+vlist = s.puf_varmeas.unique().tolist()
 vlist
 
-for var in vlist:
-    print('\n\n')
-    s2 = s[s.puf_varmeas==var]
-    print(s2)
+# for var in vlist:
+#     print('\n\n')
+#     s2 = s[s.puf_varmeas==var]
+#     print(s2)
 
-tfile = open(r'c:\temp\irs_puf_compare.txt', 'a')
+# pick one of the following 2 file names
+# fname = r'C:\Users\donbo\Google Drive\NY PUF project\irs_puf_compare.txt'
+fname = r'C:\programs_python\puf_analysis\results\irs_puf_compare.txt'
+
+tfile = open(fname, 'a')
 tfile.truncate(0)
+# first write a summary with stub 0 for all variables
+tfile.write('\n\n')
+tfile.write('Summary report:\n\n')
+s2 = s[s.common_stub==0]
+tfile.write(s2.to_string())
+# now write details for each variable
+tfile.write('\n\nDetails by AGI range:')
 for var in vlist:
-    tfile.write('\n\n\n')
+    tfile.write('\n\n')
     s2 = s[s.puf_varmeas==var]
     tfile.write(s2.to_string())
 tfile.close()
 
 
-# %% develop usable targets
+# %% OLD BELOW HERE develop usable targets
 
 # drop targets for which I haven't yet set column descriptions as we won't
 # use them
