@@ -21,11 +21,12 @@ PUF_HDF = HDFDIR + BASE_NAME + '.h5'  # hdf5 is lightning fast
 
 
 # %% constants
-
 # pc.HT2_AGI_STUBS
 # pc.ht2stubs
 # pc.IRS_AGI_STUBS
 # pc.irsstubs
+
+qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
 
 
 # %% get target data
@@ -72,14 +73,157 @@ cglong.loc[cglong['variable'] == 'cgnet', 'column_description'] =val_lab
 irstot = irstot.append(cglong)
 
 
-# %% get the puf
+# %% get the puf, define nonfilers, create pufvars
 puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-10-26.h5')  # 1 sec
 puf['common_stub'] = pd.cut(
     puf['c00100'],
     pc.COMMON_STUBS,
     labels=range(1, 19),
     right=False)
-puf.info
+puf.info()
+
+# %% define filers for 2017
+# 2017 filing requirements
+# https://www.irs.gov/pub/irs-prior/p17--2017.pdf
+# by marital status, age, with gross income at least
+#  Single under 65 $10,400
+#  65 or older $11,950
+#  Married filing jointly*** under 65 (both spouses) $20,800
+# 65 or older (one spouse) $22,050
+# 65 or older (both spouses) $23,300
+# Married filing separately any age $ 4,050
+# Head of household under 65 $13,400
+#    65 or older $14,950
+# Qualifying widow(er) under 65 $16,750
+#  65 or older $18,000
+
+# age_head, age_spouse
+np.quantile(puf.age_head, qtiles)  # 1 to 85 (1??)
+np.quantile(puf.age_spouse, qtiles)  # 50 to 97
+
+# MARS [1=single, 2=joint, 3=separate, 4=household-head, 5=widow(er)]
+puf.MARS.value_counts()
+
+# however, there are other reasons to file:
+# 1. You had federal income tax withheld or made estimated tax payments. (and therefore get refund)
+# 2. You qualify for the earned income credit. (eitc)
+# 3. You qualify for the additional child tax credit. (c11070)
+# 4. You qualify for the premium tax credit. (c10960)
+# 5. You qualify for the health coverage tax credit.
+# 6. You qualify for the American opportunity credit. (c87668)
+# 7. You qualify for the credit for federal tax on fuels.
+
+# credits
+# eitc Earned Income Credit
+# rptc Refundable Payroll Tax Credit for filing unit (also rptc_p, rptc_s)
+# odc Other Dependent Credit
+# personal_refundable_credit Personal refundable credit
+# personal_nonrefundable_credit Personal nonrefundable credit
+# charity_credit Credit for charitable giving
+
+# c07100 Total non-refundable credits used to reduce positive tax liability
+# refund Total refundable income tax credits
+
+# c02900 Total of all ‘above the line’ income adjustments to get AGI
+np.quantile(puf.c02900, qtiles) # 0 to $5.8 million
+np.quantile(puf.c00100, qtiles) # -$34 million to $184 million
+
+# Gross income. This includes all income you receive in the form of money, 
+# goods, property, and services that isn't exempt from tax. It also includes 
+# income from sources outside the United States or from the sale of your main 
+# home (even if you can exclude all or part of it). Include part of your 
+# social security benefits if: 1. You were married, filing a separate return,
+# and you lived with your spouse at any time during 2017; or 2. Half of your
+# social security benefits plus your other gross income and any tax-exempt
+#  interest is more than $25,000 ($32,000 if married filing jointly).
+
+# define filers
+# https://www.irs.gov/pub/irs-prior/p17--2017.pdf
+# define gross income as above the line income plus any losses deducted in
+# arriving at that, plus any income excluded in arriving at that
+above_line_income = puf.c00100 + puf.c02900
+
+# add back any losses that were used to reduce above the line income
+# these are negative so we will subtract them from above the line income
+capital_losses = puf.c23650.lt(0) * puf.c23650 + puf.c01000.lt(0) * puf.c01000
+other_losses = puf.e01200.lt(0) * puf.e01200
+business_losses = puf.e00900.lt(0) * puf.e00900
+rent_losses = puf.e02000.lt(0) * puf.e02000
+farm_losses = puf.e02100.lt(0) * puf.e02100
+above_line_losses = capital_losses + other_losses + business_losses + rent_losses + farm_losses
+
+# addback any untaxed income that was excluded in calculating above the line income
+interest_untaxed = puf.e00400
+# dividends_untaxed ?? not sure what to do
+pensions_untaxed = puf.e01500 - puf.e01700  # always ge zero, I checked
+socsec_untaxed = puf.e02400 - puf.c02500  # OVERSTATEMENT always ge zero, I checked
+above_line_untaxed = interest_untaxed + pensions_untaxed + socsec_untaxed
+
+gross_income = above_line_income - above_line_losses + above_line_untaxed
+
+# to be on the safe side, don't let gross_income be negative
+puf['gross_income'] = gross_income * gross_income.ge(0)
+
+# define filer masks
+# households that are required to file based on marital status, age, and gross income
+m_single_lt65 = puf.MARS.eq(1) & puf.age_head.lt(65) & puf.gross_income.ge(10400)
+m_single_ge65 = puf.MARS.eq(1) & puf.age_head.ge(65) & puf.gross_income.ge(11950)
+m_single = m_single_lt65 | m_single_ge65
+
+# married joint
+m_mfj_bothlt65 = puf.MARS.eq(2) & puf.age_head.lt(65) & puf.age_spouse.lt(65) & puf.gross_income.ge(20800)
+m_mfj_onege65 = puf.MARS.eq(2) & (puf.age_head.ge(65) | puf.age_spouse.ge(65)) & puf.gross_income.ge(22050)
+m_mfj_bothge65 = puf.MARS.eq(2) & puf.age_head.ge(65) & puf.age_spouse.ge(65) & puf.gross_income.ge(23300)
+m_mfj = m_mfj_bothlt65 | m_mfj_onege65 | m_mfj_bothge65
+
+# married separate
+m_mfs = puf.MARS.eq(3) & puf.gross_income.ge(4050)
+
+# head of household
+m_hoh_lt65 = puf.MARS.eq(4) & puf.age_head.lt(65) & puf.gross_income.ge(13400)
+m_hoh_ge65 = puf.MARS.eq(4) & puf.age_head.ge(65) & puf.gross_income.ge(14950)
+m_hoh = m_hoh_lt65 | m_hoh_ge65
+
+# qualifying widow(er)
+m_qw_lt65 = puf.MARS.eq(5) & puf.age_head.lt(65) & puf.gross_income.ge(16750)
+m_qw_ge65 = puf.MARS.eq(5) & puf.age_head.ge(65) & puf.gross_income.ge(18000)
+m_qw = m_qw_lt65 | m_qw_ge65
+
+m_required = m_single | m_mfj | m_mfs | m_hoh | m_qw
+
+# returns that surely will or must file even if marital-status/age/gross_income requirement not met
+m_negagi = puf.c00100.lt(0) # negative agi
+m_iitax = puf.iitax.ne(0)
+m_credits = puf.c07100.ne(0) | puf.refund.ne(0)
+
+m_not_required = m_negagi | m_iitax | m_credits
+
+m_filer = m_required | m_not_required
+
+puf['filer'] = m_filer
+
+
+np.quantile(gross_income, qtiles)
+puf.filer.sum()
+
+
+# define nonfilers
+#   initial cut is to define them as records where c04470 and iitax are both zero
+#     iitax is regular income tax plus all other income taxes (1040 line 63, 2016),
+#       minus self-employment tax (1040 line 57)
+#       minus taxes from form 8959 additional Medicare tax (line 62a)
+#     c04470 is itemized deductions after phase-out (zero for non-itemizers)
+# later look at filing requirements
+#    https://www.hrblock.com/tax-center/filing/filing-requirements/
+
+# puf['nonfiler'] = (puf['iitax'] == 0) & (puf['c04470'] == 0)  # needs parentheses
+# puf['nonfiler'] = puf['iitax'].eq(0) & puf['c04470'].eq(0)
+# puf.nonfiler.sum()
+# puf = puf.drop(['nonfiler'], axis=1)
+
+pufvars = puf.columns.sort_values()
+
+
 
 
 # %% scratch area helper functions
@@ -101,6 +245,7 @@ def irssum(irsvar):
     q = 'common_stub==0 and variable==@irsvar'
     val = irstot.query(q)[['value']]
     return val.iat[0,0]
+
 
 # %% scratch medical deductions
 # e17500 Description: Itemizable medical and dental expenses. WARNING: this variable is zero below the floor in PUF data.
@@ -191,19 +336,18 @@ print(f'{nret(var):,.0f}')
 # for now match c19700 to id_contributions ??
 
 
-# %% get nz counts and weighted sums of most puf variables
+# %% get nz counts and weighted sums of most puf variables, for FILERS
 # get the subset of variables we want
 
 # c18300 appears to be the SALT concept that corresponds to the uncapped deduction and comes a little
 # close to what is in the irs spreadsheet
 # c18300 Sch A: State and local taxes plus real estate taxes deducted (component of pre-limitation c21060 total)
 
-pufvars = puf.columns
 keepcols = ('pid', 'common_stub', 's006', 'c00100', 'e00200', 'e00300',
             'e00600', 'c01000', 'e01500', 'e02400', 'c02500',
             # itemized deductions
             'c17000', 'c18300', 'c19200', 'c19700')
-pufsub = puf.loc[:, keepcols]
+pufsub = puf.loc[puf.filer, keepcols]
 
 # make a long file with weighted values
 puflong = pufsub.melt(id_vars=('pid', 'common_stub', 's006'))
@@ -309,7 +453,9 @@ tfile = open(fname, 'a')
 tfile.truncate(0)
 # first write a summary with stub 0 for all variables
 tfile.write('\n\n')
-tfile.write('Summary report:\n\n')
+tfile.write('Summary report:\n')
+tfile.write('  puf.csv advanced to 2017 with stage 1 and stage 2 only\n')
+tfile.write('  filers only, using requirement rules and likely information\n\n')
 s2 = s[s.common_stub==0]
 tfile.write(s2.to_string())
 # now write details for each variable
