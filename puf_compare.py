@@ -5,6 +5,51 @@ Created on Sat Oct 24 04:19:27 2020
 @author: donbo
 """
 
+# %% target notes
+# puf counts generally are my definition of filers
+# in addition to the obvious items
+
+# filing status
+
+# income items
+
+# agi and c00100, good
+# wages and e00200, good
+
+# taxable interest
+# taxint irs line 8a, Form 1040, same as e00300
+# DON'T TARGET NUMBER OF NZ RETURNS
+
+# ordinary dividends line 9a form 1040
+# orddiv same as e00600 the larger one
+# looks like I should reduce the growfactor then should be ok to target nz and sum
+
+# capital gains
+# cgnet and c01000
+# should be good to target both
+
+# pensions total
+# pensions e01500
+# amount good, too many nz in puf but prob should target both
+
+# social security
+# socsectaxable  c02500
+# looks like I should target both nz and amount
+# target taxable, not total
+
+# itemized deductions
+# irs id_medical_capped c17000 the limited deduction in the irs data
+
+# taxes paid
+# id_taxpaid
+# irs 17in21id.xls taxes paid deduction  46,431,232 624,820,806
+# c18300 Sch A: State and local taxes plus real estate taxes deducted (component of pre-limitation c21060 total)
+# c18300  45,959,926 585,237,496,064
+# wouldn't hurt to increase the growfactor
+
+
+
+
 # %% imports
 import pandas as pd
 import numpy as np
@@ -27,6 +72,106 @@ PUF_HDF = HDFDIR + BASE_NAME + '.h5'  # hdf5 is lightning fast
 # pc.irsstubs
 
 qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
+
+# %% misc functions
+def weighted_percentile(data, weights, perc):
+    """
+    perc : percentile in [0-1]!
+    """
+    ix = np.argsort(data)
+    data = data[ix] # sort data
+    weights = weights[ix] # sort weights
+    cdf = (np.cumsum(weights) - 0.5 * weights) / np.sum(weights) # 'like' a CDF function
+    return np.interp(perc, cdf, data)
+
+
+def quantile_at_values(values, population, weights=None):
+    values = np.atleast_1d(values).astype(float)
+    population = np.atleast_1d(population).astype(float)
+    # if no weights are given, use equal weights
+    if weights is None:
+        weights = np.ones(population.shape).astype(float)
+        normal = float(len(weights))
+    # else, check weights
+    else:
+        weights = np.atleast_1d(weights).astype(float)
+        assert len(weights) == len(population)
+        assert (weights >= 0).all()
+        normal = np.sum(weights)
+        assert normal > 0.
+    quantiles = np.array([np.sum(weights[population <= value]) for value in values]) / normal
+    assert (quantiles >= 0).all() and (quantiles <= 1).all()
+    return quantiles
+
+# define a function for weighted quantiles. input: x, q
+# x: two-column data, the second column is weight. q: percentile
+def wquantile(xvalues, weights, qtile):
+    x = pd.DataFrame(data={'data': xvalues, 'weights': weights})
+    xsort = x.sort_values(x.columns[0])
+    xsort['index'] = range(len(x))
+    p = qtile * x[x.columns[1]].sum()
+    pop = float(xsort[xsort.columns[1]][xsort['index']==0])
+    i = 0
+    while pop < p:
+        pop = pop + float(xsort[xsort.columns[1]][xsort['index']==i+1])
+        i = i + 1
+    return xsort[xsort.columns[0]][xsort['index']==i]
+
+
+def wp(data, wt, percentiles):
+    """Compute weighted percentiles.
+    If the weights are equal, this is the same as normal percentiles.
+    Elements of the C{data} and C{wt} arrays correspond to
+    each other and must have equal length (unless C{wt} is C{None}).
+    http://kochanski.org/gpk/code/speechresearch/gmisclib/gmisclib.weighted_percentile-pysrc.html#wp
+
+    @param data: The data.
+    @type data: A L{np.ndarray} array or a C{list} of numbers.
+    @param wt: How important is a given piece of data.
+    @type wt: C{None} or a L{np.ndarray} array or a C{list} of numbers.
+            All the weights must be non-negative and the sum must be
+            greater than zero.
+    @param percentiles: what percentiles to use.  (Not really percentiles,
+            as the range is 0-1 rather than 0-100.)
+    @type percentiles: a C{list} of numbers between 0 and 1.
+    @rtype: [ C{float}, ... ]
+    @return: the weighted percentiles of the data.
+    """
+    assert np.greater_equal(percentiles, 0.0).all(), "Percentiles less than zero"
+    assert np.less_equal(percentiles, 1.0).all(), "Percentiles greater than one"
+    data = np.asarray(data)
+    assert len(data.shape) == 1
+    if wt is None:
+        wt = np.ones(data.shape, np.float)
+    else:
+        wt = np.asarray(wt, np.float)
+        assert wt.shape == data.shape
+        assert np.greater_equal(wt, 0.0).all(), "Not all weights are non-negative."
+
+    assert len(wt.shape) == 1
+    n = data.shape[0]
+    assert n > 0
+    i = np.argsort(data)
+    sd = np.take(data, i, axis=0)
+    sw = np.take(wt, i, axis=0)
+    aw = np.add.accumulate(sw)
+    if not aw[-1] > 0:
+        print("Nonpositive weight sum")
+    w = (aw-0.5*sw)/aw[-1]
+    spots = np.searchsorted(w, percentiles)
+    o = []
+    for (s, p) in zip(spots, percentiles):
+        if s == 0:
+            o.append(sd[0])
+        elif s == n:
+            o.append(sd[n-1])
+        else:
+            f1 = (w[s] - p)/(w[s] - w[s-1])
+            f2 = (p - w[s-1])/(w[s] - w[s-1])
+            assert f1 >= 0 and f2 >= 0 and f1 <= 1 and f2 <= 1
+            assert abs(f1+f2-1.0) < 1e-6
+            o.append(sd[s-1]*f1 + sd[s]*f2)
+    return o
 
 
 # %% function to create mask identifying filers
@@ -59,6 +204,24 @@ def filers(puf, year=2017):
     define gross income as above the line income plus any losses deducted in
     arriving at that, plus any income excluded in arriving at that
     """
+    if year == 2017:
+        s_inc_lt65 = 10400
+        s_inc_ge65 = 11950
+
+        mfj_inc_bothlt65 = 20800
+        mfj_inc_onege65 = 22050
+        mfj_inc_bothge65 = 23300
+
+        mfs_inc = 4050
+
+        hoh_inc_lt65 = 13400
+        hoh_inc_ge65 = 14950
+
+        qw_inc_lt65 = 16750
+        qw_inc_ge65 = 18000
+
+        wage_threshold = 1000
+
     # above the line income is agi plus above line adjustments getting to agi
     above_line_income = puf.c00100 + puf.c02900
 
@@ -78,7 +241,8 @@ def filers(puf, year=2017):
     interest_untaxed = puf.e00400
     dividends_untaxed = puf.e00600 - puf.e00650
     pensions_untaxed = puf.e01500 - puf.e01700  # always ge zero, I checked
-    socsec_untaxed = puf.e02400 - puf.c02500  # OVERSTATEMENT always ge zero, I checked
+    # socsec_untaxed is OVERSTATED - I think IRS has a limit on amount
+    socsec_untaxed = puf.e02400 - puf.c02500  # always ge zero, I checked
     above_line_untaxed = interest_untaxed + dividends_untaxed \
         + pensions_untaxed + socsec_untaxed
 
@@ -88,25 +252,8 @@ def filers(puf, year=2017):
     gross_income = gross_income * gross_income.ge(0)
 
     # define filer masks
-    # households that are required to file based on marital status, age, and gross income
-
-    if year == 2017:
-        s_inc_lt65 = 10400
-        s_inc_ge65 = 11950
-
-        mfj_inc_bothlt65 = 20800
-        mfj_inc_onege65 = 22050
-        mfj_inc_bothge65 = 23300
-
-        mfs_inc = 4050
-
-        hoh_inc_lt65 = 13400
-        hoh_inc_ge65 = 14950
-
-        qw_inc_lt65 = 16750
-        qw_inc_ge65 = 18000
-
-        wage_cut = 1000
+    # households that are required to file based on marital status,
+    # age, and gross income
 
     # single
     m_single_lt65 = puf.MARS.eq(1) \
@@ -169,7 +316,7 @@ def filers(puf, year=2017):
     m_negagi = puf.c00100.lt(0)  # negative agi
     m_iitax = puf.iitax.ne(0)
     m_credits = puf.c07100.ne(0) | puf.refund.ne(0)
-    m_wages = puf.e00200.ge(wage_cut)
+    m_wages = puf.e00200.ge(wage_threshold)
 
     m_likely = m_negagi | m_iitax | m_credits | m_wages
 
@@ -189,20 +336,22 @@ irsvars = irstot.variable.value_counts().sort_index()
 
 # %% create cgnet and nret_cgnet
 # cgnet = cggross - cgloss, we will match against c01000
-# we will calculate nret_cgnet ASSUMING it is the same as nret_cggross
-cgvars = ['cggross', 'cgloss', 'nret_cggross']
+# we will calculate nret_cgnet ASSUMING it is nret_cggross + nret_cgloss
+cgvars = ['cggross', 'cgloss', 'nret_cggross', 'nret_cgloss']
 capgains = irstot.query('variable in @cgvars')
 idvars = ['src', 'common_stub', 'incrange', 'table_description']
 keepvars = idvars + ['variable', 'value']
 cgwide = capgains.loc[:, keepvars].pivot(index=idvars, columns=['variable'], values='value')
 cgwide['cgnet'] = cgwide.cggross - cgwide.cgloss
-cgwide = cgwide.rename(columns={'nret_cggross': 'nret_cgnet'}).reset_index()
+cgwide['nret_cgnet'] = cgwide.nret_cggross + cgwide.nret_cgloss
+# cgwide = cgwide.rename(columns={'nret_cggross': 'nret_cgnet'}).reset_index()
+cgwide = cgwide.reset_index()
 cgwide = cgwide.drop(columns=['cggross', 'cgloss'])
 cglong = cgwide.melt(id_vars=idvars)
 
 # set column_description
 # faster approach
-ret_lab = 'Number of returns with capital gains net taxable ASSUMED = nret_cggross'
+ret_lab = 'Number of returns with capital gains net taxable ASSUMED = nret_cggross + nret_cgloss'
 val_lab = 'Capital gains net taxable CALCULATED as gross - loss'
 cglong.loc[cglong['variable'] == 'nret_cgnet', 'column_description'] = ret_lab
 cglong.loc[cglong['variable'] == 'cgnet', 'column_description'] =val_lab
@@ -236,32 +385,11 @@ puf.info()
 # age_head, age_spouse
 # np.quantile(puf.age_head, qtiles)  # 1 to 85 (1??)
 # np.quantile(puf.age_spouse, qtiles)  # 50 to 97
-
-# MARS [1=single, 2=joint, 3=separate, 4=household-head, 5=widow(er)]
 # puf.MARS.value_counts()
 
 puf['filer'] = filers(puf, 2017)
-
 puf.filer.sum()
-
-
-# define nonfilers
-#   initial cut is to define them as records where c04470 and iitax are both zero
-#     iitax is regular income tax plus all other income taxes (1040 line 63, 2016),
-#       minus self-employment tax (1040 line 57)
-#       minus taxes from form 8959 additional Medicare tax (line 62a)
-#     c04470 is itemized deductions after phase-out (zero for non-itemizers)
-# later look at filing requirements
-#    https://www.hrblock.com/tax-center/filing/filing-requirements/
-
-# puf['nonfiler'] = (puf['iitax'] == 0) & (puf['c04470'] == 0)  # needs parentheses
-# puf['nonfiler'] = puf['iitax'].eq(0) & puf['c04470'].eq(0)
-# puf.nonfiler.sum()
-# puf = puf.drop(['nonfiler'], axis=1)
-
 pufvars = puf.columns.sort_values()
-
-
 
 
 # %% scratch area helper functions
@@ -287,6 +415,21 @@ def irssum(irsvar):
 # %% scratch taxable interest
 # per pub 1304
 # irs concept (line 8a, Form 1040), same as e00300
+# we have way too many records with nonzero values but the weighted sum is
+# in the right ballpark (4.6%)
+# DON'T TARGET NUMBER OF NZ RETURNS
+
+data = puf[puf.filer].e00300
+weights = puf[puf.filer].s006
+
+data = puf.query('filer and (e00300 != 0)')['e00300']
+weights = puf.query('filer and (e00300 != 0)')['s006']
+
+res = wp(data, weights, qtiles)
+np.round(res, 1)
+qtiles
+type(res)
+
 
 
 # %% scratch dividends
@@ -295,6 +438,17 @@ def irssum(irsvar):
 var = 'e00650'
 print(f'{nret(var, puf[puf.filer]):,.0f}')
 print(f'{wsum(var, puf[puf.filer]):,.0f}')
+
+
+# %% scratch
+# e02000 Sch E total rental, royalty, partnership, S-corporation, etc, income/loss (includes e26270 and e27200)
+# e26270 Sch E: Combined partnership and S-corporation net income/loss (includes k1bx14p and k1bx14s amounts and is included in e02000)
+
+# nret_partnerscorpinc Number of returns with partnership or S corporation net income
+# partnerscorpinc Partnership or S corporation net income
+# nret_partnerscorploss Number of returns with partnership or S corporation net loss
+# partnerscorploss Partnership or S corporation net loss
+
 
 
 # %% scratch medical deductions
