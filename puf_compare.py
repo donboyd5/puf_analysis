@@ -9,43 +9,60 @@ Created on Sat Oct 24 04:19:27 2020
 # puf counts generally are my definition of filers
 # in addition to the obvious items
 
-# filing status
+# filing status - just target the 3 biggest statuses
+# they look close enough to work
+# nret_all nret_all
+# nret_single mars1
+# nret_mfjss mars2
+# nret_hoh mars4
 
 # income items
 
-# agi and c00100, good
-# wages and e00200, good
+# agi, c00100, target both nnz and amount
+# wages, e00200, target both nnz and amount
 
-# taxable interest
+# taxable interest income
 # taxint irs line 8a, Form 1040, same as e00300
 # DON'T TARGET NUMBER OF NZ RETURNS
 
 # ordinary dividends line 9a form 1040
 # orddiv same as e00600 the larger one
-# looks like I should reduce the growfactor then should be ok to target nz and sum
+# looks like I should reduce the growfactor
+# then should be ok to target both nnz and amount
 
-# capital gains
+# capital gains net income
 # cgnet and c01000
-# should be good to target both
+# should be good to target both nnz and amount
 
-# pensions total
-# pensions e01500
-# amount good, too many nz in puf but prob should target both
+# pensions total income
+# pensions, e01500
+# amount good, too many nnz in puf but PROB should target both
 
-# social security
-# socsectaxable  c02500
-# looks like I should target both nz and amount
+# social security taxable income
+# socsectaxable, c02500
+# looks like I should target both nnz and amount
 # target taxable, not total
 
-# itemized deductions
-# irs id_medical_capped c17000 the limited deduction in the irs data
+# partnership and scorp income and loss
+# partnerscorpinc e26270pos
+# partnerscorploss e26270neg
+# should be able to target both nnz and amount for both
 
-# taxes paid
-# id_taxpaid
+# itemized deductions
+# irs id_medical_capped, c17000 the limited deduction in the irs data
+# target both nnz and amount
+
+# taxes paid deduction
+# id_taxpaid, c18300  target both nnz and amount
 # irs 17in21id.xls taxes paid deduction  46,431,232 624,820,806
 # c18300 Sch A: State and local taxes plus real estate taxes deducted (component of pre-limitation c21060 total)
 # c18300  45,959,926 585,237,496,064
 # wouldn't hurt to increase the growfactor
+
+# interest paid deduction
+# id_intpaid, c19200  should be able to target both nnz and amount
+
+# charitable contributions deduction
 
 
 
@@ -381,6 +398,21 @@ puf['common_stub'] = pd.cut(
 puf.info()
 
 
+# %% create needed puf variables
+puf['nret_all'] = 1
+
+# marital status indicators
+puf['mars1'] = puf.MARS.eq(1)
+puf['mars2'] = puf.MARS.eq(2)
+puf['mars3'] = puf.MARS.eq(3)
+puf['mars4'] = puf.MARS.eq(4)
+puf['mars5'] = puf.MARS.eq(5)
+
+# partnership and S corp e26270
+puf['e26270pos'] = puf.e26270 * puf.e26270.gt(0)
+puf['e26270neg'] = puf.e26270 * puf.e26270.lt(0)
+
+
 # %% define filers
 # age_head, age_spouse
 # np.quantile(puf.age_head, qtiles)  # 1 to 85 (1??)
@@ -412,6 +444,23 @@ def irssum(irsvar):
     val = irstot.query(q)[['value']]
     return val.iat[0,0]
 
+# %% scratch marital status
+irsvar = 'nret_single'  # 73,021,932
+irsvar = 'nret_mfjss'  # 54,774,397
+irsvar = 'nret_mfs'  # 3,212,807
+irsvar = 'nret_hoh'  # 21,894,095
+# print(f'{irsn(irsvar):,.0f}')
+print(f'{irssum(irsvar):,.0f}')
+
+var = 'mars1'  # 75,537,981
+var = 'mars2'  # 57,654,690
+var = 'mars3'  # 2,370,429
+var = 'mars4'  # 23,195,817
+var = 'mars5'  # 0
+print(f'{nret(var, puf[puf.filer]):,.0f}')
+# print(f'{wsum(var, puf[puf.filer]):,.0f}')
+
+
 # %% scratch taxable interest
 # per pub 1304
 # irs concept (line 8a, Form 1040), same as e00300
@@ -440,7 +489,7 @@ print(f'{nret(var, puf[puf.filer]):,.0f}')
 print(f'{wsum(var, puf[puf.filer]):,.0f}')
 
 
-# %% scratch
+# %% scratch partnership and S corp
 # e02000 Sch E total rental, royalty, partnership, S-corporation, etc, income/loss (includes e26270 and e27200)
 # e26270 Sch E: Combined partnership and S-corporation net income/loss (includes k1bx14p and k1bx14s amounts and is included in e02000)
 
@@ -449,6 +498,15 @@ print(f'{wsum(var, puf[puf.filer]):,.0f}')
 # nret_partnerscorploss Number of returns with partnership or S corporation net loss
 # partnerscorploss Partnership or S corporation net loss
 
+irsvar = 'partnerscorpinc'  # 6,240,408, 833,430,151,000
+irsvar = 'partnerscorploss'  # 2,872,745, 153,150,406,000
+print(f'{irsn(irsvar):,.0f}')
+print(f'{irssum(irsvar):,.0f}')
+
+var = 'e26270pos'  # 5,832,109  681,710,267,190
+var = 'e26270neg'  # 3,138,926  -164,846,548,501
+print(f'{nret(var, puf[puf.filer]):,.0f}')
+print(f'{wsum(var, puf[puf.filer]):,.0f}')
 
 
 # %% scratch medical deductions
@@ -542,6 +600,8 @@ print(f'{wsum(var):,.0f}')
 print(f'{nret(var):,.0f}')
 # seems like we could use the sum of these e19800, e20100 as roughly equiv of id_contributions?
 # for now match c19700 to id_contributions ??
+
+# post issue on github
 
 
 # %% get nz counts and weighted sums of most puf variables, for FILERS
