@@ -29,6 +29,155 @@ PUF_HDF = HDFDIR + BASE_NAME + '.h5'  # hdf5 is lightning fast
 qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
 
 
+# %% function to create mask identifying filers
+
+def filers(puf, year=2017):
+    """Return boolean array identifying tax filers.
+
+    Parameters
+    ----------
+    puf : TYPE
+        DESCRIPTION.
+    year : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    # IRS rules for filers: https://www.irs.gov/pub/irs-prior/p17--2017.pdf
+
+    Gross income. This includes all income you receive in the form of money,
+    goods, property, and services that isn't exempt from tax. It also includes
+    income from sources outside the United States or from the sale of your main
+    home (even if you can exclude all or part of it). Include part of your
+    social security benefits if: 1. You were married, filing a separate return,
+    and you lived with your spouse at any time during 2017; or 2. Half of your
+    social security benefits plus your other gross income and any tax-exempt
+    interest is more than $25,000 ($32,000 if married filing jointly).
+
+    define gross income as above the line income plus any losses deducted in
+    arriving at that, plus any income excluded in arriving at that
+    """
+    # above the line income is agi plus above line adjustments getting to agi
+    above_line_income = puf.c00100 + puf.c02900
+
+    # add back any losses that were used to reduce above the line income
+    # these are negative so we will subtract them from above the line income
+    capital_losses = puf.c23650.lt(0) * puf.c23650 \
+        + puf.c01000.lt(0) * puf.c01000
+    other_losses = puf.e01200.lt(0) * puf.e01200
+    business_losses = puf.e00900.lt(0) * puf.e00900
+    rent_losses = puf.e02000.lt(0) * puf.e02000
+    farm_losses = puf.e02100.lt(0) * puf.e02100
+    above_line_losses = capital_losses + other_losses + business_losses \
+        + rent_losses + farm_losses
+
+    # add back any untaxed income that was excluded in calculating
+    # above the line income
+    interest_untaxed = puf.e00400
+    dividends_untaxed = puf.e00600 - puf.e00650
+    pensions_untaxed = puf.e01500 - puf.e01700  # always ge zero, I checked
+    socsec_untaxed = puf.e02400 - puf.c02500  # OVERSTATEMENT always ge zero, I checked
+    above_line_untaxed = interest_untaxed + dividends_untaxed \
+        + pensions_untaxed + socsec_untaxed
+
+    gross_income = above_line_income - above_line_losses + above_line_untaxed
+
+    # to be on the safe side, don't let gross_income be negative
+    gross_income = gross_income * gross_income.ge(0)
+
+    # define filer masks
+    # households that are required to file based on marital status, age, and gross income
+
+    if year == 2017:
+        s_inc_lt65 = 10400
+        s_inc_ge65 = 11950
+
+        mfj_inc_bothlt65 = 20800
+        mfj_inc_onege65 = 22050
+        mfj_inc_bothge65 = 23300
+
+        mfs_inc = 4050
+
+        hoh_inc_lt65 = 13400
+        hoh_inc_ge65 = 14950
+
+        qw_inc_lt65 = 16750
+        qw_inc_ge65 = 18000
+
+        wage_cut = 1000
+
+    # single
+    m_single_lt65 = puf.MARS.eq(1) \
+        & puf.age_head.lt(65) \
+        & gross_income.ge(s_inc_lt65)
+
+    m_single_ge65 = puf.MARS.eq(1) \
+        & puf.age_head.ge(65) \
+        & gross_income.ge(s_inc_ge65)
+
+    m_single = m_single_lt65 | m_single_ge65
+
+    # married joint
+    m_mfj_bothlt65 = puf.MARS.eq(2) \
+        & puf.age_head.lt(65) \
+        & puf.age_spouse.lt(65) \
+        & gross_income.ge(mfj_inc_bothlt65)
+
+    m_mfj_onege65 = puf.MARS.eq(2) \
+        & (puf.age_head.ge(65) | puf.age_spouse.ge(65)) \
+        & ~(puf.age_head.ge(65) & puf.age_spouse.ge(65)) \
+        & gross_income.ge(mfj_inc_onege65)
+
+    m_mfj_bothge65 = puf.MARS.eq(2) \
+        & puf.age_head.ge(65) \
+        & puf.age_spouse.ge(65) \
+        & gross_income.ge(mfj_inc_bothge65)
+
+    m_mfj = m_mfj_bothlt65 | m_mfj_onege65 | m_mfj_bothge65
+
+    # married separate
+    m_mfs = puf.MARS.eq(3) & gross_income.ge(mfs_inc)
+
+    # head of household
+    m_hoh_lt65 = puf.MARS.eq(4) \
+        & puf.age_head.lt(65) \
+        & gross_income.ge(hoh_inc_lt65)
+
+    m_hoh_ge65 = puf.MARS.eq(4) \
+        & puf.age_head.ge(65) \
+        & gross_income.ge(hoh_inc_ge65)
+
+    m_hoh = m_hoh_lt65 | m_hoh_ge65
+
+    # qualifying widow(er)
+    m_qw_lt65 = puf.MARS.eq(5) \
+        & puf.age_head.lt(65) \
+        & gross_income.ge(qw_inc_lt65)
+
+    m_qw_ge65 = puf.MARS.eq(5) \
+        & puf.age_head.ge(65) \
+        & gross_income.ge(qw_inc_ge65)
+
+    m_qw = m_qw_lt65 | m_qw_ge65
+
+    m_required = m_single | m_mfj | m_mfs | m_hoh | m_qw
+
+    # returns that surely will or must file even if
+    # marital-status/age/gross_income requirement is not met
+    m_negagi = puf.c00100.lt(0)  # negative agi
+    m_iitax = puf.iitax.ne(0)
+    m_credits = puf.c07100.ne(0) | puf.refund.ne(0)
+    m_wages = puf.e00200.ge(wage_cut)
+
+    m_likely = m_negagi | m_iitax | m_credits | m_wages
+
+    m_filer = m_required | m_likely
+
+    return m_filer
+
+
 # %% get target data
 IRSDAT = DATADIR + 'targets2017_collapsed.csv'
 irstot = pd.read_csv(IRSDAT)
@@ -73,7 +222,7 @@ cglong.loc[cglong['variable'] == 'cgnet', 'column_description'] =val_lab
 irstot = irstot.append(cglong)
 
 
-# %% get the puf, define nonfilers, create pufvars
+# %% get the puf
 puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-10-26.h5')  # 1 sec
 puf['common_stub'] = pd.cut(
     puf['c00100'],
@@ -82,128 +231,17 @@ puf['common_stub'] = pd.cut(
     right=False)
 puf.info()
 
-# %% define filers for 2017
-# 2017 filing requirements
-# https://www.irs.gov/pub/irs-prior/p17--2017.pdf
-# by marital status, age, with gross income at least
-#  Single under 65 $10,400
-#  65 or older $11,950
-#  Married filing jointly*** under 65 (both spouses) $20,800
-# 65 or older (one spouse) $22,050
-# 65 or older (both spouses) $23,300
-# Married filing separately any age $ 4,050
-# Head of household under 65 $13,400
-#    65 or older $14,950
-# Qualifying widow(er) under 65 $16,750
-#  65 or older $18,000
 
+# %% define filers
 # age_head, age_spouse
-np.quantile(puf.age_head, qtiles)  # 1 to 85 (1??)
-np.quantile(puf.age_spouse, qtiles)  # 50 to 97
+# np.quantile(puf.age_head, qtiles)  # 1 to 85 (1??)
+# np.quantile(puf.age_spouse, qtiles)  # 50 to 97
 
 # MARS [1=single, 2=joint, 3=separate, 4=household-head, 5=widow(er)]
-puf.MARS.value_counts()
+# puf.MARS.value_counts()
 
-# however, there are other reasons to file:
-# 1. You had federal income tax withheld or made estimated tax payments. (and therefore get refund)
-# 2. You qualify for the earned income credit. (eitc)
-# 3. You qualify for the additional child tax credit. (c11070)
-# 4. You qualify for the premium tax credit. (c10960)
-# 5. You qualify for the health coverage tax credit.
-# 6. You qualify for the American opportunity credit. (c87668)
-# 7. You qualify for the credit for federal tax on fuels.
+puf['filer'] = filers(puf, 2017)
 
-# credits
-# eitc Earned Income Credit
-# rptc Refundable Payroll Tax Credit for filing unit (also rptc_p, rptc_s)
-# odc Other Dependent Credit
-# personal_refundable_credit Personal refundable credit
-# personal_nonrefundable_credit Personal nonrefundable credit
-# charity_credit Credit for charitable giving
-
-# c07100 Total non-refundable credits used to reduce positive tax liability
-# refund Total refundable income tax credits
-
-# c02900 Total of all ‘above the line’ income adjustments to get AGI
-np.quantile(puf.c02900, qtiles) # 0 to $5.8 million
-np.quantile(puf.c00100, qtiles) # -$34 million to $184 million
-
-# Gross income. This includes all income you receive in the form of money, 
-# goods, property, and services that isn't exempt from tax. It also includes 
-# income from sources outside the United States or from the sale of your main 
-# home (even if you can exclude all or part of it). Include part of your 
-# social security benefits if: 1. You were married, filing a separate return,
-# and you lived with your spouse at any time during 2017; or 2. Half of your
-# social security benefits plus your other gross income and any tax-exempt
-#  interest is more than $25,000 ($32,000 if married filing jointly).
-
-# define filers
-# https://www.irs.gov/pub/irs-prior/p17--2017.pdf
-# define gross income as above the line income plus any losses deducted in
-# arriving at that, plus any income excluded in arriving at that
-above_line_income = puf.c00100 + puf.c02900
-
-# add back any losses that were used to reduce above the line income
-# these are negative so we will subtract them from above the line income
-capital_losses = puf.c23650.lt(0) * puf.c23650 + puf.c01000.lt(0) * puf.c01000
-other_losses = puf.e01200.lt(0) * puf.e01200
-business_losses = puf.e00900.lt(0) * puf.e00900
-rent_losses = puf.e02000.lt(0) * puf.e02000
-farm_losses = puf.e02100.lt(0) * puf.e02100
-above_line_losses = capital_losses + other_losses + business_losses + rent_losses + farm_losses
-
-# addback any untaxed income that was excluded in calculating above the line income
-interest_untaxed = puf.e00400
-# dividends_untaxed ?? not sure what to do
-pensions_untaxed = puf.e01500 - puf.e01700  # always ge zero, I checked
-socsec_untaxed = puf.e02400 - puf.c02500  # OVERSTATEMENT always ge zero, I checked
-above_line_untaxed = interest_untaxed + pensions_untaxed + socsec_untaxed
-
-gross_income = above_line_income - above_line_losses + above_line_untaxed
-
-# to be on the safe side, don't let gross_income be negative
-puf['gross_income'] = gross_income * gross_income.ge(0)
-
-# define filer masks
-# households that are required to file based on marital status, age, and gross income
-m_single_lt65 = puf.MARS.eq(1) & puf.age_head.lt(65) & puf.gross_income.ge(10400)
-m_single_ge65 = puf.MARS.eq(1) & puf.age_head.ge(65) & puf.gross_income.ge(11950)
-m_single = m_single_lt65 | m_single_ge65
-
-# married joint
-m_mfj_bothlt65 = puf.MARS.eq(2) & puf.age_head.lt(65) & puf.age_spouse.lt(65) & puf.gross_income.ge(20800)
-m_mfj_onege65 = puf.MARS.eq(2) & (puf.age_head.ge(65) | puf.age_spouse.ge(65)) & puf.gross_income.ge(22050)
-m_mfj_bothge65 = puf.MARS.eq(2) & puf.age_head.ge(65) & puf.age_spouse.ge(65) & puf.gross_income.ge(23300)
-m_mfj = m_mfj_bothlt65 | m_mfj_onege65 | m_mfj_bothge65
-
-# married separate
-m_mfs = puf.MARS.eq(3) & puf.gross_income.ge(4050)
-
-# head of household
-m_hoh_lt65 = puf.MARS.eq(4) & puf.age_head.lt(65) & puf.gross_income.ge(13400)
-m_hoh_ge65 = puf.MARS.eq(4) & puf.age_head.ge(65) & puf.gross_income.ge(14950)
-m_hoh = m_hoh_lt65 | m_hoh_ge65
-
-# qualifying widow(er)
-m_qw_lt65 = puf.MARS.eq(5) & puf.age_head.lt(65) & puf.gross_income.ge(16750)
-m_qw_ge65 = puf.MARS.eq(5) & puf.age_head.ge(65) & puf.gross_income.ge(18000)
-m_qw = m_qw_lt65 | m_qw_ge65
-
-m_required = m_single | m_mfj | m_mfs | m_hoh | m_qw
-
-# returns that surely will or must file even if marital-status/age/gross_income requirement not met
-m_negagi = puf.c00100.lt(0) # negative agi
-m_iitax = puf.iitax.ne(0)
-m_credits = puf.c07100.ne(0) | puf.refund.ne(0)
-
-m_not_required = m_negagi | m_iitax | m_credits
-
-m_filer = m_required | m_not_required
-
-puf['filer'] = m_filer
-
-
-np.quantile(gross_income, qtiles)
 puf.filer.sum()
 
 
@@ -227,11 +265,11 @@ pufvars = puf.columns.sort_values()
 
 
 # %% scratch area helper functions
-def wsum(var):
+def wsum(var, puf):
     val = (puf[var] * puf['s006']).sum()
     return val
 
-def nret(var):
+def nret(var, puf):
     val = ((puf[var] != 0)* puf['s006']).sum()
     return val
 
@@ -246,32 +284,49 @@ def irssum(irsvar):
     val = irstot.query(q)[['value']]
     return val.iat[0,0]
 
+# %% scratch taxable interest
+# per pub 1304
+# irs concept (line 8a, Form 1040), same as e00300
+
+
+# %% scratch dividends
+# irs ordinary dividends line 9a form 1040 same as e00600 this is the larger one so target this
+# irs Qualified Dividends (line 9b, Form 1040) same as e00650
+var = 'e00650'
+print(f'{nret(var, puf[puf.filer]):,.0f}')
+print(f'{wsum(var, puf[puf.filer]):,.0f}')
+
 
 # %% scratch medical deductions
+# id_medical_capped
 # e17500 Description: Itemizable medical and dental expenses. WARNING: this variable is zero below the floor in PUF data.
 # c17000 Sch A: Medical expenses deducted (component of pre-limitation c21060 total)
 # I don't understand why c17000 is called component of pre-limitation -- it does appear to be limited
 # e17500_capped Sch A: Medical expenses, capped as a decimal fraction of AGI
 # irs 17in21id.xls pre-limit total 155,408,904  10,171,257
-# irs 17in21id.xls limited 102,533,387  10,171,257
+# id_medical_capped irs 17in21id.xls limited 102,533,387  10,171,257
 
-var = 'e17500' # 200,511,523,398  17,563,931 
+irsvar = 'id_medical_capped'
+print(f'{irsn(irsvar):,.0f}')
+print(f'{irssum(irsvar):,.0f}')
+
+var = 'e17500' # 200,511,523,398  17,563,931
 var = 'c17000'  # 96,675,292,760  9,725,100
 var = 'e17500_capped'  # 200,511,523,398 17,563,931
-print(f'{wsum(var):,.0f}')
-print(f'{nret(var):,.0f}')
+print(f'{nret(var, puf[puf.filer]):,.0f}')
+print(f'{wsum(var, puf[puf.filer]):,.0f}')
 
-# seems like I should match c17000 against the limited deduction in the irs data
+# seems like I should match c17000 against id_medical_capped the limited deduction in the irs data
 
 
 # %% scratch SALT
-var = 'c01000'
-var = 'c01000'
+var = 'c18300'  # 45,959,926 585,237,496,064
+var = 'e18400'  # 153,487,189 513,295,087,752
+var = 'e18400_capped' # 153,487,189 513,295,087,752
 var = 'e18500_capped'
-var = 'c18300'
+print(f'{nret(var, puf[puf.filer]):,.0f}')
+print(f'{wsum(var, puf[puf.filer]):,.0f}')
 
-print(f'{wsum(var):,.0f}')
-print(f'{nret(var):,.0f}')
 
 # SALT
 # irs values  nrets
@@ -284,16 +339,15 @@ print(f'{nret(var):,.0f}')
 
 # puf values (2017)
 # note: c21060 is Itemized deductions before phase-out (zero for non-itemizers)
+
 # c18300 Sch A: State and local taxes plus real estate taxes deducted (component of pre-limitation c21060 total)
-# 585,382,051,977 46,042,217
 
 # e18400 Itemizable state and local income/sales taxes
-# 526,195,784,967
 
 # e18400_capped Sch A: State and local income taxes deductible, capped as a decimal fraction of AGI
 # 526,195,784,967
 
-# e18500 Itemizable real-estate taxes paid  285,719,544,931  
+# e18500 Itemizable real-estate taxes paid  285,719,544,931
 # e18500_capped Sch A: State and local real estate taxes deductible, capped as a decimal fraction of AGI
 # 285,719,544,931
 
@@ -316,11 +370,11 @@ print(f'{nret(var):,.0f}')
 
 
 # %% scratch charitable contributions
- 
+
 irsvar = 'id_contributions'
 print(f'{irsn(irsvar):,.0f}')  # 37,979,015
 print(f'{irssum(irsvar):,.0f}') # 256,064,685,000
-    
+
 # e19800 Itemizable charitable giving: cash/check contributions. WARNING: this variable is already capped in PUF data.
 # e20100 Itemizable charitable giving: other than cash/check contributions. WARNING: this variable is already capped in PUF data.
 # c19700 Sch A: Charity contributions deducted (component of pre-limitation c21060 total)
@@ -422,7 +476,7 @@ comp.info()
 comp.puf_varmeas.value_counts()
 
 
-# %% print or write results 
+# %% print or write results
 
 s = comp.copy()[mainvars + infovars]
 # define custom sort order
