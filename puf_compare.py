@@ -71,6 +71,7 @@ Created on Sat Oct 24 04:19:27 2020
 import pandas as pd
 import numpy as np
 import puf_constants as pc
+from datetime import date
 
 
 # %% locations and file names
@@ -79,6 +80,7 @@ HDFDIR = r'C:\programs_python\puf_analysis\ignore/'
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 
 BASE_NAME = 'puf_adjusted'
+BASE_NAME = 'puf2017_2020-11-02'
 PUF_HDF = HDFDIR + BASE_NAME + '.h5'  # hdf5 is lightning fast
 
 
@@ -389,13 +391,18 @@ irstot = irstot.append(cglong)
 
 
 # %% get the puf
-puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-10-26.h5')  # 1 sec
+# puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-10-26.h5')  # 1 sec
+puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-11-02.h5')  # 1 sec
+
 puf['common_stub'] = pd.cut(
     puf['c00100'],
     pc.COMMON_STUBS,
     labels=range(1, 19),
     right=False)
 puf.info()
+
+puf.head()['c00100']
+puf.head()['e00600']
 
 
 # %% create needed puf variables
@@ -587,17 +594,20 @@ irsvar = 'id_contributions'
 print(f'{irsn(irsvar):,.0f}')  # 37,979,015
 print(f'{irssum(irsvar):,.0f}') # 256,064,685,000
 
-# e19800 Itemizable charitable giving: cash/check contributions. WARNING: this variable is already capped in PUF data.
 # e20100 Itemizable charitable giving: other than cash/check contributions. WARNING: this variable is already capped in PUF data.
+
 # c19700 Sch A: Charity contributions deducted (component of pre-limitation c21060 total)
 # e19800_capped Sch A: Charity cash contributions deductible, capped as a decimal fraction of AGI
+# e19800 Itemizable charitable giving: cash/check contributions. WARNING: this variable is already capped in PUF data.
 # e20100_capped Sch A: Charity noncash contributions deductible, capped as a decimal fraction of AGI
-var = 'e19800'  # 212,635,455,351   101,903,175
-var = 'e20100'  # 64,207,135,577   56,359,659
-var = 'c19700' # 211,099,226,362 38,613,998
-var = 'e20100_capped' # 64,207,135,577  56,359,659
-print(f'{wsum(var):,.0f}')
-print(f'{nret(var):,.0f}')
+var = 'e19800'  # 212,635,455,351   101,903,175  # cash
+var = 'e20100'  # 64,207,135,577   56,359,659  # noncash
+var = 'c19700' # 38,553,297 211,073,849,881
+var = 'e20100_capped' # 64,207,135,577  56,359,659  # capped
+print(f'{nret(var, puf[puf.filer]):,.0f}')
+print(f'{wsum(var, puf[puf.filer]):,.0f}')
+
+# growfactor for e19800 and e20100 is ATXPY
 # seems like we could use the sum of these e19800, e20100 as roughly equiv of id_contributions?
 # for now match c19700 to id_contributions ??
 
@@ -606,7 +616,7 @@ print(f'{nret(var):,.0f}')
 
 # %% get nz counts and weighted sums of most puf variables, for FILERS
 # get the subset of variables we want
-
+# puf['common_stub']
 # c18300 appears to be the SALT concept that corresponds to the uncapped deduction and comes a little
 # close to what is in the irs spreadsheet
 # c18300 Sch A: State and local taxes plus real estate taxes deducted (component of pre-limitation c21060 total)
@@ -615,6 +625,7 @@ keepcols = ('pid', 'common_stub', 's006', 'c00100', 'e00200', 'e00300',
             'e00600', 'c01000', 'e01500', 'e02400', 'c02500',
             # itemized deductions
             'c17000', 'c18300', 'c19200', 'c19700')
+
 pufsub = puf.loc[puf.filer, keepcols]
 
 # make a long file with weighted values
@@ -715,7 +726,11 @@ vlist
 
 # pick one of the following 2 file names
 # fname = r'C:\Users\donbo\Google Drive\NY PUF project\irs_puf_compare.txt'
-fname = r'C:\programs_python\puf_analysis\results\irs_puf_compare.txt'
+date_id = date.today().strftime("%Y-%m-%d")
+fbase = 'irs_puf_compare_' + date_id + '.txt'
+# fr"{fbase}"
+fname = r'C:\programs_python\puf_analysis\results\/' + fbase
+#  + fr"{fbase}"
 
 tfile = open(fname, 'a')
 tfile.truncate(0)

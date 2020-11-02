@@ -28,6 +28,8 @@ from datetime import date
 
 import puf_constants as pc
 
+import puf_extrapolate_custom as xc
+
 # setup
 # recs = tc.Records() # get the puf, not the cps version
 
@@ -44,7 +46,11 @@ IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 
 # latest version of the puf that I created with taxdata
 PUF_NAME = INDIR + 'puf.csv'
+
 GF_NAME = INDIR + 'growfactors.csv'
+GF_ONES = DATADIR + 'growfactors_ones.csv'
+GF_CUSTOM = DATADIR + 'growfactors_custom.csv'
+
 WEIGHTS_NAME = INDIR + 'puf_weights.csv'
 
 # latest official puf per peter:
@@ -61,11 +67,27 @@ WEIGHTS_NAME = INDIR + 'puf_weights.csv'
 # date_id = date.today().strftime("%Y-%m-%d")
 
 
-# %% create objects
+# %% get puf
+puf = pd.read_csv(PUF_NAME)
+
+
+# %% alternative - CUSTOM growfactors
+
+gf_custom = pd.read_csv(GF_CUSTOM)
+gfactor_ones = tc.GrowFactors(GF_ONES)
+
+puf_extrap = xc.extrapolate_custom(puf, gf_custom, 2017)
+
+recs = tc.Records(data=puf_extrap,
+                  start_year=2011,
+                  gfactors=gfactor_ones,
+                  weights=WEIGHTS_NAME,
+                  adjust_ratios=None)  # don't use puf_ratios
+
+
+# %% alternative - use original growfactors
 gfactor = tc.GrowFactors(GF_NAME)
 dir(gfactor)
-
-puf = pd.read_csv(PUF_NAME)
 
 recs = tc.Records(data=puf,
                   start_year=2011,
@@ -77,6 +99,7 @@ recs = tc.Records(data=puf,
 #                   start_year=2011,
 #                   gfactors=gfactor,
 #                   weights=WEIGHTS_NAME)  # apply built-in puf_ratios.csv
+
 
 # %% advance the file
 # what happens if we advance twice?
@@ -91,7 +114,9 @@ calc.calc_all()
 puf_advanced = calc.dataframe(variable_list=[], all_vars=True)
 puf_advanced['pid'] = np.arange(len(puf_advanced))
 
-puf_advanced.head(10)
+puf.head()['e00200']
+puf_extrap.head()['e00200']
+puf_advanced.head(10)['e00200']
 
 
 # %% save advanced file
@@ -114,7 +139,7 @@ puf_advanced.to_hdf(OUT_HDF, 'data')  # 1 sec
 # %time dfcsv = pd.read_csv(OUT_CSV)  # 8 secs
 dfhdf = pd.read_hdf(OUT_HDF)  # 1 sec
 # dfcsv.tail()
-dfhdf.tail()
+# dfhdf.tail()
 puf_advanced.tail()
 
 del(dfcsv)
