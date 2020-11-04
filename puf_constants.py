@@ -12,7 +12,7 @@ import pandas as pd
 # %% filenames and urls
 # https://www.irs.gov/statistics/soi-tax-stats-historic-table-2
 WEBDIR = 'https://www.irs.gov/pub/irs-soi/'
-HT2_2017 = "18in55cmagi.csv"
+HT2_2017 = "17in55cmagi.csv"
 HT2_2018 = "18in55cmagi.csv"
 
 DATADIR = r'C:\programs_python\puf_analysis\data/'
