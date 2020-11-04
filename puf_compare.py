@@ -76,15 +76,17 @@ import numpy as np
 import puf_constants as pc
 from datetime import date
 
+import puf_utilities as pu
 
 # %% locations and file names
 DATADIR = r'C:\programs_python\puf_analysis\data/'
 HDFDIR = r'C:\programs_python\puf_analysis\ignore/'
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 
-BASE_NAME = 'puf_adjusted'
-BASE_NAME = 'puf2017_regrown_2020-11-02'
-PUF_HDF = HDFDIR + BASE_NAME + '.h5'  # hdf5 is lightning fast
+# BASE_NAME = 'puf_adjusted'
+BASE_NAME = 'puf2017_regrown2020-11-02'
+# PUF_HDF = HDFDIR + BASE_NAME + '.h5'  # hdf5 is lightning fast
+PUF_PQ = HDFDIR + BASE_NAME + '.parquet'
 
 
 # %% constants
@@ -144,7 +146,9 @@ irstot = irstot.append(cglong)
 
 # %% get the puf
 # puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-10-26.h5')  # 1 sec
-puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-11-02.h5')  # 1 sec
+# puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-11-02.h5')  # 1 sec
+# puf = pd.read_hdf(IGNOREDIR + 'puf2017_2020-11-02.h5')  # 1 sec
+puf = pd.read_parquet(IGNOREDIR + BASE_NAME + '.parquet', engine='pyarrow')
 
 puf['common_stub'] = pd.cut(
     puf['c00100'],
@@ -153,8 +157,8 @@ puf['common_stub'] = pd.cut(
     right=False)
 puf.info()
 
-puf.head()['c00100']
-puf.head()['e00600']
+# puf.head()['c00100']
+# puf.head()['e00600']
 
 
 # %% create needed puf variables
@@ -178,7 +182,7 @@ puf['e26270neg'] = puf.e26270 * puf.e26270.lt(0)
 # np.quantile(puf.age_spouse, qtiles)  # 50 to 97
 # puf.MARS.value_counts()
 
-puf['filer'] = filers(puf, 2017)
+puf['filer'] = pu.filers(puf, 2017)
 puf.filer.sum()
 pufvars = puf.columns.sort_values()
 

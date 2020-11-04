@@ -174,14 +174,14 @@ def filers(puf, year=2017):
     # add back any untaxed income that was excluded in calculating
     # above the line income
     interest_untaxed = puf.e00400
-    dividends_untaxed = puf.e00600 - puf.e00650
+    # dividends_untaxed = puf.e00600 - puf.e00650
     pensions_untaxed = puf.e01500 - puf.e01700  # always ge zero, I checked
     # socsec_untaxed is OVERSTATED - I think IRS has a limit on amount
     socsec_untaxed = puf.e02400 - puf.c02500  # always ge zero, I checked
-    above_line_untaxed = interest_untaxed + dividends_untaxed \
-        + pensions_untaxed + socsec_untaxed
+    above_line_untaxed = interest_untaxed + pensions_untaxed + socsec_untaxed
 
-    gross_income = above_line_income - above_line_losses + above_line_untaxed
+    # gross_income = above_line_income - above_line_losses + above_line_untaxed
+    gross_income = above_line_income
 
     # to be on the safe side, don't let gross_income be negative
     gross_income = gross_income * gross_income.ge(0)

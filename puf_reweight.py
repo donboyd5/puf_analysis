@@ -354,12 +354,12 @@ tmp = comp_s.drop(columns=['column_description'])
 # %% target an income range
 targvars
 targets_use = [targvars[i] for i in [0, 2, 1, 4, 5, 6]]
+targets_use = [targvars[i] for i in range(0, 11)]
 targets_use
-target_base.pivot(index='irsstub', columns='variable', values='value')
 
 possible_wide = possible_targets.pivot(index='common_stub', columns='pufxvar', values='value')
 
-stub = 6
+stub = 1
 pufrw = pufsub.query('common_stub== @stub')[['pid', 's006'] + targets_use]
 targvals = possible_wide.loc[[stub], targets_use]
 
@@ -379,84 +379,19 @@ np.square(pdiff0).sum()
 
 prob = mw.Microweight(wh=wh, xmat=xmat, targets=targets_stub)
 
-opts = {'crange': 0.0001, 'xlb': 0, 'xub':1e5, 'quiet': False}
-opts = {'crange': 0.001, 'xlb': 0, 'xub':50, 'quiet': False}
-opts = None
-rw1 = prob.reweight(method='ipopt', options=opts)
-rw1.sspd
-rw1.elapsed_seconds
-rw1.pdiff
-rw1.opts
-
-# so = {'increment': 1e-3, 'autoscale': False}  # best 1819
-# opts = {'increment': .00001}
-# opts = {'increment': .00001, 'autoscale': False}
-# opts = {'increment': 1e-6, 'autoscale': True}
-# opts = {'increment': 1e-3, 'autoscale': False}
-# opts = {'increment': 1e-6, 'autoscale': True, 'objective': 'QUADRATIC'}
-opts = {'increment': 1e-4, 'autoscale': False}
-opts = None
-rw2 = prob.reweight(method='empcal', options=opts)
-rw2.sspd
-rw2.pdiff
-rw2.opts
-
-pdiff0
-np.square(pdiff0).sum()
-
-rw3 = prob.reweight(method='rake')
-rw3 = prob.reweight(method='rake', options={'max_rake_iter': 20})
-rw3.sspd
-
-opts = {'xlb': 0.01, 'xub': 100, 'tol': 1e-8, 'max_iter': 150}
-opts = {'xlb': 0.0, 'xub': 1e5, 'tol': 1e-7, 'max_iter': 100}
-opts = {'xlb': 0, 'xub': 100, 'max_iter': 100}
-opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'max_iter': 500}
-
-# THIS IS IT BELOW
-# This is important
 opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
-opts = None
-rw4 = prob.reweight(method='lsq', options=opts)
-rw4.elapsed_seconds
-rw4.sspd
-rw4.pdiff
-rw4.opts
-np.quantile(rw4.g, qtiles)
+# opts = None
+probrw = prob.reweight(method='lsq', options=opts)
+probrw.elapsed_seconds
+probrw.sspd
+probrw.pdiff
+probrw.opts
+np.quantile(probrw.g, qtiles)
+probrw.elapsed_seconds
 
-# don't bother with minNLP
-# rw5 = prob.reweight(method='minNLP')
-# rw5.sspd
-# rw5.opts
+x = probrw.g
 
-
-# distribution of g values
-np.quantile(rw1.g, qtiles)
-np.quantile(rw2.g, qtiles)
-np.quantile(rw3.g, qtiles)  # HUGE g
-np.quantile(rw4.g, qtiles)
-
-# time
-rw1.elapsed_seconds
-rw2.elapsed_seconds
-rw3.elapsed_seconds
-rw4.elapsed_seconds
-
-# sum of squared percentage differences
-rw1.sspd
-rw2.sspd
-rw3.sspd
-rw4.sspd
-
-targets_stub
-rw4.targets_opt
-rw4.wh_opt
-
-np.dot(xmat.T, wh)
-np.dot(xmat.T, rw4.wh_opt)
-
-np.quantile(x, [0, .1, .25, .5, .75, .9, 1])
-
+# check
 t1 = constraints(x, wh, xmat)
 pdiff1 = t1 / targets_stub * 100 - 100
 pdiff1
