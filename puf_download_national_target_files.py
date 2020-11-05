@@ -168,15 +168,16 @@ YEAR = '2017'
 fn = r'C:\programs_python\puf_analysis\data\soitables.xlsx'
 tabs = pd.read_excel(io=fn, sheet_name='national_' + YEAR)
 tabmaps = pd.read_excel(io=fn, sheet_name='tablemaps_' + YEAR)
+tabmaps = tabmaps.rename(columns={'col': 'excel_column'})
 
 # loop through the tables listed in tabs
 # tab = 'tab14'
-tabs.table
+# tabs.table
 # tabsuse = tabs.table.drop([3])  # not ready to use tab21
 tabsuse = tabs.table
 
 tablist = []
-tab = tabsuse[3]
+# tab = tabsuse[3]  # for testing the for loop
 for tab in tabsuse:
     # get info describing a specific table
     tabd = tabs[tabs['table'] == tab]  # df row with table description
@@ -186,7 +187,7 @@ for tab in tabsuse:
     df = xlrange(io=DOWNDIR + tabd.src.values[0],
                  firstrow=tabd.firstrow.values[0],
                  lastrow=tabd.lastrow.values[0],
-                 usecols=tabinfo.col.str.cat(sep=", "),
+                 usecols=tabinfo.excel_column.str.cat(sep=", "),
                  colnames=tabinfo.colname.tolist())
 
     # add identifiers
@@ -198,7 +199,8 @@ for tab in tabsuse:
 
     # bring table description and column description into the table
     dfl = pd.merge(dfl,
-                   tabinfo[['colname', 'table_description', 'column_description']],
+                   tabinfo[['excel_column', 'colname',
+                            'table_description', 'column_description']],
                    left_on=['variable'],
                    right_on=['colname'])
     dfl = dfl.drop('colname', axis=1)  # colname duplicates variable so drop it
@@ -215,13 +217,14 @@ targets_all.to_csv(DATADIR + 'targets' + YEAR + '.csv', index=False)
 
 
 # %% ONETIME save irs income range mappings based on data
+targets_all = pd.read_csv(DATADIR + 'targets' + YEAR + '.csv')
 # create irsstub and incrange mapping
 # incrange for irsstub 0 and 1 doesn't have consistent text values so set them
 
 # ranges for 2017 and 2018 are the same, but if additional years are added
 # always verify that ranges are the same
 
-# irs uses two groupings: 
+# irs uses two groupings:
 #   19 ranges plus a total, for most files
 #   22 ranges plus a total, for itemized deductions; we will create a crosswalk
 
@@ -314,8 +317,16 @@ common_stub.to_csv(DATADIR + 'irsstub_common_labels.csv', index=False)
 # %% ONETIME: clean data and collapse to the common set of income ranges
 # see https://kanoki.org/2019/04/06/pandas-map-dictionary-values-with-dataframe-columns/
 
-# get targets, delete duplicates, remap stubs, drop unneeded columns
-# remap the stubs so that we can collapse
+# tasks include:
+#   convert values to numeric
+#   drop columns we won't need or use yet
+#   create common_stub by remapping itemizer and non-itemizer stubs
+#   delete rows that duplicate variables after confirming values ~ equal
+#   collapse by the common stubs
+#   multiply dollar amounts by $1,000
+#   make loss items negative
+#   save collapsed file
+
 YEAR = '2017'
 targets_remap = pd.read_csv(DATADIR + 'targets' + YEAR + '.csv').drop(['incrange'], axis=1)
 targets_remap.columns
@@ -359,7 +370,8 @@ check = targets_remap.copy()
 check['type'] = 'non_item'
 check.loc[item_mask, 'type'] = 'item'
 # check = check[['common_stub', 'type', 'irsstub', 'value']].groupby(['common_stub', 'type', 'irsstub']).agg(['count'])
-check = check[['type', 'irsstub', 'common_stub', 'value']].groupby(['type', 'irsstub', 'common_stub']).agg(['count'])
+check = check[['type', 'irsstub', 'common_stub', 'value']].groupby \
+    (['type', 'irsstub', 'common_stub']).agg(['count'])
 check
 
 # drop duplicate records, unnecessary columns, and collapse
@@ -393,21 +405,31 @@ targets_undup[['variable', 'value']].groupby(['variable']).agg(['count'])
 
 # collapse without irsstub
 # data.groupby('month')[['duration']].sum()
-aggcols = ['src', 'common_stub', 'variable', 'table_description', 'column_description']
+aggcols = ['src', 'common_stub', 'variable', 'table_description', 'column_description', 'excel_column']
 targets_collapsed = targets_undup.groupby(aggcols)[['value']].sum().reset_index()  # [[]] keeps data frame
 targets_collapsed.columns
 
 # get the income range labels, reorder columns, put dollars in thousands, and save
 common_stub_labels = pd.read_csv(DATADIR + 'irsstub_common_labels.csv')
 targets_collapsed = pd.merge(targets_collapsed, common_stub_labels, on=['common_stub'])
-savecols = ['src', 'common_stub', 'incrange', 'variable', 'value', 'table_description', 'column_description']
+savecols = ['src', 'common_stub', 'incrange', 'variable', 'value', 'table_description', 'column_description', 'excel_column']
 targets_collapsed = targets_collapsed[savecols]
 
 # multiply dollar amounts by 1000
 dollar_xmask = targets_collapsed.variable.str.contains('nret_|n_')
 dollar_xmask.sum()
 dollar_xmask[range(26, 30)]
-targets_collapsed.loc[~dollar_xmask, 'value'] = targets_collapsed.loc[~dollar_xmask, 'value'] * 1000
+targets_collapsed.loc[~dollar_xmask, 'value'] *= 1000
+
+# define and verify loss vars that will be made negative
+lossvars = targets_collapsed.variable[targets_collapsed.variable.str.contains('loss')].unique()
+lossvars
+loss_mask = targets_collapsed.variable.str.contains('loss')
+check = targets_collapsed.loc[loss_mask, ['variable', 'value']]
+check.value.min()  # good, no negatives
+targets_collapsed.loc[loss_mask, 'value'] *= -1
+
+# save and finish
 targets_collapsed.to_csv(DATADIR + 'targets' + YEAR + '_collapsed.csv', index=False)
 
 

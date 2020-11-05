@@ -1,6 +1,8 @@
 # coding: utf-8
 """
-Created on Sun Sep 13 06:33:21 2020
+  Create two advanced files:
+      one advanced in the normal way with all 3 stages
+      one advanced with only stages 1 and 2, and with my alternative growfactors
 
   # #!/usr/bin/env python
   See Peter's code here:
@@ -35,26 +37,33 @@ import puf_extrapolate_custom as xc
 
 # %% constants
 # raw string allows Windows-style slashes
-# note that it still cannot end with a single backslash
-PUFDIR = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/'
+# note that it still cannot end with a single backslash - that must be forward slash
 
-INDIR = PUFDIR + '2020-08-13_djb/'  # puf.csv that I created
+# directories
+PUFDIR = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/'
+DIR_FOR_OFFICIAL_PUF = PUFDIR + '2020-08-20/'
+INDIR = PUFDIR + '2020-08-13_djb/'  # has the puf.csv that I created
+
 DATADIR = r'C:\programs_python\puf_analysis\data/'
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
-
-# r'C:\Users\donbo\Downloads\taxdata_stuff\puf_2017_djb.csv'
-
-# latest version of the puf that I created with taxdata
-PUF_NAME = INDIR + 'puf.csv'
-
-GF_NAME = INDIR + 'growfactors.csv'
-GF_ONES = DATADIR + 'growfactors_ones.csv'
-GF_CUSTOM = DATADIR + 'growfactors_custom.csv'
-
-WEIGHTS_NAME = INDIR + 'puf_weights.csv'
+PUFOUTDIR = IGNOREDIR + 'puf_versions/'
 
 # latest official puf per peter:
 # PUF_NAME = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011\2020-08-20\puf.csv'
+# LATEST_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011\2020-08-20\puf.csv'
+LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'
+
+# latest version of the puf that I created with taxdata
+BOYD_PUF = INDIR + 'puf.csv'
+# r'C:\Users\donbo\Downloads\taxdata_stuff\puf_2017_djb.csv'
+
+# growfactors
+GF_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'growfactors.csv'
+GF_ONES = DATADIR + 'growfactors_ones.csv'
+# I developed custom growfactors that reflect IRS growth between 2011 and 2017
+GF_CUSTOM = DATADIR + 'growfactors_custom.csv'
+
+WEIGHTS_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'puf_weights.csv'
 
 
 # %% date play
@@ -68,79 +77,46 @@ WEIGHTS_NAME = INDIR + 'puf_weights.csv'
 
 
 # %% get puf
-puf = pd.read_csv(PUF_NAME)
+puf = pd.read_csv(LATEST_OFFICIAL_PUF)
 
 
-# %% alternative - CUSTOM growfactors
-
-gf_custom = pd.read_csv(GF_CUSTOM)
-gfactor_ones = tc.GrowFactors(GF_ONES)
-
-puf_extrap = xc.extrapolate_custom(puf, gf_custom, 2017)
-
-recs = tc.Records(data=puf_extrap,
-                  start_year=2011,
-                  gfactors=gfactor_ones,
-                  weights=WEIGHTS_NAME,
-                  adjust_ratios=None)  # don't use puf_ratios
-
-
-# %% alternative - use original growfactors
-gfactor = tc.GrowFactors(GF_NAME)
-dir(gfactor)
-
-recs = tc.Records(data=puf,
-                  start_year=2011,
-                  gfactors=gfactor,
-                  weights=WEIGHTS_NAME,
-                  adjust_ratios=None)  # don't use puf_ratios
-
-# recs = tc.Records(data=mypuf,
-#                   start_year=2011,
-#                   gfactors=gfactor,
-#                   weights=WEIGHTS_NAME)  # apply built-in puf_ratios.csv
-
-
-# %% advance the file
-# what happens if we advance twice?
+# %% advance to 2017 in the normal (default) way -- all 3 stages
+recs = tc.Records(data=puf, start_year=2011)  # start_year not needed for puf.csv
 pol = tc.Policy()
 calc = tc.Calculator(policy=pol, records=recs)
-CYR = 2017
-calc.advance_to_year(CYR)
+calc.advance_to_year(2017)
 calc.calc_all()
+puf2017_default = calc.dataframe(variable_list=[], all_vars=True)
+puf2017_default['pid'] = np.arange(len(puf2017_default))
+
+puf2017_default.to_parquet(PUFOUTDIR + 'puf2017_default' + '.parquet', engine='pyarrow')
+check = pd.read_parquet(PUFOUTDIR + 'puf2017_default' + '.parquet', engine='pyarrow')
+check.head(10)[['s006', 'c00100', 'e00300']]
 
 
-# %% create and examine data frame
-puf_advanced = calc.dataframe(variable_list=[], all_vars=True)
-puf_advanced['pid'] = np.arange(len(puf_advanced))
+# %% advance to 2017 - CUSTOM growfactors
+# extrapolate the underlying data with custom growfactors, BEFORE creating Records object
+# then create record objects with a dummy set of growfactors equal to one so that
+# tax-calculator won't extrapolate further (i.e., again)
+gf_custom = pd.read_csv(GF_CUSTOM)
+gfactor_ones = tc.GrowFactors(GF_ONES)
+puf_extrap = xc.extrapolate_custom(puf, gf_custom, 2017)
 
-puf.head()['e00200']
-puf_extrap.head()['e00200']
-puf_advanced.head(10)['e00200']
+recs_extrap = tc.Records(data=puf_extrap,
+                  start_year=2011,
+                  gfactors=gfactor_ones,
+                  weights=WEIGHTS_OFFICIAL,
+                  adjust_ratios=None)  # don't use puf_ratios
 
+pol = tc.Policy()
+calc_extrap = tc.Calculator(policy=pol, records=recs_extrap)
+calc_extrap.advance_to_year(2017)
+calc_extrap.calc_all()
+puf2017_regrown = calc_extrap.dataframe(variable_list=[], all_vars=True)
+puf2017_regrown['pid'] = np.arange(len(puf2017_regrown))
 
-# %% save advanced file
-date_id = date.today().strftime("%Y-%m-%d")
+puf2017_regrown.to_parquet(PUFOUTDIR + 'puf2017_regrown' + '.parquet', engine='pyarrow')
+check_regrown = pd.read_parquet(PUFOUTDIR + 'puf2017_regrown' + '.parquet', engine='pyarrow')
+check_regrown.head(10)[['s006', 'c00100', 'e00300']]
+check.head(10)[['s006', 'c00100', 'e00300']]
 
-BASE_NAME = 'puf' + str(CYR) + '_' + date_id
-
-# hdf5 is lightning fast
-OUT_HDF = IGNOREDIR + BASE_NAME + '.h5'
-puf_advanced.to_hdf(OUT_HDF, 'data')  # 1 sec
-
-# csv is slow, only use if need to share files
-# OUT_CSV = IGNOREDIR + BASE_NAME + '.csv'
-# puf_advanced.to_csv(OUT_CSV, index=False)  # 1+ minutes
-# chunksize gives minimal speedup
-# %time puf_2017.to_csv(OUT_NAME, index=False, chunksize=1e6)
-
-
-# read back in
-# %time dfcsv = pd.read_csv(OUT_CSV)  # 8 secs
-dfhdf = pd.read_hdf(OUT_HDF)  # 1 sec
-# dfcsv.tail()
-# dfhdf.tail()
-puf_advanced.tail()
-
-del(dfcsv)
-del(dfhdf)
