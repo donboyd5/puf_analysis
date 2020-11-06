@@ -10,41 +10,41 @@ This report is in 3 sections:
 
 1. Summary report for all variables, summarized over all filers:
 
-    common_stub     incrange         pufvar                  irsvar                 irs                 puf              diff    pdiff                                                                    column_description
-0             0  All returns       nret_all                nret_all         152,903,231         145,518,015        -7,385,216    -4.8%                                                                     Number of returns
-1             0  All returns          mars1             nret_single          73,021,932          67,159,955        -5,861,977    -8.0%                                                   Number of returns of single persons
-2             0  All returns          mars2              nret_mfjss          54,774,397          53,239,543        -1,534,854    -2.8%  Number of returns of married persons filing jointly and returns of surviving spouses
-3             0  All returns          mars3                nret_mfs           3,212,807           2,305,822          -906,985   -28.2%                                Number of returns of married persons filing separately
-4             0  All returns          mars4                nret_hoh          21,894,095          22,812,695           918,600     4.2%                                              Number of returns of heads of households
-5             0  All returns         c00100                     agi  11,009,900,155,000  11,188,787,220,226   178,887,065,226     1.6%                                                    Adjusted gross income less deficit
-6             0  All returns         e00200                   wages   7,577,563,943,000   7,677,150,011,347    99,586,068,347     1.3%                                                                    Salaries and wages
-7             0  All returns     e00200_nnz              nret_wages         126,264,481         120,220,733        -6,043,748    -4.8%                                             Number of returns with salaries and wages
-8             0  All returns         e00300                  taxint     106,055,367,000     105,560,990,592      -494,376,408    -0.5%                                                                      Taxable interest
-9             0  All returns     e00300_nnz             nret_taxint          44,193,009          53,220,088         9,027,079    20.4%                                               Number of returns with taxable interest
-10            0  All returns         e00600                  orddiv     282,336,042,000     289,288,968,266     6,952,926,266     2.5%                                                                    Ordinary dividends
-11            0  All returns     e00600_nnz             nret_orddiv          28,171,331          29,154,215           982,884     3.5%                                             Number of returns with ordinary dividends
-12            0  All returns      c01000pos                 cggross     859,894,631,000     856,302,600,046    -3,592,030,954    -0.4%                                                           Capital gains gross taxable
-13            0  All returns  c01000pos_nnz            nret_cggross          13,698,506          12,275,129        -1,423,377   -10.4%                                    Number of returns with capital gains gross taxable
-14            0  All returns      c01000neg                  cgloss     -16,779,101,000     -12,512,891,434     4,266,209,566   -25.4%                                                                  Capital loss taxable
-15            0  All returns  c01000neg_nnz             nret_cgloss          -7,471,221           6,128,015        13,599,236  -182.0%                                           Number of returns with capital loss taxable
-16            0  All returns         e01500                pensions   1,171,791,907,000   1,157,995,015,979   -13,796,891,021    -1.2%                                   Total pensions and annuities (including nontaxable)
-17            0  All returns     e01500_nnz           nret_pensions          30,610,779          29,587,790        -1,022,989    -3.3%            Number of returns with total pensions and annuities (including nontaxable)
-18            0  All returns         e02400               socsectot     644,989,570,000     560,497,891,413   -84,491,678,587   -13.1%                                                        Total Social Security benefits
-19            0  All returns     e02400_nnz          nret_socsectot          28,967,603          25,516,054        -3,451,549   -11.9%                                 Number of returns with total Social Security benefits
-20            0  All returns         c02500           socsectaxable     309,539,629,000     305,015,837,260    -4,523,791,740    -1.5%                                                      Taxable Social Security benefits
-21            0  All returns     c02500_nnz      nret_socsectaxable          20,929,431          21,368,614           439,183     2.1%                               Number of returns with taxable Social Security benefits
-22            0  All returns      e26270pos         partnerscorpinc     833,430,151,000     681,862,954,478  -151,567,196,522   -18.2%                                               Partnership or S corporation net income
-23            0  All returns  e26270pos_nnz    nret_partnerscorpinc           6,240,408           5,768,624          -471,784    -7.6%                        Number of returns with partnership or S corporation net income
-24            0  All returns      e26270neg        partnerscorploss    -153,150,406,000    -164,266,563,595   -11,116,157,595     7.3%                                                 Partnership or S corporation net loss
-25            0  All returns  e26270neg_nnz   nret_partnerscorploss          -2,872,745           3,076,392         5,949,137  -207.1%                          Number of returns with partnership or S corporation net loss
-26            0  All returns         c17000       id_medical_capped     102,533,387,000      97,566,811,989    -4,966,575,011    -4.8%                                                        Total medical expenses, capped
-27            0  All returns     c17000_nnz  nret_id_medical_capped          10,171,257           9,845,152          -326,105    -3.2%                                 Number of returns with total medical expenses, capped
-28            0  All returns         c18300              id_taxpaid     624,820,806,000     643,019,400,421    18,198,594,421     2.9%                                                                  Taxes paid deduction
-29            0  All returns     c18300_nnz         nret_id_taxpaid          46,431,232          46,980,435           549,203     1.2%                                           Number of returns with taxes paid deduction
-30            0  All returns         c19200              id_intpaid     313,944,112,000     361,292,328,659    47,348,216,659    15.1%                                                               Interest paid deduction
-31            0  All returns     c19200_nnz         nret_id_intpaid          34,327,403          36,910,472         2,583,069     7.5%                                        Number of returns with interest paid deduction
-32            0  All returns         c19700        id_contributions     256,064,685,000     252,197,919,951    -3,866,765,049    -1.5%                                                               Contributions deduction
-33            0  All returns     c19700_nnz   nret_id_contributions          37,979,015          39,397,723         1,418,708     3.7%                                        Number of returns with contributions deduction
+    common_stub     incrange         pufvar                  irsvar                 irs                 puf              diff   pdiff                                                                    column_description
+0             0  All returns       nret_all                nret_all         152,903,231         145,518,015        -7,385,216   -4.8%                                                                     Number of returns
+1             0  All returns          mars1             nret_single          73,021,932          67,159,955        -5,861,977   -8.0%                                                   Number of returns of single persons
+2             0  All returns          mars2              nret_mfjss          54,774,397          53,239,543        -1,534,854   -2.8%  Number of returns of married persons filing jointly and returns of surviving spouses
+3             0  All returns          mars3                nret_mfs           3,212,807           2,305,822          -906,985  -28.2%                                Number of returns of married persons filing separately
+4             0  All returns          mars4                nret_hoh          21,894,095          22,812,695           918,600    4.2%                                              Number of returns of heads of households
+5             0  All returns         c00100                     agi  11,009,900,155,000  11,188,787,220,226   178,887,065,226    1.6%                                                    Adjusted gross income less deficit
+6             0  All returns         e00200                   wages   7,577,563,943,000   7,677,150,011,347    99,586,068,347    1.3%                                                                    Salaries and wages
+7             0  All returns     e00200_nnz              nret_wages         126,264,481         120,220,733        -6,043,748   -4.8%                                             Number of returns with salaries and wages
+8             0  All returns         e00300                  taxint     106,055,367,000     105,560,990,592      -494,376,408   -0.5%                                                                      Taxable interest
+9             0  All returns     e00300_nnz             nret_taxint          44,193,009          53,220,088         9,027,079   20.4%                                               Number of returns with taxable interest
+10            0  All returns         e00600                  orddiv     282,336,042,000     289,288,968,266     6,952,926,266    2.5%                                                                    Ordinary dividends
+11            0  All returns     e00600_nnz             nret_orddiv          28,171,331          29,154,215           982,884    3.5%                                             Number of returns with ordinary dividends
+12            0  All returns      c01000pos                 cggross     859,894,631,000     856,302,600,046    -3,592,030,954   -0.4%                                                           Capital gains gross taxable
+13            0  All returns  c01000pos_nnz            nret_cggross          13,698,506          12,275,129        -1,423,377  -10.4%                                    Number of returns with capital gains gross taxable
+14            0  All returns      c01000neg                  cgloss     -16,779,101,000     -12,512,891,434     4,266,209,566  -25.4%                                                                  Capital loss taxable
+15            0  All returns  c01000neg_nnz             nret_cgloss           7,471,221           6,128,015        -1,343,206  -18.0%                                           Number of returns with capital loss taxable
+16            0  All returns         e01500                pensions   1,171,791,907,000   1,157,995,015,979   -13,796,891,021   -1.2%                                   Total pensions and annuities (including nontaxable)
+17            0  All returns     e01500_nnz           nret_pensions          30,610,779          29,587,790        -1,022,989   -3.3%            Number of returns with total pensions and annuities (including nontaxable)
+18            0  All returns         e02400               socsectot     644,989,570,000     560,497,891,413   -84,491,678,587  -13.1%                                                        Total Social Security benefits
+19            0  All returns     e02400_nnz          nret_socsectot          28,967,603          25,516,054        -3,451,549  -11.9%                                 Number of returns with total Social Security benefits
+20            0  All returns         c02500           socsectaxable     309,539,629,000     305,015,837,260    -4,523,791,740   -1.5%                                                      Taxable Social Security benefits
+21            0  All returns     c02500_nnz      nret_socsectaxable          20,929,431          21,368,614           439,183    2.1%                               Number of returns with taxable Social Security benefits
+22            0  All returns      e26270pos         partnerscorpinc     833,430,151,000     681,862,954,478  -151,567,196,522  -18.2%                                               Partnership or S corporation net income
+23            0  All returns  e26270pos_nnz    nret_partnerscorpinc           6,240,408           5,768,624          -471,784   -7.6%                        Number of returns with partnership or S corporation net income
+24            0  All returns      e26270neg        partnerscorploss    -153,150,406,000    -164,266,563,595   -11,116,157,595    7.3%                                                 Partnership or S corporation net loss
+25            0  All returns  e26270neg_nnz   nret_partnerscorploss           2,872,745           3,076,392           203,647    7.1%                          Number of returns with partnership or S corporation net loss
+26            0  All returns         c17000       id_medical_capped     102,533,387,000      97,566,811,989    -4,966,575,011   -4.8%                                                        Total medical expenses, capped
+27            0  All returns     c17000_nnz  nret_id_medical_capped          10,171,257           9,845,152          -326,105   -3.2%                                 Number of returns with total medical expenses, capped
+28            0  All returns         c18300              id_taxpaid     624,820,806,000     643,019,400,421    18,198,594,421    2.9%                                                                  Taxes paid deduction
+29            0  All returns     c18300_nnz         nret_id_taxpaid          46,431,232          46,980,435           549,203    1.2%                                           Number of returns with taxes paid deduction
+30            0  All returns         c19200              id_intpaid     313,944,112,000     361,292,328,659    47,348,216,659   15.1%                                                               Interest paid deduction
+31            0  All returns     c19200_nnz         nret_id_intpaid          34,327,403          36,910,472         2,583,069    7.5%                                        Number of returns with interest paid deduction
+32            0  All returns         c19700        id_contributions     256,064,685,000     252,197,919,951    -3,866,765,049   -1.5%                                                               Contributions deduction
+33            0  All returns     c19700_nnz   nret_id_contributions          37,979,015          39,397,723         1,418,708    3.7%                                        Number of returns with contributions deduction
 
 2. Detail report by AGI range for each variable:
 
@@ -363,26 +363,26 @@ This report is in 3 sections:
 592           17  $5,000,000 under $10,000,000  c01000neg  cgloss      -16,068,000      -14,795,948      1,272,052   -7.9%  Capital loss taxable
 626           18           $10,000,000 or more  c01000neg  cgloss       -8,267,000       -6,381,514      1,885,486  -22.8%  Capital loss taxable
 
-     common_stub                      incrange         pufvar       irsvar         irs        puf        diff    pdiff                           column_description
-15             0                   All returns  c01000neg_nnz  nret_cgloss  -7,471,221  6,128,015  13,599,236  -182.0%  Number of returns with capital loss taxable
-49             1                  Under $5,000  c01000neg_nnz  nret_cgloss    -709,045    346,071   1,055,116  -148.8%  Number of returns with capital loss taxable
-83             2          $5,000 under $10,000  c01000neg_nnz  nret_cgloss    -264,552     78,861     343,413  -129.8%  Number of returns with capital loss taxable
-117            3         $10,000 under $15,000  c01000neg_nnz  nret_cgloss    -234,246    144,825     379,071  -161.8%  Number of returns with capital loss taxable
-151            4         $15,000 under $20,000  c01000neg_nnz  nret_cgloss    -204,769    142,288     347,057  -169.5%  Number of returns with capital loss taxable
-185            5         $20,000 under $25,000  c01000neg_nnz  nret_cgloss    -190,269    137,432     327,701  -172.2%  Number of returns with capital loss taxable
-219            6         $25,000 under $30,000  c01000neg_nnz  nret_cgloss    -205,169    161,588     366,757  -178.8%  Number of returns with capital loss taxable
-253            7         $30,000 under $40,000  c01000neg_nnz  nret_cgloss    -380,801    312,333     693,134  -182.0%  Number of returns with capital loss taxable
-287            8         $40,000 under $50,000  c01000neg_nnz  nret_cgloss    -328,643    327,908     656,551  -199.8%  Number of returns with capital loss taxable
-321            9         $50,000 under $75,000  c01000neg_nnz  nret_cgloss    -922,328    790,682   1,713,010  -185.7%  Number of returns with capital loss taxable
-355           10        $75,000 under $100,000  c01000neg_nnz  nret_cgloss    -879,878    735,253   1,615,131  -183.6%  Number of returns with capital loss taxable
-389           11       $100,000 under $200,000  c01000neg_nnz  nret_cgloss  -1,802,059  1,693,844   3,495,903  -194.0%  Number of returns with capital loss taxable
-423           12       $200,000 under $500,000  c01000neg_nnz  nret_cgloss  -1,032,204    955,997   1,988,201  -192.6%  Number of returns with capital loss taxable
-457           13     $500,000 under $1,000,000  c01000neg_nnz  nret_cgloss    -213,262    207,617     420,879  -197.4%  Number of returns with capital loss taxable
-491           14   $1,000,000 under $1,500,000  c01000neg_nnz  nret_cgloss     -49,190     45,495      94,685  -192.5%  Number of returns with capital loss taxable
-525           15   $1,500,000 under $2,000,000  c01000neg_nnz  nret_cgloss     -19,722     17,950      37,672  -191.0%  Number of returns with capital loss taxable
-559           16   $2,000,000 under $5,000,000  c01000neg_nnz  nret_cgloss     -26,547     22,378      48,925  -184.3%  Number of returns with capital loss taxable
-593           17  $5,000,000 under $10,000,000  c01000neg_nnz  nret_cgloss      -5,645      5,273      10,918  -193.4%  Number of returns with capital loss taxable
-627           18           $10,000,000 or more  c01000neg_nnz  nret_cgloss      -2,893      2,220       5,113  -176.7%  Number of returns with capital loss taxable
+     common_stub                      incrange         pufvar       irsvar        irs        puf        diff   pdiff                           column_description
+15             0                   All returns  c01000neg_nnz  nret_cgloss  7,471,221  6,128,015  -1,343,206  -18.0%  Number of returns with capital loss taxable
+49             1                  Under $5,000  c01000neg_nnz  nret_cgloss    709,045    346,071    -362,974  -51.2%  Number of returns with capital loss taxable
+83             2          $5,000 under $10,000  c01000neg_nnz  nret_cgloss    264,552     78,861    -185,691  -70.2%  Number of returns with capital loss taxable
+117            3         $10,000 under $15,000  c01000neg_nnz  nret_cgloss    234,246    144,825     -89,421  -38.2%  Number of returns with capital loss taxable
+151            4         $15,000 under $20,000  c01000neg_nnz  nret_cgloss    204,769    142,288     -62,481  -30.5%  Number of returns with capital loss taxable
+185            5         $20,000 under $25,000  c01000neg_nnz  nret_cgloss    190,269    137,432     -52,837  -27.8%  Number of returns with capital loss taxable
+219            6         $25,000 under $30,000  c01000neg_nnz  nret_cgloss    205,169    161,588     -43,581  -21.2%  Number of returns with capital loss taxable
+253            7         $30,000 under $40,000  c01000neg_nnz  nret_cgloss    380,801    312,333     -68,468  -18.0%  Number of returns with capital loss taxable
+287            8         $40,000 under $50,000  c01000neg_nnz  nret_cgloss    328,643    327,908        -735   -0.2%  Number of returns with capital loss taxable
+321            9         $50,000 under $75,000  c01000neg_nnz  nret_cgloss    922,328    790,682    -131,646  -14.3%  Number of returns with capital loss taxable
+355           10        $75,000 under $100,000  c01000neg_nnz  nret_cgloss    879,878    735,253    -144,625  -16.4%  Number of returns with capital loss taxable
+389           11       $100,000 under $200,000  c01000neg_nnz  nret_cgloss  1,802,059  1,693,844    -108,215   -6.0%  Number of returns with capital loss taxable
+423           12       $200,000 under $500,000  c01000neg_nnz  nret_cgloss  1,032,204    955,997     -76,207   -7.4%  Number of returns with capital loss taxable
+457           13     $500,000 under $1,000,000  c01000neg_nnz  nret_cgloss    213,262    207,617      -5,645   -2.6%  Number of returns with capital loss taxable
+491           14   $1,000,000 under $1,500,000  c01000neg_nnz  nret_cgloss     49,190     45,495      -3,695   -7.5%  Number of returns with capital loss taxable
+525           15   $1,500,000 under $2,000,000  c01000neg_nnz  nret_cgloss     19,722     17,950      -1,772   -9.0%  Number of returns with capital loss taxable
+559           16   $2,000,000 under $5,000,000  c01000neg_nnz  nret_cgloss     26,547     22,378      -4,169  -15.7%  Number of returns with capital loss taxable
+593           17  $5,000,000 under $10,000,000  c01000neg_nnz  nret_cgloss      5,645      5,273        -372   -6.6%  Number of returns with capital loss taxable
+627           18           $10,000,000 or more  c01000neg_nnz  nret_cgloss      2,893      2,220        -673  -23.3%  Number of returns with capital loss taxable
 
      common_stub                      incrange  pufvar    irsvar                irs                puf             diff   pdiff                                   column_description
 16             0                   All returns  e01500  pensions  1,171,791,907,000  1,157,995,015,979  -13,796,891,021   -1.2%  Total pensions and annuities (including nontaxable)
@@ -573,26 +573,26 @@ This report is in 3 sections:
 602           17  $5,000,000 under $10,000,000  e26270neg  partnerscorploss    -5,485,485,000    -9,768,080,981   -4,282,595,981   78.1%  Partnership or S corporation net loss
 636           18           $10,000,000 or more  e26270neg  partnerscorploss   -25,651,529,000   -17,738,222,262    7,913,306,738  -30.8%  Partnership or S corporation net loss
 
-     common_stub                      incrange         pufvar                 irsvar         irs        puf       diff    pdiff                                            column_description
-25             0                   All returns  e26270neg_nnz  nret_partnerscorploss  -2,872,745  3,076,392  5,949,137  -207.1%  Number of returns with partnership or S corporation net loss
-59             1                  Under $5,000  e26270neg_nnz  nret_partnerscorploss    -373,747    333,362    707,109  -189.2%  Number of returns with partnership or S corporation net loss
-93             2          $5,000 under $10,000  e26270neg_nnz  nret_partnerscorploss     -69,107     33,108    102,215  -147.9%  Number of returns with partnership or S corporation net loss
-127            3         $10,000 under $15,000  e26270neg_nnz  nret_partnerscorploss     -59,219     68,097    127,316  -215.0%  Number of returns with partnership or S corporation net loss
-161            4         $15,000 under $20,000  e26270neg_nnz  nret_partnerscorploss     -54,968     42,486     97,454  -177.3%  Number of returns with partnership or S corporation net loss
-195            5         $20,000 under $25,000  e26270neg_nnz  nret_partnerscorploss     -54,237     66,744    120,981  -223.1%  Number of returns with partnership or S corporation net loss
-229            6         $25,000 under $30,000  e26270neg_nnz  nret_partnerscorploss     -65,233     54,037    119,270  -182.8%  Number of returns with partnership or S corporation net loss
-263            7         $30,000 under $40,000  e26270neg_nnz  nret_partnerscorploss    -115,428    133,849    249,277  -216.0%  Number of returns with partnership or S corporation net loss
-297            8         $40,000 under $50,000  e26270neg_nnz  nret_partnerscorploss    -137,185    126,930    264,115  -192.5%  Number of returns with partnership or S corporation net loss
-331            9         $50,000 under $75,000  e26270neg_nnz  nret_partnerscorploss    -324,532    325,274    649,806  -200.2%  Number of returns with partnership or S corporation net loss
-365           10        $75,000 under $100,000  e26270neg_nnz  nret_partnerscorploss    -311,410    347,743    659,153  -211.7%  Number of returns with partnership or S corporation net loss
-399           11       $100,000 under $200,000  e26270neg_nnz  nret_partnerscorploss    -701,622    828,139  1,529,761  -218.0%  Number of returns with partnership or S corporation net loss
-433           12       $200,000 under $500,000  e26270neg_nnz  nret_partnerscorploss    -406,948    480,341    887,289  -218.0%  Number of returns with partnership or S corporation net loss
-467           13     $500,000 under $1,000,000  e26270neg_nnz  nret_partnerscorploss    -111,970    130,346    242,316  -216.4%  Number of returns with partnership or S corporation net loss
-501           14   $1,000,000 under $1,500,000  e26270neg_nnz  nret_partnerscorploss     -31,954     37,971     69,925  -218.8%  Number of returns with partnership or S corporation net loss
-535           15   $1,500,000 under $2,000,000  e26270neg_nnz  nret_partnerscorploss     -15,383     19,100     34,483  -224.2%  Number of returns with partnership or S corporation net loss
-569           16   $2,000,000 under $5,000,000  e26270neg_nnz  nret_partnerscorploss     -25,811     30,703     56,514  -219.0%  Number of returns with partnership or S corporation net loss
-603           17  $5,000,000 under $10,000,000  e26270neg_nnz  nret_partnerscorploss      -7,902     11,153     19,055  -241.1%  Number of returns with partnership or S corporation net loss
-637           18           $10,000,000 or more  e26270neg_nnz  nret_partnerscorploss      -6,089      7,010     13,099  -215.1%  Number of returns with partnership or S corporation net loss
+     common_stub                      incrange         pufvar                 irsvar        irs        puf     diff   pdiff                                            column_description
+25             0                   All returns  e26270neg_nnz  nret_partnerscorploss  2,872,745  3,076,392  203,647    7.1%  Number of returns with partnership or S corporation net loss
+59             1                  Under $5,000  e26270neg_nnz  nret_partnerscorploss    373,747    333,362  -40,385  -10.8%  Number of returns with partnership or S corporation net loss
+93             2          $5,000 under $10,000  e26270neg_nnz  nret_partnerscorploss     69,107     33,108  -35,999  -52.1%  Number of returns with partnership or S corporation net loss
+127            3         $10,000 under $15,000  e26270neg_nnz  nret_partnerscorploss     59,219     68,097    8,878   15.0%  Number of returns with partnership or S corporation net loss
+161            4         $15,000 under $20,000  e26270neg_nnz  nret_partnerscorploss     54,968     42,486  -12,482  -22.7%  Number of returns with partnership or S corporation net loss
+195            5         $20,000 under $25,000  e26270neg_nnz  nret_partnerscorploss     54,237     66,744   12,507   23.1%  Number of returns with partnership or S corporation net loss
+229            6         $25,000 under $30,000  e26270neg_nnz  nret_partnerscorploss     65,233     54,037  -11,196  -17.2%  Number of returns with partnership or S corporation net loss
+263            7         $30,000 under $40,000  e26270neg_nnz  nret_partnerscorploss    115,428    133,849   18,421   16.0%  Number of returns with partnership or S corporation net loss
+297            8         $40,000 under $50,000  e26270neg_nnz  nret_partnerscorploss    137,185    126,930  -10,255   -7.5%  Number of returns with partnership or S corporation net loss
+331            9         $50,000 under $75,000  e26270neg_nnz  nret_partnerscorploss    324,532    325,274      742    0.2%  Number of returns with partnership or S corporation net loss
+365           10        $75,000 under $100,000  e26270neg_nnz  nret_partnerscorploss    311,410    347,743   36,333   11.7%  Number of returns with partnership or S corporation net loss
+399           11       $100,000 under $200,000  e26270neg_nnz  nret_partnerscorploss    701,622    828,139  126,517   18.0%  Number of returns with partnership or S corporation net loss
+433           12       $200,000 under $500,000  e26270neg_nnz  nret_partnerscorploss    406,948    480,341   73,393   18.0%  Number of returns with partnership or S corporation net loss
+467           13     $500,000 under $1,000,000  e26270neg_nnz  nret_partnerscorploss    111,970    130,346   18,376   16.4%  Number of returns with partnership or S corporation net loss
+501           14   $1,000,000 under $1,500,000  e26270neg_nnz  nret_partnerscorploss     31,954     37,971    6,017   18.8%  Number of returns with partnership or S corporation net loss
+535           15   $1,500,000 under $2,000,000  e26270neg_nnz  nret_partnerscorploss     15,383     19,100    3,717   24.2%  Number of returns with partnership or S corporation net loss
+569           16   $2,000,000 under $5,000,000  e26270neg_nnz  nret_partnerscorploss     25,811     30,703    4,892   19.0%  Number of returns with partnership or S corporation net loss
+603           17  $5,000,000 under $10,000,000  e26270neg_nnz  nret_partnerscorploss      7,902     11,153    3,251   41.1%  Number of returns with partnership or S corporation net loss
+637           18           $10,000,000 or more  e26270neg_nnz  nret_partnerscorploss      6,089      7,010      921   15.1%  Number of returns with partnership or S corporation net loss
 
      common_stub                      incrange  pufvar             irsvar              irs             puf            diff   pdiff              column_description
 26             0                   All returns  c17000  id_medical_capped  102,533,387,000  97,566,811,989  -4,966,575,011   -4.8%  Total medical expenses, capped

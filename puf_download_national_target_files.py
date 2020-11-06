@@ -159,7 +159,7 @@ for f in files:
         file.write(r.content)
 
 
-# %% parse and save important file contents
+# %% ONETIME parse and save important file contents
 # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
 
 # get the names and info for tables we want data from
@@ -422,9 +422,11 @@ dollar_xmask[range(26, 30)]
 targets_collapsed.loc[~dollar_xmask, 'value'] *= 1000
 
 # define and verify loss vars that will be made negative
-lossvars = targets_collapsed.variable[targets_collapsed.variable.str.contains('loss')].unique()
-lossvars
-loss_mask = targets_collapsed.variable.str.contains('loss')
+lossvars = targets_collapsed.variable[(targets_collapsed.variable.str.contains('loss')) &
+                                      (~targets_collapsed.variable.str.contains('nret'))].unique()
+lossvars # make sure nret variables are not in here!!
+loss_mask = targets_collapsed.variable.isin(lossvars)
+loss_mask.sum()
 check = targets_collapsed.loc[loss_mask, ['variable', 'value']]
 check.value.min()  # good, no negatives
 targets_collapsed.loc[loss_mask, 'value'] *= -1

@@ -23,6 +23,7 @@ PUFDIR = IGNOREDIR + 'puf_versions/'
 
 PUF_DEFAULT = PUFDIR + 'puf2017_default.parquet'
 PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
+PUF_REGROWN_REWEIGHTED = PUFDIR + 'puf2017_regrown_reweighted.parquet'
 
 
 # %% constants
@@ -137,6 +138,7 @@ targets_possible = pd.read_csv(DATADIR + 'targets_possible.csv')
 # %% get puf file(s)
 puf_default = pd.read_parquet(PUF_DEFAULT, engine='pyarrow')
 puf_regrown = pd.read_parquet(PUF_REGROWN, engine='pyarrow')
+puf_regrown_reweighted = pd.read_parquet(PUF_REGROWN_REWEIGHTED, engine='pyarrow')
 # puf_default.columns.sort_values().to_list()
 
 
@@ -163,4 +165,15 @@ comp_report(comp,
             title=title_regrown,
             target_mappings=target_mappings)
 
+
+# %% compare and write results for regrown reweighted puf
+comp, target_mappings = prepall(puf_regrown_reweighted, targets_possible)
+
+title_regrown_reweighted = 'REPORT: puf.csv with custom stage1 growfactors, advanced to 2017 with tax-calculator stage 2 weights, no stage3, THEN reweighted'
+fname_regrown_reweighted = RESULTDIR + 'irs_pufregrown_reweighted_comparison.txt'
+
+comp_report(comp,
+            outfile=fname_regrown_reweighted,
+            title=title_regrown_reweighted,
+            target_mappings=target_mappings)
 
