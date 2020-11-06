@@ -5,6 +5,9 @@ Created on Tue Nov  3 13:38:57 2020
 @author: donbo
 """
 
+# %% imports
+import pandas as pd
+import puf_constants as pc
 
 
 # %% weighted percentiles
@@ -160,27 +163,7 @@ def filers(puf, year=2017):
     # above the line income is agi plus above line adjustments getting to agi
     above_line_income = puf.c00100 + puf.c02900
 
-    # add back any losses that were used to reduce above the line income
-    # these are negative so we will subtract them from above the line income
-    capital_losses = puf.c23650.lt(0) * puf.c23650 \
-        + puf.c01000.lt(0) * puf.c01000
-    other_losses = puf.e01200.lt(0) * puf.e01200
-    business_losses = puf.e00900.lt(0) * puf.e00900
-    rent_losses = puf.e02000.lt(0) * puf.e02000
-    farm_losses = puf.e02100.lt(0) * puf.e02100
-    above_line_losses = capital_losses + other_losses + business_losses \
-        + rent_losses + farm_losses
-
-    # add back any untaxed income that was excluded in calculating
-    # above the line income
-    interest_untaxed = puf.e00400
-    # dividends_untaxed = puf.e00600 - puf.e00650
-    pensions_untaxed = puf.e01500 - puf.e01700  # always ge zero, I checked
-    # socsec_untaxed is OVERSTATED - I think IRS has a limit on amount
-    socsec_untaxed = puf.e02400 - puf.c02500  # always ge zero, I checked
-    above_line_untaxed = interest_untaxed + pensions_untaxed + socsec_untaxed
-
-    # gross_income = above_line_income - above_line_losses + above_line_untaxed
+    # gross_income FOR NOW assume same as above-the-line income
     gross_income = above_line_income
 
     # to be on the safe side, don't let gross_income be negative
@@ -258,4 +241,38 @@ def filers(puf, year=2017):
     m_filer = m_required | m_likely
 
     return m_filer
+
+
+# %% prepare puf for comparison
+def prep_puf(puf, pufvars_to_nnz=None):
+    puf['common_stub'] = pd.cut(
+        puf['c00100'],
+        pc.COMMON_STUBS,
+        labels=range(1, 19),
+        right=False)
+
+    puf['filer'] = filers(puf)
+
+    puf['nret_all'] = 1
+
+    # marital status indicators
+    puf['mars1'] = puf.MARS.eq(1)
+    puf['mars2'] = puf.MARS.eq(2)
+    puf['mars3'] = puf.MARS.eq(3)
+    puf['mars4'] = puf.MARS.eq(4)
+    puf['mars5'] = puf.MARS.eq(5)
+
+    # create capital gains positive and negative
+    puf['c01000pos'] = puf.c01000 * puf.c01000.gt(0)
+    puf['c01000neg'] = puf.c01000 * puf.c01000.lt(0)
+
+    # create partnership and S corp e26270 positive and negative
+    puf['e26270pos'] = puf.e26270 * puf.e26270.gt(0)
+    puf['e26270neg'] = puf.e26270 * puf.e26270.lt(0)
+
+    if pufvars_to_nnz is not None:
+        for var in pufvars_to_nnz:
+            puf[var + '_nnz'] = puf[var].ne(0) * 1
+
+    return puf
 
