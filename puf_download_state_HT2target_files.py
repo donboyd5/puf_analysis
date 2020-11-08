@@ -117,7 +117,57 @@ dfl = pd.merge(dfl, vlabs[['variable', 'description', 'reference']],
 check = dfl[['variable', 'description']].drop_duplicates()
 
 dfl = dfl[['state', 'variable', 'description', 'ht2_stub', 'value']].sort_values(by=['state', 'variable', 'ht2_stub'])
-dfl = dfl.rename(columns={'variable': 'ht2variable', 'description': 'ht2description', 'value': 'ht2'})
+dfl = dfl.rename(columns={'variable': 'ht2var', 'description': 'ht2description', 'value': 'ht2'})
 
+
+# %% map ht2 variable names to puf names
+dfl
+dfl.ht2var.unique().sort().value_counts().sort() to_list()
+sorted(dfl.ht2var.unique())
+
+# first ht2, then pufvar
+vars_dict = {'n1': 'nret_all'}
+vars_bare = ('mars1', 'mars2', 'mars4')
+vars_ennz = ('00200', '00300', '00600', '01500', '02400')
+vars_cnnz = ('00100', '02500', '17000', '18300', '19200', '19700')
+
+# posneg vars
+# c01000pos
+# e26270pos
+
+dict_bare = {}
+for keyval in vars_bare:
+    dict_bare[keyval] = keyval
+
+dict_ennz = {}
+for ennz in vars_ennz:
+    key = 'a' + ennz
+    value = 'e' + ennz
+    dict_ennz[key] = value
+    key = 'n' + ennz
+    value = 'e' + ennz + '_nnz'
+    dict_ennz[key] = value
+
+dict_cnnz = {}
+for cnnz in vars_cnnz:
+    key = 'a' + cnnz
+    value = 'c' + cnnz
+    dict_cnnz[key] = value
+    key = 'n' + cnnz
+    value = 'c' + cnnz + '_nnz'
+    dict_cnnz[key] = value
+
+ht2puf_map = {}
+ht2puf_map.update(vars_dict)
+ht2puf_map.update(dict_bare)
+ht2puf_map.update(dict_ennz)
+ht2puf_map.update(dict_cnnz)
+
+ht2puf_map
+
+dfl['pufvar'] = dfl.ht2var.map(ht2puf_map)
+
+
+# %% save
 dfl.to_csv(DATADIR + 'ht2_long.csv', index=False)
 

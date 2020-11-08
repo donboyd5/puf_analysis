@@ -35,11 +35,6 @@ targets_ht2 = pd.read_csv(DATADIR + 'ht2_long.csv')
 # targets_national.dtypes
 
 
-# %% add pufvar to the state data
-targets_ht2['varmeat'] = targets_ht2.ht2variable.str.slice(start=1, stop=6)
-targets_ht2['pufvar'] = np.where(targets_ht2.ht2variable.str.startswith('a'),
-                                 'e' + targets_ht2.varmeat,
-                                 None)
 
 
 # %% create mergeable files
@@ -70,7 +65,7 @@ targets_national_mrg.columns
 targets_ht2.loc[:, ['ht2common_stub']] = targets_ht2.ht2_stub.map(ht2_map)
 targets_ht2 = targets_ht2[targets_ht2.state=='US'].drop(columns=['state'])
 targets_ht2
-aggcols = ['ht2common_stub', 'pufvar', 'ht2variable', 'ht2description']
+aggcols = ['ht2common_stub', 'pufvar', 'ht2var', 'ht2description']
 targets_ht2_mrg = targets_ht2.groupby(aggcols)[['ht2']].sum().reset_index()
 targets_ht2_mrg.columns
 
