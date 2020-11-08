@@ -7,6 +7,7 @@ Created on Tue Nov  3 13:38:57 2020
 
 # %% imports
 import pandas as pd
+import sys
 import puf_constants as pc
 
 
@@ -275,4 +276,44 @@ def prep_puf(puf, pufvars_to_nnz=None):
             puf[var + '_nnz'] = puf[var].ne(0) * 1
 
     return puf
+
+
+# %% utility functions
+
+def getmem(objects=dir()):
+    """Memory used, not including objects starting with '_'.
+
+    Example:  getmem().head(10)
+    """
+    mb = 1024**2
+    mem = {}
+    for i in objects:
+        if not i.startswith('_'):
+            mem[i] = sys.getsizeof(eval(i))
+    mem = pd.Series(mem) / mb
+    mem = mem.sort_values(ascending=False)
+    return mem
+
+
+def xlrange(io, sheet_name=0,
+            firstrow=1, lastrow=None,
+            usecols=None, colnames=None):
+    # firstrow and lastrow are 1-based
+    if colnames is None:
+        if usecols is None:
+            colnames = None
+        elif isinstance(usecols, list):
+            colnames = usecols
+        else:
+            colnames = usecols.split(',')
+    nrows = None
+    if lastrow is not None:
+        nrows = lastrow - firstrow + 1
+    df = pd.read_excel(io,
+                       header=None,
+                       names=colnames,
+                       usecols=usecols,
+                       skiprows=firstrow - 1,
+                       nrows=nrows)
+    return df
 

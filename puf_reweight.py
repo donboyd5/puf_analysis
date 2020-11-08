@@ -67,7 +67,7 @@ qtiles = (0, .01, .1, .25, .5, .75, .9, .99, 1)
 
 
 # %% get target data
-targets_possible = pd.read_csv(DATADIR + 'targets_possible.csv')
+targets_possible = pd.read_csv(DATADIR + 'targets2017_possible.csv')
 
 target_mappings = targets_possible.drop(labels=['common_stub', 'incrange', 'irs'], axis=1).drop_duplicates()
 target_vars = target_mappings.pufvar.to_list()

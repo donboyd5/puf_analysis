@@ -187,7 +187,7 @@ targets_possible['pufvar'] = pd.Categorical(targets_possible['pufvar'],
                                             ordered=True)
 targets_possible = targets_possible.sort_values(by=['common_stub', 'pufvar'], axis=0)
 
-targets_possible.to_csv(DATADIR + 'targets_possible.csv', index=False)
+targets_possible.to_csv(DATADIR + 'targets2017_possible.csv', index=False)
 
 check = targets_possible[['irsvar', 'pufvar']].drop_duplicates()
 check  # 34 items

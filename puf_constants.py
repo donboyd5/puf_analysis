@@ -43,7 +43,23 @@ ht2stubs = pd.DataFrame([
     [8, '$200,000 under $500,000'],
     [9, '$500,000 under $1,000,000'],
     [10, '$1,000,000 or more']],
-    columns=['h2stub', 'h2range'])
+    columns=['ht2stub', 'ht2range'])
+
+# this next set of stubs is common between the ht2 stubs and the
+# national stubs that are common between itemizers and nonitemizers
+ht2common_stubs = pd.DataFrame([
+    [0, 'All returns'],
+    [1, 'Under $10,000'],
+    [2, '$10,000 under $25,000'],
+    [3, '$25,000 under $50,000'],
+    [4, '$50,000 under $75,000'],
+    [5, '$75,000 under $100,000'],
+    [6, '$100,000 under $200,000'],
+    [7, '$200,000 under $500,000'],
+    [8, '$500,000 under $1,000,000'],
+    [9, '$1,000,000 or more']],
+    columns=['ht2common_stub', 'incrange'])
+
 
 # use the common IRS stubs, which are the LCD of the main irsstubs and the
 # itemized deduction IRS stubs
