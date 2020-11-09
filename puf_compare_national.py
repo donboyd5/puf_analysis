@@ -109,7 +109,7 @@ def comp_report(comp, outfile, title, target_mappings):
     s2 = s[s.common_stub==0]
     tfile.write(s2.to_string())
     # now write details for each variable
-    tfile.write('\n\n2. Detail report by AGI range for each variable:')
+    tfile.write('\n\n2. Detailed report by AGI range for each variable:')
     for var in target_vars:
         tfile.write('\n\n')
         s2 = s[s.pufvar==var]

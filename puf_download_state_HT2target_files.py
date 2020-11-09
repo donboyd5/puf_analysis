@@ -75,6 +75,7 @@ fn = 'ht2_variable_labels.xlsx'
 vlabs = pd.read_excel(HT2DIR + fn, sheet_name = '2017')
 vlabs['variable'] = vlabs.variable.str.lower()
 vlabs
+vlabs[vlabs.duplicated()]
 
 
 # %% read and adjust Historical Table 2
@@ -122,7 +123,6 @@ dfl = dfl.rename(columns={'variable': 'ht2var', 'description': 'ht2description',
 
 # %% map ht2 variable names to puf names
 dfl
-dfl.ht2var.unique().sort().value_counts().sort() to_list()
 sorted(dfl.ht2var.unique())
 
 # first ht2, then pufvar
