@@ -31,10 +31,18 @@ check = ht2[ht2.ht2var == 'n18500']
 ht2_us = ht2[ht2["state"] == "US"] \
     [['ht2var', 'ht2_stub', 'ht2']].rename(columns={'ht2': 'ht2_us'})  # 1,650
 
-ht2_shares = pd.merge(ht2[ht2.state != 'US'], ht2_us, on=['ht2var', 'ht2_stub'])
-ht2_shares['share'] = ht2_shares.ht2 / ht2_shares.ht2_us
+# share are not perfectly 1 with national values, so let's use sum instead
+ht2_sums = ht2[ht2["state"] != "US"][['ht2var', 'ht2_stub', 'ht2']]
+ht2_sums = ht2_sums.groupby(['ht2var', 'ht2_stub'])['ht2'].sum()  # pandas treats na as zero
+ht2_sums = ht2_sums.reset_index().rename(columns={'ht2': 'ht2_sum'})
+
+ht2_shares = pd.merge(ht2[ht2.state != 'US'], ht2_sums, on=['ht2var', 'ht2_stub'])
+ht2_shares['share'] = ht2_shares.ht2 / ht2_shares.ht2_sum
 
 tmp = ht2_shares[ht2_shares.ht2_stub != 0].groupby(['ht2var', 'ht2_stub'])['share'].sum()
+# note that some items are zero (e.g., vita_eic for high income)
+
+ht2_shares.to_csv(DATADIR + 'ht2_shares.csv', index=None)
 
 
 # %% functions
