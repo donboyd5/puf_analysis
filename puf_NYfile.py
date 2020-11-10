@@ -34,11 +34,15 @@ PUFDIR = IGNOREDIR + 'puf_versions/'
 
 PUF_DEFAULT = PUFDIR + 'puf2017_default.parquet'
 PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
+PUF_REGROWN_REWEIGHTED = PUFDIR + 'puf2017_regrown_reweighted.parquet'
 
 
 # %% functions
 def uvals(series):
     return sorted(series.unique())
+
+def flat(l):
+    return ", ".join(l)
 
 
 # %% get ht2_shares
@@ -47,7 +51,7 @@ ht2_shares
 ht2_shares.info()
 sts = uvals(ht2_shares.state)
 len(sts)  # 52
-" ,".join(sts)  # includes DC, OA, but not PR or US
+flat(sts)  # includes DC, OA, but not PR or US
 
 
 # %% define states to target
@@ -64,10 +68,30 @@ ht2_collapsed.info()
 
 
 # %% get relevant national puf
-puf = pd.read_parquet(PUF_REGROWN)
+puf = pd.read_parquet(PUF_REGROWN_REWEIGHTED)
 puf
 
 
 # %% add puf variables, get puf sums
-puf2 = pu.prep_puf(puf, pufvars_to_nnz=None)
+
+potential_targets = uvals(ht2_collapsed.pufvar)
+flat(potential_targets)
+
+pvtonnz = ['c02500', 'c17000', 'c18300', 'c19700',
+           'e00200', 'e00300', 'e00600']
+puf = pu.prep_puf(puf, pufvars_to_nnz=pvtonnz)
 # puf2 is puf # true!
+puf.info()
+flat(sorted(puf.columns))
+
+keepvars = ['ht2_stub', 's006_rwt'] + potential_targets
+pufsub = puf.loc[puf.filer, keepvars]
+puflong = pufsub.melt(id_vars=['ht2_stub', 's006_rwt'], var_name='pufvar')
+puflong['wvalue'] = puflong.value * puflong.s006_rwt
+puflong.shape
+puflong.info()
+aggvars = ['ht2_stub', 'pufvar']
+pufsums = puflong.groupby(aggvars).agg({'wvalue': 'sum'}).reset_index()
+
+
+# pufsub is puf

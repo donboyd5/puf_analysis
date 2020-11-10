@@ -252,6 +252,12 @@ def prep_puf(puf, pufvars_to_nnz=None):
         labels=range(1, 19),
         right=False)
 
+    puf['ht2_stub'] = pd.cut(
+        puf['c00100'],
+        pc.HT2_AGI_STUBS,
+        labels=range(1, 11),
+        right=False)
+
     puf['filer'] = filers(puf)
 
     puf['nret_all'] = 1
