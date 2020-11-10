@@ -255,6 +255,18 @@ puf_regrown_reweighted.s006_rwt.sum()
 puf_regrown_reweighted.to_parquet(PUFDIR + 'puf2017_regrown_reweighted.parquet', engine='pyarrow')
 
 
+# %% evaluate
+
+
+qtiles = (0, .01, .1, .25, .5, .75, .9, .99, 1)
+check = pd.read_parquet(PUFDIR + 'puf2017_regrown_reweighted.parquet', engine='pyarrow')
+check2 = check[check['filer']]
+
+x = check2.s006_rwt / check2.s006_taxcalc
+np.quantile(x, qtiles)
+qtiles
+
+
 # %% Peter's  crosswalks
 # Peter's mappings of puf to historical table 2
 # "n1": "N1",  # Total population

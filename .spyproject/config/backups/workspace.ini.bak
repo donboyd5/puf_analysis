@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['puf_reweight.py', 'puf_compare.py', 'puf_advance_file.py', 'puf_download_national_target_files.py', 'puf_ONETIME_create_puf_irs_mappings_and_targets.py', 'puf_extrapolate_custom.py']
+recent_files = ['puf_compare_national_state.py', 'puf_compare_national.py', 'puf_ht2_ratios.py', 'puf_NYfile.py', 'puf_download_national_target_files.py', 'puf_download_state_HT2target_files.py', 'puf_constants.py', 'puf_reweight.py']
 
