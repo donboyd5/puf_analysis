@@ -70,4 +70,4 @@ puf
 
 # %% add puf variables, get puf sums
 puf2 = pu.prep_puf(puf, pufvars_to_nnz=None)
-puf2 is puf # true!
+# puf2 is puf # true!
