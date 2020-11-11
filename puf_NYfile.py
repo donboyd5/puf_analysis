@@ -39,6 +39,10 @@ PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
 PUF_REGROWN_REWEIGHTED = PUFDIR + 'puf2017_regrown_reweighted.parquet'
 
 
+# %% constants
+qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
+
+
 # %% functions
 def uvals(series):
     return sorted(series.unique())
@@ -114,17 +118,21 @@ pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
 
 idx = (0, 1, 2, 3)
 idx = slice(2, 2 + 5)
-idx = [2, 3]
-idx = 2, 3
 targvars = potential_targets[idx]
 
 idx = [2, 3]
+idx = [0, 3]
 targvars = [potential_targets[index] for index in idx]
-targvars
+targvars = ['nret_all', 'mars1', 'mars2', 'c00100', 'e00200', 'e00200_nnz',
+            'e00300', 'e00300_nnz', 'e00600', 'e00600_nnz',
+            # deductions
+            'c17000','c17000_nnz',
+            'c18300', 'c18300_nnz']
 
 stub = 3
 pufstub = pufsub.query('ht2_stub == @stub')[['pid', 'ht2_stub', 's006_rwt'] + targvars]
 pufstub
+pufstub.describe()
 
 wh = pufstub.s006_rwt.to_numpy()
 xmat = np.asarray(pufstub[targvars], dtype=float)
@@ -132,7 +140,33 @@ xmat.shape
 
 targets = ht2wide.loc[ht2wide.ht2_stub == stub, targvars].to_numpy()
 stub_prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targets)
-gw1 = stub_prob.geoweight(method='qmatrix')
+gw1 = stub_prob.geoweight(method='qmatrix', user_options=uo)
+g1 = gw1.method_result.Q_unadjusted.sum(axis=1)
+np.quantile(g1, qtiles)
+
+
+uo = {'max_iter': 1}
+gw1a = stub_prob.geoweight(method='qmatrix-lsq', user_options=uo)
+gw1a.sspd
+dir(gw1a.method_result)
+g = gw1a.method_result.Q_unadjusted.sum(axis=1)
+g.shape
+g.sum()
+g[range(10)]
+np.quantile(g, qtiles)
+new_wts = g * wh
+
+wh[range(10)]
+wh.sum()
+new_wts.sum()
+
+ustargs = np.dot(xmat.T, wh)
+ustargsrw = np.dot(xmat.T, new_wts)
+usdiffs = ustargsrw - ustargs
+uspdiffs = usdiffs / ustargs * 100
+np.round(uspdiffs, 2)
+
+
 gw1.method
 gw1.elapsed_seconds
 gw1.sspd
