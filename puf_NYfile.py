@@ -115,6 +115,148 @@ keepvars = ['stgroup', 'ht2_stub', 'pufvar', 'target']
 ht2wide = ht2targets[keepvars].pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='target').reset_index()
 
 
+# %% get adjusted national weights based on independence
+pufsub.columns
+pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
+
+targvars = ['nret_all', 'mars1', 'mars2', 'c00100', 'e00200', 'e00200_nnz',
+            'e00300', 'e00300_nnz', 'e00600', 'e00600_nnz',
+            # deductions
+            'c17000','c17000_nnz',
+            'c18300', 'c18300_nnz']
+
+def get_rwt(df, targvars, ht2wide):
+    print(df.name)
+    stub = df.name
+    qx = '(ht2_stub == @stub)'
+    pufstub =df[['pid', 'ht2_stub', 's006_rwt'] + targvars]
+
+    wh = pufstub.s006_rwt.to_numpy()
+    xmat = np.asarray(pufstub[targvars], dtype=float)
+
+    # set up targets - keep a dataframe and a matrix even though dataframe
+    # is not absolutely necessary
+    targetsdf = ht2wide.query(qx)[['stgroup'] + targvars]
+    sts = targetsdf.stgroup.tolist()
+    targets = targetsdf[targvars].to_numpy()
+    drops = np.where(targets == 0, True, False)  # True means we drop
+    # print(targets.size)
+    # print(drops.sum())
+
+    # create initial Q, is n x m (# of households) x (# of areas)
+    init_shares = (targetsdf.nret_all / targetsdf.nret_all.sum()).to_numpy()
+    Q_init = np.tile(init_shares, (wh.size, 1))
+
+    stub_prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targets)
+
+    # call the solver
+    uo = {'Q': Q_init, 'drops': drops, 'independent': True}
+    so = {'xlb': 0, 'xub': 50,
+          'tol': 1e-7, 'method': 'bvls',
+          'max_iter': 50, 'verbose': 0}
+    gw_indep = stub_prob.geoweight(method='qmatrix-lsq', user_options=uo, solver_options=so)
+    # gw_indep = stub_prob.geoweight(method='qmatrix-ec', user_options=uo)
+    # gw_indep = stub_prob.geoweight(method='poisson', user_options=uo)
+    df['s006_rwt_geo'] = gw_indep.whs_opt.sum(axis=1)
+    return df
+
+
+grouped = pufsub.groupby('ht2_stub')
+
+a = timer()
+pufsub_rwtd = grouped.apply(get_rwt, targvars, ht2wide)
+b = timer()
+b - a
+
+# pufsub_rwtd['s006_rwt_rwt'] = pufsub_rwtd.s006 * pufsub_rwtd.x
+pufsub_rwtd.info()
+
+# make the new puf
+weights = pufsub_rwtd[['pid', 's006_rwt', 's006_rwt_geo']]
+weights.s006_rwt.sum()
+weights.s006_rwt_geo.sum()
+
+np.nanquantile(weights.s006_rwt_geo / weights.s006_rwt, qtiles)
+
+
+# %% merge new weights back with original weights
+pufrgrw = pd.read_parquet(PUF_REGROWN_REWEIGHTED)
+pufrgrw = pd.merge(pufrgrw, weights[['pid', 's006_rwt_geo']], on=['pid'], how='left')
+pufrgrw.columns
+rwmask = ~pufrgrw.s006_rwt_geo.isna()
+rwmask.sum()
+pufrgrw.loc[rwmask, ['s006']] = pufrgrw.s006_rwt_geo[rwmask]
+
+pufrgrw[['pid', 's006', 's006_taxcalc', 's006_rwt', 's006_rwt_geo']].tail(100)
+pufrgrw[['pid', 's006', 's006_taxcalc', 's006_rwt', 's006_rwt_geo']].head(100)
+
+pufrgrw['s006'] = np.where(pufrgrw.s006_rwt_geo.isna(),
+                           pufrgrw.s006_taxcalc,
+                           pufrgrw.s006_rwt_geo)
+pufrgrw.s006.sum()
+pufrgrw.s006_taxcalc.sum()
+pufrgrw.s006_rwt.sum()
+pufrgrw.s006_rwt_geo.sum()
+
+pufrgrw.to_parquet(PUFDIR + 'puf2017_regrown_reweighted_geoweighted.parquet', engine='pyarrow')
+
+
+
+# %% examine individual stubs
+
+def get_stub(stub, targvars, ht2wide):
+    qx = '(ht2_stub == @stub)'
+    pufstub = pufsub.query(qx)[['pid', 'ht2_stub', 's006_rwt'] + targvars]
+
+    wh = pufstub.s006_rwt.to_numpy()
+    xmat = np.asarray(pufstub[targvars], dtype=float)
+
+    # set up targets - keep a dataframe and a matrix even though dataframe
+    # is not absolutely necessary
+    targetsdf = ht2wide.query(qx)[['stgroup'] + targvars]
+    sts = targetsdf.stgroup.tolist()
+    targets = targetsdf[targvars].to_numpy()
+    drops = np.where(targets == 0, True, False)  # True means we drop
+    print(targets.size)
+    print(drops.sum())
+
+    # create initial Q, is n x m (# of households) x (# of areas)
+    init_shares = (targetsdf.nret_all / targetsdf.nret_all.sum()).to_numpy()
+    Q_init = np.tile(init_shares, (wh.size, 1))
+
+    stub_prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targets)
+
+    # call the solver
+    uo = {'Q': Q_init, 'drops': drops, 'independent': True}
+    so = {'xlb': 0, 'xub': 50,
+          'tol': 1e-7, 'method': 'bvls',
+          'max_iter': 50, 'verbose': 0}
+    gw_indep = stub_prob.geoweight(method='qmatrix-lsq', user_options=uo, solver_options=so)
+    return gw_indep
+
+
+
+stub = 10
+pufstub = pufsub.query('(ht2_stub == @stub)')[['pid', 'ht2_stub', 's006_rwt'] + targvars]
+wh = pufstub.s006_rwt.to_numpy()
+wh = np.where(wh <= .01, .01, wh)
+np.quantile(wh, qtiles)
+
+stub = 1
+tdf, gw = get_stub(stub, targvars, ht2wide)
+
+gw.method_result.geotargets
+dir(gw)
+gw.pdiff
+whs = gw.whs_opt
+gw.whs_opt.shape
+gw.whs_opt.sum(axis=0)
+ratio = gw.whs_opt.sum(axis=1) / wh
+np.quantile(ratio, qtiles)
+wh
+type(get_stub(stub, targvars, ht2wide))
+
+
 # %% prepare a single stub for geoweighting
 pufsub.columns
 pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
@@ -355,41 +497,6 @@ targets.shape
 
 # scale targets by ratio of pufsums to HT2
 
-
-# %% reweight the file for a stub to look like just one state
-pufsub.columns
-pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
-
-targvars = ['nret_all', 'mars1', 'mars2', 'c00100', 'e00200', 'e00200_nnz',
-            'e00300', 'e00300_nnz', 'e00600', 'e00600_nnz',
-            # deductions
-            'c17000','c17000_nnz',
-            'c18300', 'c18300_nnz']
-
-stub = 3
-pufstub = pufsub.query('ht2_stub == @stub')[['pid', 'ht2_stub', 's006_rwt'] + targvars]
-pufstub
-pufstub.describe()
-
-# get the targets for NY and step wh down to a shared value for NY
-wh = pufstub.s006_rwt.to_numpy()
-xmat = np.asarray(pufstub[targvars], dtype=float)
-xmat.shape
-
-geotargets = ht2wide.loc[ht2wide.ht2_stub == stub, targvars].to_numpy()
-targetsdf = ht2wide.loc[ht2wide.ht2_stub == stub, ['stgroup'] + targvars]
-nytargets = targetsdf.loc[targetsdf.stgroup=='NY', targvars].to_numpy().flatten()
-nytargets.flatten()
-
-nyshare = targetsdf.loc[targetsdf.stgroup=='NY'].nret_all / targetsdf.nret_all.sum()
-nyshare
-nywh = wh * nyshare.squeeze()
-
-stub_prob = mw.Microweight(wh=nywh, xmat=xmat, targets=nytargets)
-opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
-# opts = None
-probrw = stub_prob.reweight(method='lsq', options=opts)
-probrw.pdiff
 
 
 # %% geoweight
