@@ -27,6 +27,8 @@ import src.microweight as mw
 
 import src.make_test_problems as mtp
 
+import src.reweight_leastsquares as rwls
+
 
 # %% locations and file names
 DATADIR = r'C:\programs_python\puf_analysis\data/'
@@ -37,6 +39,7 @@ PUFDIR = IGNOREDIR + 'puf_versions/'
 PUF_DEFAULT = PUFDIR + 'puf2017_default.parquet'
 PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
 PUF_REGROWN_REWEIGHTED = PUFDIR + 'puf2017_regrown_reweighted.parquet'
+PUF_REGROWN_RERE_REWEIGHTED = PUFDIR + 'puf2017_regrown_rere_reweighted.parquet'
 
 
 # %% constants
@@ -138,16 +141,74 @@ wh = pufstub.s006_rwt.to_numpy()
 xmat = np.asarray(pufstub[targvars], dtype=float)
 xmat.shape
 
-targets = ht2wide.loc[ht2wide.ht2_stub == stub, targvars].to_numpy()
+targetsdf = ht2wide.loc[ht2wide.ht2_stub == stub, ['stgroup'] + targvars]
+# create initial Q, is n(h) x m(s)
+# df.query('A < 0.5 and B < 0.5')
+init_shares = ht2_collapsed.query('(ht2_stub==@stub) and (pufvar=="nret_all")')[['stgroup', 'share']]
+init_shares = init_shares.share.to_numpy()
+Q_init = np.tile(init_shares, (wh.size, 1))
+
+targets = targetsdf[targvars].to_numpy()
 stub_prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targets)
+uo = {'max_iter': 1, 'Q': Q_init}
+
 gw1 = stub_prob.geoweight(method='qmatrix', user_options=uo)
 g1 = gw1.method_result.Q_unadjusted.sum(axis=1)
 np.quantile(g1, qtiles)
 
-
-uo = {'max_iter': 1}
-gw1a = stub_prob.geoweight(method='qmatrix-lsq', user_options=uo)
+uo = {'max_iter': 1, 'Q': Q_init, 'independent': True}
+opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
+gw1a = stub_prob.geoweight(method='qmatrix-lsq', user_options=uo, solver_options=opts)
 gw1a.sspd
+gw1a.pdiff
+np.quantile(gw1a.pdiff, qtiles)
+
+
+pdiff_df = pd.DataFrame(data = gw1a.pdiff,
+                       index = ht2_collapsed.stgroup.unique(),
+                       columns=targvars).reset_index()
+
+pdiffl = pd.melt(pdiff_df, id_vars='index', value_name='pdiff').rename(columns={'index': 'stgroup'})
+pdiffl['abspdiff'] = pdiffl.pdiff.abs()
+pdiffl.query('stgroup=="NY"').sort_values(by=['abspdiff'], ascending=False)
+pdiffl.sort_values(by=['abspdiff'], ascending=False)
+
+# try to reproduce qmatrix approach using lsq reweight, just one state
+xmat_wh = xmat * wh.reshape((-1, 1))
+
+j = 5  # NY
+targetsdf.iloc[j, :]
+whj = Q_init[:, j]
+targetsj = targets[j, :]
+# rwls.rw_lsq(wh, xmat, targets, options=lsq_opts)
+lsq_opts = {
+    'xlb': 1e-8,
+    'xub': 100.0,
+    'verbose': 2
+    }
+res = rwls.rw_lsq(whj, xmat_wh, targetsj, options=lsq_opts)
+dir(res)
+res.targets_opt
+targetsj
+res.targets_opt / targetsj * 100 - 100
+g = res.g
+np.isnan(g).any() or np.isinf(g).any() or g.any() == 0
+Q_init[:, j] = Q_init[:, j] * g.reshape(g.size, )
+
+whs = np.multiply(Q_init, wh.reshape((-1, 1)))  # faster
+esttargs = np.dot(whs.T, xmat)
+esttargs[j, :]
+
+diff = np.dot(whs.T, xmat) - geotargets
+
+
+
+            # g = gfn(Q[:, j],
+            #         xmat_wh[:, good_cols],
+            #         geotargets[j, good_cols],
+            #         objective=so.objective)
+
+
 dir(gw1a.method_result)
 g = gw1a.method_result.Q_unadjusted.sum(axis=1)
 g.shape
@@ -293,6 +354,43 @@ targets.shape
 # targets_scaled / targets
 
 # scale targets by ratio of pufsums to HT2
+
+
+# %% reweight the file for a stub to look like just one state
+pufsub.columns
+pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
+
+targvars = ['nret_all', 'mars1', 'mars2', 'c00100', 'e00200', 'e00200_nnz',
+            'e00300', 'e00300_nnz', 'e00600', 'e00600_nnz',
+            # deductions
+            'c17000','c17000_nnz',
+            'c18300', 'c18300_nnz']
+
+stub = 3
+pufstub = pufsub.query('ht2_stub == @stub')[['pid', 'ht2_stub', 's006_rwt'] + targvars]
+pufstub
+pufstub.describe()
+
+# get the targets for NY and step wh down to a shared value for NY
+wh = pufstub.s006_rwt.to_numpy()
+xmat = np.asarray(pufstub[targvars], dtype=float)
+xmat.shape
+
+geotargets = ht2wide.loc[ht2wide.ht2_stub == stub, targvars].to_numpy()
+targetsdf = ht2wide.loc[ht2wide.ht2_stub == stub, ['stgroup'] + targvars]
+nytargets = targetsdf.loc[targetsdf.stgroup=='NY', targvars].to_numpy().flatten()
+nytargets.flatten()
+
+nyshare = targetsdf.loc[targetsdf.stgroup=='NY'].nret_all / targetsdf.nret_all.sum()
+nyshare
+nywh = wh * nyshare.squeeze()
+
+stub_prob = mw.Microweight(wh=nywh, xmat=xmat, targets=nytargets)
+opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
+# opts = None
+probrw = stub_prob.reweight(method='lsq', options=opts)
+probrw.pdiff
+
 
 # %% geoweight
 gw1 = prob.geoweight(method='qmatrix')
