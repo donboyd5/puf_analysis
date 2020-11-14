@@ -5,14 +5,18 @@ import taxcalc as tc
 import puf_extrapolate_custom as xc
 
 def advance_puf(puf, year, savepath):
+    print('creating records object...')
     recs = tc.Records(data=puf, start_year=2011)  # start_year not needed for puf.csv
     pol = tc.Policy()
     calc = tc.Calculator(policy=pol, records=recs)
+    print(f'advancing puf to {year}...')
     calc.advance_to_year(year)
+    print(f'calculating policy for {year}...')
     calc.calc_all()
     pufdf = calc.dataframe(variable_list=[], all_vars=True)
     pufdf['pid'] = np.arange(len(pufdf))
 
+    print('saving the advanced puf...')
     pufdf.to_parquet(savepath, engine='pyarrow')
     # no return
     return None
@@ -25,10 +29,10 @@ def advance_puf_custom(puf, year, gfcustom, gfones, weights, savepath):
 
     gfactor_custom = pd.read_csv(gfcustom)
     gfactor_ones = tc.GrowFactors(gfones)
-    print('extrapolating puf with custom growfactors')
+    print(f'extrapolating puf to {year} with custom growfactors...')
     puf_extrap = xc.extrapolate_custom(puf, gfactor_custom, year)
 
-    print('creating records object and advancing with dummy growfactors')
+    print('creating records object and advancing with dummy growfactors...')
     recs_extrap = tc.Records(data=puf_extrap,
                   start_year=2011,
                   gfactors=gfactor_ones,
@@ -41,6 +45,6 @@ def advance_puf_custom(puf, year, gfcustom, gfones, weights, savepath):
     calc_extrap.calc_all()
     pufdf_custom = calc_extrap.dataframe(variable_list=[], all_vars=True)
     pufdf_custom['pid'] = np.arange(len(pufdf_custom))
-    print('saving custom file')
+    print(f'saving the custom-grown puf to {savepath}')
     pufdf_custom.to_parquet(savepath, engine='pyarrow')
-    return 'all done'
+    return None

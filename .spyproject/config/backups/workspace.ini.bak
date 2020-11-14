@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['puf_NYfile.py', '..\\weighting\\src\\microweight.py', '..\\weighting\\src\\geoweight_qmatrix.py', '..\\weighting\\src\\reweight_leastsquares.py', 'puf_reweight.py', 'puf_compare_national.py']
+recent_files = ['puf_compare_national.py', 'puf_reweight.py', 'puf_NYfile.py', '..\\weighting\\src\\microweight.py', '..\\weighting\\src\\reweight_leastsquares.py', '..\\weighting\\src\\test_microweight.py', '..\\weighting\\src\\reweight_ipopt.py', 'puf_utilities.py']
 
