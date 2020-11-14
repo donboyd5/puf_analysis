@@ -164,15 +164,42 @@ def filers(puf, year=2017):
     # above the line income is agi plus above line adjustments getting to agi
     above_line_income = puf.c00100 + puf.c02900
 
-    # gross_income FOR NOW assume same as above-the-line income
-    gross_income = above_line_income
+    # add back any losses that were used to reduce above the line income
+    # these are negative so we will subtract them from above the line income
+    capital_losses = puf.c23650.lt(0) * puf.c23650 \
+        + puf.c01000.lt(0) * puf.c01000
+    other_losses = puf.e01200.lt(0) * puf.e01200
+    business_losses = puf.e00900.lt(0) * puf.e00900
+    rent_losses = puf.e02000.lt(0) * puf.e02000
+    farm_losses = puf.e02100.lt(0) * puf.e02100
+    above_line_losses = capital_losses + other_losses + business_losses \
+        + rent_losses + farm_losses
+
+    # add back any untaxed income that was excluded in calculating
+    # above the line income and that is not considered "exempt"
+    # It is clear that IRS includes some Social Security in some
+    # circumstances, but for now I treat it as wholly exempt
+
+    # here is the full portion of untaxed Social Security. I think this
+    # is OVERSTATED - I think IRS has a limit on amount that can be added
+    # back but am not sure how to calculate it
+    # socsec_untaxed = puf.e02400 - puf.c02500  # always ge zero, I checked
+    socsec_untaxed = 0
+    above_line_untaxed = socsec_untaxed
+
+    # gross_income -- is anything left out?
+    gross_income = above_line_income - above_line_losses + above_line_untaxed
 
     # to be on the safe side, don't let gross_income be negative
     gross_income = gross_income * gross_income.ge(0)
 
-    # define filer masks
-    # households that are required to file based on marital status,
-    # age, and gross income
+    # define filer masks; the approach is to define two groups of households:
+    #   (1) households that are required to file based on marital status,
+    #       age, and gross income
+    #   (2) households that are likely to file whether they are required to or
+    #       not, because they are likely to need a refund (e.g., people with)
+    #       wage income, or are seeking a credit, or have a complex return
+    #       (they have negative AGI)
 
     # single
     m_single_lt65 = puf.MARS.eq(1) \

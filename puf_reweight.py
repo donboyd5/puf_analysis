@@ -17,6 +17,7 @@ https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-
 @author: donbo
 """
 
+
 # %% imports
 import sys
 import taxcalc as tc
@@ -37,17 +38,18 @@ sys.path.append('c:/programs_python/weighting/')  # needed
 import src.microweight as mw
 
 
+# %% ONETIME create file of national weights
+# puf.columns
+# vars = ['pid', 's006_taxcalc', 's006_rwt', 's006_rwt_geo']
+# national_weights = puf.loc[:, vars]
+# national_weights.to_csv(PUFDIR + 'national_weights.csv', index=False)
+# national_weights.isnull().sum()
+
+
 # %% program functions
 
-def wsum(grp, sumvars, wtvar):
-    """ Returns data frame row with weighted sums of selected variables.
-
-        grp: a dataframe (typically a dataframe group)
-        sumvars: the variables for which we want weighted sums
-        wtvar:  the weighting variable
-    """
-    return grp[sumvars].multiply(grp[wtvar], axis=0).sum()
-
+def dfvars(df):
+    return df.columns.sort_values().tolist()
 
 def constraints(x, wh, xmat):
     return np.dot(x * wh, xmat)
@@ -60,6 +62,7 @@ PUFDIR = IGNOREDIR + 'puf_versions/'
 
 PUF_DEFAULT = PUFDIR + 'puf2017_default.parquet'
 PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
+PUF_REGROWN_RW_GW = PUFDIR + 'puf2017_regrown_reweighted_geoweighted.parquet'
 
 
 # %% constants
@@ -79,28 +82,13 @@ nnz_vars = target_mappings.pufvar[innz]
 pufvars_to_nnz = nnz_vars.str.rsplit(pat='_', n=1, expand=True)[0].to_list()
 
 
-# %% get advanced regrown puf file
-puf = pd.read_parquet(PUF_REGROWN, engine='pyarrow')
-puf.info()
-puf.tail()
-
-puf = pu.prep_puf(puf, pufvars_to_nnz)
-
-# prepare puf subset
-idvars = ['pid', 'filer', 'common_stub', 's006']
-keep_vars = idvars + target_vars
-pufsub = puf.loc[puf['filer'], keep_vars]
-pufsub.columns.to_list()
-
-# pufvars = puf.columns.sort_values().tolist()  # show all column names
-
 # %% wide targets?
 targets_possible.info()
 possible_wide = targets_possible.loc[:, ['common_stub', 'pufvar', 'irs']] \
     .pivot(index='common_stub', columns='pufvar', values='irs') \
         .reset_index()
+# possible_wide.to_csv('c:/temp/wide.csv')
 
-possible_wide.to_csv('c:/temp/wide.csv')
 
 # %% define targets to use
 target_vars
@@ -119,8 +107,125 @@ targets_use.remove('e02400_nnz')
 targets_use
 
 
-# %% run the stub
-stub = 2
+# %% get desired puf and weights
+# PUF_REGROWN  PUF_REGROWN_RW_GW
+# puf = pd.read_parquet(PUF_REGROWN_RW_GW, engine='pyarrow')
+
+puf = pd.read_parquet(PUF_REGROWN, engine='pyarrow')
+wts = pd.read_csv(PUFDIR + 'national_weights.csv')
+
+dfvars(puf)  # has s006
+# wts['weight'] = np.where(wts.s006_rwt_geo.isnan(),
+#                          wts.s006_taxcalc,
+#                          wts.s006_rwt_geo)
+
+wts['weight'] = wts.s006_rwt_geo
+wts['weight'].fillna(wts['s006_taxcalc'], inplace=True)
+
+# put the desired weight on puf
+puf = pd.merge(puf, wts[['pid', 'weight']], how='left')
+puf.describe()  # make sure we have no missing weights
+
+
+puf.info()
+puf.tail()
+
+puf = pu.prep_puf(puf, pufvars_to_nnz)
+
+# prepare puf subset
+idvars = ['pid', 'filer', 'common_stub', 'weight']
+keep_vars = idvars + target_vars
+pufsub = puf.loc[puf['filer'], keep_vars]
+pufsub.columns.to_list()
+
+# pufvars = puf.columns.sort_values().tolist()  # show all column names
+
+
+# %% prep all for loop
+
+
+
+# %% function to do a single stub
+def stub_opt(df, method):
+    print(df.name)
+    stub = df.name
+
+    targets_use = target_vars.copy()
+    if stub in range(1, 5):
+        # medical capped
+        targets_use.remove('c17000')
+        targets_use.remove('c17000_nnz')
+        # contributions
+        targets_use.remove('c19700')
+        targets_use.remove('c19700_nnz')
+
+    pufrw = df.query('common_stub== @stub')[['pid', 'weight'] + targets_use]
+    targvals = possible_wide.loc[[stub], targets_use]
+
+    xmat = np.asarray(pufrw[targets_use], dtype=float)
+    wh = np.asarray(df.weight)
+    targets_stub = np.asarray(targvals, dtype=float).flatten()
+
+    prob = mw.Microweight(wh=wh, xmat=xmat, targets=targets_stub)
+
+    if method == 'lsq':
+        opts = {'xlb': 0.1, 'xub': 100, 'tol': 1e-7, 'method': 'bvls',
+                'max_iter': 50}
+    elif method == 'ipopt':
+        # opts = {'crange': 0.001, 'quiet': False}
+        opts = {'crange': 0.001, 'xlb': 0.1, 'xub': 100, 'quiet': False}
+
+    rw = prob.reweight(method=method, options=opts)
+
+    df['x'] = rw.g
+    return df
+
+
+# %% loop through puf
+# target_vars
+# # * is the unpacking operator
+# iuse = [*range(0, 8), *range(9, 27)]
+# iuse
+# targets_use = [target_vars[i] for i in iuse]
+# targest_use = target_vars
+# targets_use
+# tmp = possible_wide.loc[[18], targets_use]
+
+grouped = pufsub.groupby('common_stub')
+
+a = timer()
+puf_rwtd = grouped.apply(stub_opt, method='lsq')  # method lsq or ipopt
+b = timer()
+b - a
+
+puf_rwtd
+puf_rwtd.x.size
+np.quantile(puf_rwtd.x, qtiles)
+
+puf_rwtd.x.head(15)
+
+# CAUTION: make sure to get the right weight to be multiplied by x
+weights = puf_rwtd.loc[:, ['pid', 'weight', 'x']]
+weights['weight_new'] = weights.weight * weights.x
+
+
+
+# %% update and save our file of national weights
+national_weights = pd.read_csv(PUFDIR + 'national_weights.csv')
+weights = weights[['pid', 'weight_new']].rename(columns={'weight_new': 's006_rwt_geo_rwt'})
+national_weights = pd.merge(national_weights.drop(columns='s006_rwt_geo_rwt'), weights, on='pid', how='left')
+national_weights.describe()
+national_weights.isna().sum()
+national_weights.isnull().sum()
+# DO NOT SAVE UNTIL CERTAIN THAT THE FILE IS GOOD
+national_weights.to_csv(PUFDIR + 'national_weights.csv', index=False)
+
+
+# %% SCRATCH area below here
+
+
+# %% run a stub
+stub = 1
 
 targets_use = target_vars.copy()
 if stub in range(1, 5):
@@ -155,6 +260,12 @@ opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
 probrw = prob.reweight(method='lsq', options=opts)
 probrw.pdiff
 
+opts = {'crange': 0.001, 'quiet': False}
+# opts = {'crange': 0.001, 'xlb':0, 'xub':100, 'quiet': False}
+rw1 = prob.reweight(method='ipopt', options=opts)
+rw1.g.shape
+
+
 # %% examine results
 probrw.sspd
 probrw.pdiff
@@ -169,71 +280,13 @@ t1 = constraints(x, wh, xmat)
 pdiff1 = t1 / targets_stub * 100 - 100
 pdiff1
 
+stub = 1
+df = pufsub.query('common_stub == @stub')
 
 
-# %% function to do a single stub
-
-def stub_opt(df):
-    print(df.name)
-    stub = df.name
-
-    targets_use = target_vars.copy()
-    if stub in range(1, 5):
-        # medical capped
-        targets_use.remove('c17000')
-        targets_use.remove('c17000_nnz')
-        # contributions
-        targets_use.remove('c19700')
-        targets_use.remove('c19700_nnz')
-
-    pufrw = df.query('common_stub== @stub')[['pid', 's006'] + targets_use]
-    targvals = possible_wide.loc[[stub], targets_use]
-
-    xmat = np.asarray(pufrw[targets_use], dtype=float)
-    wh = np.asarray(df.s006)
-    targets_stub = np.asarray(targvals, dtype=float).flatten()
-
-    x0 = np.ones(wh.size)
-
-    prob = mw.Microweight(wh=wh, xmat=xmat, targets=targets_stub)
-
-    opts = {'xlb': 0, 'xub': 50, 'tol': 1e-7, 'method': 'bvls', 'max_iter': 50}
-    probrw = prob.reweight(method='lsq', options=opts)
-
-    df['x'] = probrw.g
-    return df
 
 
-# %% loop through puf
-# target_vars
-# # * is the unpacking operator
-# iuse = [*range(0, 8), *range(9, 27)]
-# iuse
-# targets_use = [target_vars[i] for i in iuse]
-# targest_use = target_vars
-# targets_use
-# tmp = possible_wide.loc[[18], targets_use]
-
-grouped = pufsub.groupby('common_stub')
-
-a = timer()
-puf_rwtd = grouped.apply(stub_opt)
-b = timer()
-b - a
-
-puf_rwtd
-np.quantile(puf_rwtd.x, qtiles)
-
-puf_rwtd['s006_rwt'] = puf_rwtd.s006 * puf_rwtd.x
-puf_rwtd.info()
-
-weights = puf_rwtd[['pid', 's006_rwt']]
-weights.s006_rwt.sum()
-
-pufsub.s006.sum()
-
-
-# %% merge new weights back with original weights
+# %% OLD merge new weights back with original weights
 puf_regrown_reweighted = puf.copy()
 puf_regrown_reweighted['s006_taxcalc'] = puf_regrown_reweighted.s006
 puf_regrown_reweighted = pd.merge(puf_regrown_reweighted, weights,
@@ -253,64 +306,4 @@ puf_regrown_reweighted.s006_taxcalc.sum()
 puf_regrown_reweighted.s006_rwt.sum()
 
 puf_regrown_reweighted.to_parquet(PUFDIR + 'puf2017_regrown_reweighted.parquet', engine='pyarrow')
-
-
-# %% evaluate
-
-
-qtiles = (0, .01, .1, .25, .5, .75, .9, .99, 1)
-check = pd.read_parquet(PUFDIR + 'puf2017_regrown_reweighted.parquet', engine='pyarrow')
-check2 = check[check['filer']]
-
-x = check2.s006_rwt / check2.s006_taxcalc
-np.quantile(x, qtiles)
-qtiles
-
-
-# %% Peter's  crosswalks
-# Peter's mappings of puf to historical table 2
-# "n1": "N1",  # Total population
-# "mars1_n": "MARS1",  # Single returns number
-# "mars2_n": "MARS2",  # Joint returns number
-# "c00100": "A00100",  # AGI amount
-# "e00200": "A00200",  # Salary and wage amount
-# "e00200_n": "N00200",  # Salary and wage number
-# "c01000": "A01000",  # Capital gains amount
-# "c01000_n": "N01000",  # Capital gains number
-# "c04470": "A04470",  # Itemized deduction amount (0 if standard deduction)
-# "c04470_n": "N04470",  # Itemized deduction number (0 if standard deduction)
-# "c17000": "A17000",  # Medical expenses deducted amount
-# "c17000_n": "N17000",  # Medical expenses deducted number
-# "c04800": "A04800",  # Taxable income amount
-# "c04800_n": "N04800",  # Taxable income number
-# "c05800": "A05800",  # Regular tax before credits amount
-# "c05800_n": "N05800",  # Regular tax before credits amount
-# "c09600": "A09600",  # AMT amount
-# "c09600_n": "N09600",  # AMT number
-# "e00700": "A00700",  # SALT amount
-# "e00700_n": "N00700",  # SALT number
-
-    # Maps PUF variable names to HT2 variable names
-VAR_CROSSWALK = {
-    "n1": "N1",  # Total population
-    "mars1_n": "MARS1",  # Single returns number
-    "mars2_n": "MARS2",  # Joint returns number
-    "c00100": "A00100",  # AGI amount
-    "e00200": "A00200",  # Salary and wage amount
-    "e00200_n": "N00200",  # Salary and wage number
-    "c01000": "A01000",  # Capital gains amount
-    "c01000_n": "N01000",  # Capital gains number
-    "c04470": "A04470",  # Itemized deduction amount (0 if standard deduction)
-    "c04470_n": "N04470",  # Itemized deduction number (0 if standard deduction)
-    "c17000": "A17000",  # Medical expenses deducted amount
-    "c17000_n": "N17000",  # Medical expenses deducted number
-    "c04800": "A04800",  # Taxable income amount
-    "c04800_n": "N04800",  # Taxable income number
-    "c05800": "A05800",  # Regular tax before credits amount
-    "c05800_n": "N05800",  # Regular tax before credits amount
-    "c09600": "A09600",  # AMT amount
-    "c09600_n": "N09600",  # AMT number
-    "e00700": "A00700",  # SALT amount
-    "e00700_n": "N00700",  # SALT number
-}
 

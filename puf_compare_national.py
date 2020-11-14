@@ -138,9 +138,32 @@ targets_possible = pd.read_csv(DATADIR + 'targets2017_possible.csv')
 # %% get puf file(s)
 puf_default = pd.read_parquet(PUF_DEFAULT, engine='pyarrow')
 puf_regrown = pd.read_parquet(PUF_REGROWN, engine='pyarrow')
-puf_regrown_reweighted = pd.read_parquet(PUF_REGROWN_REWEIGHTED, engine='pyarrow')
-puf_regrown_reweighted_geo = pd.read_parquet(PUFDIR + 'puf2017_regrown_reweighted_geoweighted.parquet', engine='pyarrow')
+# puf_regrown_reweighted = pd.read_parquet(PUF_REGROWN_REWEIGHTED, engine='pyarrow')
+# puf_regrown_reweighted_geo = pd.read_parquet(PUFDIR + 'puf2017_regrown_reweighted_geoweighted.parquet', engine='pyarrow')
 # puf_default.columns.sort_values().to_list()
+
+
+# %% get and apply national weights - make sure the weight is named s006
+comp_weight = 's006_rwt_geo_rwt'
+
+wts = pd.read_csv(PUFDIR + 'national_weights.csv')
+wts['s006'] = wts[comp_weight]  # this is crucial -- choose the right weight
+wts.s006.fillna(wts['s006_taxcalc'], inplace=True)
+
+puf_comp = pd.merge(puf_regrown.drop(columns=['s006']), wts, on='pid', how='left')
+
+
+# %% generic comparison (replace the others below with this)
+comp, target_mappings = prepall(puf_comp, targets_possible)
+
+fname = RESULTDIR + 'irs_pufregrown_rwt_georwt_rwt.txt'
+title = 'REPORT: puf.csv, regrown, to 2017 w/ tc weights no stage3, reweighted, then TPC geoweights and reweighting'
+
+comp_report(comp,
+            outfile=fname,
+            title=title,
+            target_mappings=target_mappings)
+
 
 
 # %% compare and write results for default puf
