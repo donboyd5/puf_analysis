@@ -7,6 +7,7 @@ Created on Thu Oct 15 04:29:41 2020
 
 # %% imports
 import pandas as pd
+import json
 
 
 # %% filenames and urls
@@ -16,6 +17,7 @@ HT2_2017 = "17in55cmagi.csv"
 HT2_2018 = "18in55cmagi.csv"
 
 DATADIR = r'C:\programs_python\puf_analysis\data/'
+TARGET_MAP = DATADIR + 'target_mappings.csv'
 
 
 # %% agi stubs
@@ -65,6 +67,13 @@ ht2common_stubs = pd.DataFrame([
 # itemized deduction IRS stubs
 # irsstubs = pd.read_csv(DATADIR + 'irsstub_labels.csv')
 irsstubs = pd.read_csv(DATADIR + 'irsstub_common_labels.csv')
+
+irspuf_target_map = pd.read_csv(TARGET_MAP)
+
+# get previously determined national-puf mapping
+# json.dump(pufirs_fullmap, open(DATADIR + 'pufirs_fullmap.json', 'w'))
+# this dict defines the order in which we want tables sorted, so get it
+pufirs_fullmap = json.load(open(DATADIR + 'pufirs_fullmap.json'))
 
 
 # %% target varnames (puf names and HT2 names and my names)
