@@ -36,6 +36,42 @@ def get_possible_targets(targets_fname):
     possible_wide.columns.name = None
     return possible_wide
 
+def get_wtdsums(pufsub, sumvars, weightdf):
+    weightdf.columns = ['pid', 'weight']  # force this df to have proper names
+
+    df = pufsub.copy().drop(columns='weight', errors='ignore')
+    varnames = df.columns.tolist()
+    varnames.remove('common_stub')
+    varnames.remove('pid')
+
+    df = pd.merge(df, weightdf, how='left', on='pid')
+
+    df.update(df.loc[:, sumvars].multiply(df.weight, axis=0))
+    dfsums = df.groupby('common_stub')[sumvars].sum().reset_index()
+    dfsums = dfsums.append(dfsums[sumvars].sum(), ignore_index=True)
+    dfsums['common_stub'] = dfsums['common_stub'].fillna(0)
+    dfsums.sort_values(by='common_stub', axis=0, inplace=True)
+    dfsums = dfsums.set_index('common_stub', drop=False)
+    return dfsums
+
+
+def get_pctdiffs(pufsub, weightdf, targets):
+    weightdf.columns = ['pid', 'weight']  # force this df to have proper names
+
+    target_names = targets.columns.tolist()
+    target_names.remove('common_stub')
+    keepvars = ['common_stub', 'pid'] + target_names
+
+    dfsums = get_wtdsums(pufsub.loc[:, keepvars], target_names, weightdf)
+    sumslong = pd.melt(dfsums, id_vars='common_stub', var_name='pufvar', value_name='puf')
+    targetslong = pd.melt(targets, id_vars='common_stub', var_name='pufvar', value_name='target')
+    dfmerge = pd.merge(sumslong, targetslong, on=['common_stub', 'pufvar'])
+    dfmerge['diff'] = dfmerge.puf - dfmerge.target
+    dfmerge['pdiff'] = dfmerge['diff'] / dfmerge.target * 100
+    dfmerge['abspdiff'] = np.abs(dfmerge.pdiff)
+    dfmerge = dfmerge.sort_values(by='abspdiff', ascending=False)
+    return dfmerge
+
 
 def merge_weights(weight_list, dir):
     wtpaths = [dir + s + '.csv' for s in weight_list]
@@ -101,9 +137,12 @@ def prep_puf(puf, targets):
     return puf.loc[puf['filer'], keep_vars]
 
 
-def puf_reweight(pufsub, targets, method='lsq'):
+def puf_reweight(pufsub, init_weights, targets, method='lsq', drops=None):
+    # init_weights MUST have columns pid, weight
+    pufsub = pufsub.copy()
+    pufsub = pd.merge(pufsub.drop(columns='weight', errors='ignore'), init_weights, on='pid', how='left')
     grouped = pufsub.groupby('common_stub')
-    new_weights = grouped.apply(stub_opt, targets, method=method)  # method lsq or ipopt
+    new_weights = grouped.apply(stub_opt, targets, method=method, drops=drops)  # method lsq or ipopt
     return new_weights
 
 
@@ -116,7 +155,7 @@ def puf_reweight(pufsub, targets, method='lsq'):
 # rw.pdiff
 
 
-def stub_opt(df, targets, method):
+def stub_opt(df, targets, method, drops=None):
     # function to reweight a single stub of the puf
     print(df.name)
     stub = df.name
@@ -124,44 +163,21 @@ def stub_opt(df, targets, method):
     target_names = targets.columns.tolist()
     target_names.remove('common_stub')
 
-    # check initial percentage differences before removing any targets
-    wh = np.asarray(df.weight)
-    xmat = np.asarray(df[target_names], dtype=float)
-    targvals = targets.loc[[stub], target_names]
-    targets_stub = np.asarray(targvals, dtype=float).flatten()
-    targets_calc = np.dot(xmat.T, wh)
-    init_pdiff = targets_calc / targets_stub * 100 - 100
-    idx_bad_pdiff = np.argwhere(np.abs(init_pdiff) > 150)
+    drop_vars = []
+    if drops is not None:
+        drop_vars = drops[drops.common_stub==stub].pufvar.tolist()
 
-    # create a list of target names to use
-    # first, remove the bad percentage differences
-    target_names_array = np.array(target_names)
-    targets_use = list(np.delete(target_names_array, idx_bad_pdiff))
-
-    # always remove social security total
-    badvars = ['e02400', 'e02400_nnz']
-    targets_use = [pufvar for pufvar in targets_use if pufvar not in badvars]
-
-    # more bad vars
-    # badvars = ['e26270pos', 'e26270pos_nnz', 'e26270neg', 'e26270neg_nnz', 'c01000neg', 'c01000neg_nnz']
-    # good badvars = ['e26270pos', 'e26270pos_nnz', 'e26270neg', 'e26270neg_nnz', 'c01000neg', 'c01000neg_nnz']
-    badvars = ['e26270pos', 'e26270pos_nnz', 'e26270neg', 'e26270neg_nnz']
-    targets_use = [pufvar for pufvar in targets_use if pufvar not in badvars]
-
-    # now remove any stub-specific anticipated bad variables
-    if stub in range(1, 5):
-        # medical capped, and contributions
-        badvars = ['c17000', 'c17000_nnz', 'c19700', 'c19700_nnz']
-        targets_use = [pufvar for pufvar in targets_use if pufvar not in badvars]
-
-    # len(targets_use)
+    targets_use = [pufvar for pufvar in target_names if pufvar not in drop_vars]
+    # print(targets_use)
 
     # targets_use = target_names[0:24]
     # targets_use = targets_use[0:27]
     # targets_use[23]
-    df2 = df[['pid', 'weight'] + targets_use].copy()
+
+    df = df[['pid', 'weight'] + targets_use]
+    wh = np.asarray(df.weight)
     targvals = targets.loc[[stub], targets_use]
-    xmat = np.asarray(df2[targets_use], dtype=float)
+    xmat = np.asarray(df[targets_use], dtype=float)
     targets_stub = np.asarray(targvals, dtype=float).flatten()
 
     prob = mw.Microweight(wh=wh, xmat=xmat, targets=targets_stub)
@@ -169,7 +185,7 @@ def stub_opt(df, targets, method):
 
     if method == 'lsq':
         opts = {'xlb': 0.1, 'xub': 100, 'tol': 1e-7, 'method': 'bvls',
-                'scaling': True,
+                'scaling': False,
                 'max_iter': 50}  # bvls or trf
         # opts = {'xlb': 0.001, 'xub': 1000, 'tol': 1e-7, 'method': 'trf', 'max_iter': 500}
     elif method == 'ipopt':
@@ -180,8 +196,8 @@ def stub_opt(df, targets, method):
     # np.quantile(rw.g, qtiles)
     # rw.pdiff
 
-    df2['reweight'] = df2.weight * rw.g
-    return df2[['pid', 'weight', 'reweight']]
+    df['reweight'] = df.weight * rw.g
+    return df[['pid', 'weight', 'reweight']]
 
 
 # prepare comp file and target_mappings
@@ -200,31 +216,29 @@ def pufsums(pufcomp):
 
 
 # comparison report
-def comp_report(pufsub, weights, weights_init, targets, outfile, title):
-    pufcomp = pufsub.copy().drop(columns='weight')
-    pufcomp = pd.merge(pufcomp, weights[['pid', 'weight']], how='inner', on='pid')
-    pufcomp = pd.merge(pufcomp,
-                       weights_init[['pid', 'weight']].rename(columns={'weight': 'weight_init'}),
-                       how='inner', on='pid')
+def comp_report(pufsub, weights_rwt, weights_init, targets, outfile, title):
+    weights_rwt.columns = ['pid', 'weight']  # force this df to have proper names
+    weights_init.columns = ['pid', 'weight']  # force this df to have proper names
 
-    print(f'Summarizing the puf...')
-    psums = pufsums(pufcomp)
+    target_names = targets.columns.tolist()
+    target_names.remove('common_stub')
 
-    print(f'Preparing the comparison file...')
-    targets_long = pd.melt(targets, id_vars='common_stub', var_name='pufvar', value_name='irs')
-    comp = pd.merge(targets_long, psums, how='inner', on=['common_stub', 'pufvar'])
+    print(f'Getting percent differences with initial weights...')
+    keep = ['common_stub', 'pufvar', 'pdiff']
+    ipdiffs = get_pctdiffs(pufsub, weights_init, targets).loc[:, keep].rename(columns={'pdiff': 'ipdiff'})
 
-    comp['diff'] = comp['puf'] - comp['irs']
-    comp['pdiff'] = comp['diff'] / comp['irs'] * 100
-    comp['ipdiff'] = comp['init'] / comp['irs'] * 100 - 100
+    print(f'Getting percent differences with new weights...')
+    # rwtsums = get_wtdsums(pufsub, target_names, weights_rwt)
+    pdiffs = get_pctdiffs(pufsub, weights_rwt, targets)
 
+    print(f'Preparing report...')
+    comp = pd.merge(pdiffs, ipdiffs, on=['common_stub', 'pufvar'])
     comp = pd.merge(comp, pc.irspuf_target_map, how='inner', on='pufvar')
     comp = pd.merge(comp, pc.irsstubs, how='inner', on='common_stub')
 
-    # slim the file down
-    ordered_vars = ['common_stub', 'incrange', 'pufvar', 'irsvar',
-                    'irs', 'puf', 'diff', 'pdiff', 'ipdiff', 'column_description']
+    ordered_vars = ['common_stub', 'pufvar', 'target', 'puf', 'diff', 'pdiff', 'ipdiff', 'column_description']  # drop abspdiff
     comp = comp[ordered_vars]
+
     # sort by pufvar dictionary order (pd.Categorical)
     comp['pufvar'] = pd.Categorical(comp.pufvar,
                                     categories=pc.pufirs_fullmap.keys(),
@@ -235,13 +249,10 @@ def comp_report(pufsub, weights, weights_init, targets, outfile, title):
 
     print(f'Writing report...')
     s = comp.copy()
-    # define custom sort order
-    # s['pufvar'] = pd.Categorical(s['pufvar'], categories=pufirs_fullmap.keys(), ordered=True)
-    # s = s.sort_values(by=['pufvar', 'common_stub'])
 
     s['pdiff'] = s['pdiff'] / 100.0
     s['ipdiff'] = s['ipdiff'] / 100.0
-    format_mapping = {'irs': '{:,.0f}',
+    format_mapping = {'target': '{:,.0f}',
                       'puf': '{:,.0f}',
                       'diff': '{:,.0f}',
                       'pdiff': '{:.1%}',
@@ -261,6 +272,7 @@ def comp_report(pufsub, weights, weights_init, targets, outfile, title):
     tfile.write('\n1. Summary report for all variables, summarized over all filers:\n\n')
     s2 = s[s.common_stub==0]
     tfile.write(s2.to_string())
+
     # now write details for each variable
     tfile.write('\n\n2. Detailed report by AGI range for each variable:')
     for var in target_vars:
@@ -268,10 +280,10 @@ def comp_report(pufsub, weights, weights_init, targets, outfile, title):
         s2 = s[s.pufvar==var]
         tfile.write(s2.to_string())
 
+    # finally, write the mapping
     tfile.write('\n\n\n3. Detailed report on variable mappings\n\n')
     tfile.write(pc.irspuf_target_map.to_string())
     tfile.close()
 
-    return
-
+    return #  comp return nothing or return comp?
 

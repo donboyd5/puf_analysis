@@ -38,7 +38,6 @@ WEIGHTS_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'puf_weights.csv'
 POSSIBLE_TARGETS = DATADIR + 'targets2017_possible.csv'
 
 
-
 # %% names of files to create
 PUF_DEFAULT = PUFDIR + 'puf2017_default.parquet'
 PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
@@ -70,12 +69,12 @@ pufrg_weights = pd.read_parquet(PUF_REGROWN, engine='pyarrow')[['pid', 's006']].
 pufrg_weights.to_csv(PUFDIR + 'weights_regrown.csv', index=None)
 
 
-# %% define targets
+# %% define possible targets
 ptargets = rwp.get_possible_targets(POSSIBLE_TARGETS)
-ptargets.columns
 ptargets
-
-# winnow down the targets list if desired
+ptarget_names = ptargets.columns.tolist()
+ptarget_names.remove('common_stub')
+ptarget_names
 
 
 # %% prepare a version of the puf for reweighting
@@ -91,49 +90,69 @@ pufsub = rwp.prep_puf(pufrg, ptargets)
 pufsub.columns
 
 
-# %% add initial weight to the file
-weights = pd.read_csv(PUFDIR + 'weights_regrown.csv').rename(columns={'s006_regrown': 'weight'})
-init_weights = weights.copy()
-pufsub = pd.merge(pufsub.drop(columns='weight', errors='ignore'), weights, on='pid', how='left')
-pufsub.shape
-pufsub.columns
+# %% get initial weights
+init_weights = pd.read_csv(PUFDIR + 'weights_regrown.csv').rename(columns={'s006_regrown': 'weight'})
+init_weights  # MUST have columns pid, weight -- no other columns or names
+
+
+# %% get % differences from targets at initial weights
+pdiff_init = rwp.get_pctdiffs(pufsub, init_weights, ptargets)
+pdiff_init.shape
+np.nanquantile(pdiff_init.abspdiff, qtiles)
+np.nanquantile(pdiff_init.pdiff, qtiles)
+pdiff_init.head(15)
+pdiff_init.query('abspdiff > 10')
+
+
+# %% define any variable-stub combinations to drop via a drops dataframe
+badvars = ['c02400', 'c02400_nnz']
+stub1_4_vars = ['c17000', 'c17000_nnz', 'c19700', 'c19700_nnz']
+qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
+qx1 = "(pufvar in @badvars)"
+qx2 = "(common_stub in [1, 2, 3, 4] and pufvar in @stub1_4_vars)"
+qx = qxnan + " or " + qx1 + " or " + qx2
+qx
+drops = pdiff_init.query(qx).copy()
+drops.sort_values(by=['common_stub', 'pufvar'], inplace=True)
+drops
 
 
 # %% reweight the puf file
+method = 'ipopt'  # ipopt or lsq
 a = timer()
-new_weights = rwp.puf_reweight(pufsub, ptargets, method='ipopt')
+new_weights = rwp.puf_reweight(pufsub, init_weights, ptargets, method=method, drops=drops)
 b = timer()
 b - a
 
-# use one or the other of the following
-# new_weights[['pid', 'reweight']].rename(columns={'reweight': 'rwt1_lsq'}).to_csv(PUFDIR + 'weights_reweight1_lsq.csv', index=None)
-new_weights[['pid', 'reweight']].rename(columns={'reweight': 'rwt1_ipopt'}).to_csv(PUFDIR + 'weights_reweight1_ipopt.csv', index=None)
+wtname = 'rwt1_' +  method
+wfname = PUFDIR + 'weights_rwt1_' + method + '.csv'
+new_weights[['pid', 'reweight']].rename(columns={'reweight': wtname}).to_csv(wfname, index=None)
+
+
+# %% check pdiffs
+pdiff_rwt = rwp.get_pctdiffs(pufsub, new_weights[['pid', 'reweight']], ptargets)
+pdiff_rwt.shape
+pdiff_rwt.head(20)
+pdiff_rwt.query('abspdiff > 10')
 
 
 # %% create report on results from the reweighting
+# CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
+# pid, the second will be the weight of interst
+
+# method = 'ipopt'  # ipopt or lsq
 date_id = date.today().strftime("%Y-%m-%d")
 
-# comp_weights must have pid and weight
-# comp_weights = pd.read_csv(PUFDIR + 'weights_reweight1_lsq.csv').rename(columns={'rwt1_lsq': 'weight'})
-# fname = RESULTDIR + 'compare_irs_pufregrown_reweighted_lsq_' + date_id + '.txt'
-# rtitle = 'Regrown reweighted puf, lsq method, compared to IRS values, run on ' + date_id
-# rwp.comp_report(pufsub=pufsub, weights=comp_weights, weights_init=init_weights, targets=ptargets, outfile=fname, title=rtitle)
+# get weights for the comparison report
+wfname = PUFDIR + 'weights_reweight1_' + method + '.csv'
+comp_weights = pd.read_csv(wfname)
 
-comp_weights = pd.read_csv(PUFDIR + 'weights_reweight1_ipopt.csv').rename(columns={'rwt1_ipopt': 'weight'})
-fname = RESULTDIR + 'compare_irs_pufregrown_reweighted_ipopt_' + date_id + '.txt'
-rtitle = 'Regrown reweighted puf, ipopt method, compared to IRS values, run on ' + date_id
-rwp.comp_report(pufsub=pufsub, weights=comp_weights, weights_init=init_weights, targets=ptargets, outfile=fname, title=rtitle)
-
-
-
-# %% create file with multiple national weights
-# basenames of weight csv files
-weight_list = ['weights_default', 'weights_regrown', 'weights_reweight1_lsq', 'weights_reweight1_ipopt']
-weight_df = rwp.merge_weights(weight_list, PUFDIR)  # they all must be in the same directory
-
-weight_df.to_csv(PUFDIR + 'all_weights.csv', index=None)
-weight_df.sum()
-
+rfname = RESULTDIR + 'compare_irs_pufregrown_reweighted_' + method + '_' + date_id + '.txt'
+rtitle = 'Regrown reweighted puf, ' + method + ' method, compared to IRS values, run on ' + date_id
+rwp.comp_report(pufsub,
+                 weights_rwt=comp_weights,  # new_weights[['pid', 'reweight']],
+                 weights_init=init_weights,
+                 targets=ptargets, outfile=rfname, title=rtitle)
 
 
 # %% get revised national weights based on independent construction of state weights
@@ -151,8 +170,17 @@ weight_df.sum()
 # %% construct final state weights
 
 
-
 # %% create report on results with the state weights
+
+
+
+# %% create file with multiple national weights
+# basenames of weight csv files
+weight_list = ['weights_default', 'weights_regrown', 'weights_reweight1_lsq', 'weights_reweight1_ipopt']
+weight_df = rwp.merge_weights(weight_list, PUFDIR)  # they all must be in the same directory
+
+weight_df.to_csv(PUFDIR + 'all_weights.csv', index=None)
+weight_df.sum()
 
 
 
