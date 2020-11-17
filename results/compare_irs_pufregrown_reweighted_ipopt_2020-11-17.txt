@@ -1,5 +1,5 @@
 
-Regrown reweighted puf, ipopt method, compared to IRS values, run on 2020-11-16
+Regrown reweighted puf, ipopt method, compared to IRS values, run on 2020-11-17
 
 Data are for filers only, using IRS filing requirements plus estimates of likely filing.
 

@@ -140,6 +140,9 @@ def prep_puf(puf, targets):
 
 def puf_reweight(pufsub, init_weights, targets, method='lsq', drops=None):
     # init_weights MUST have columns pid, weight
+    init_weights = init_weights.copy()
+    init_weights.columns = ['pid', 'weight']
+
     pufsub = pufsub.copy()
     pufsub = pd.merge(pufsub.drop(columns='weight', errors='ignore'), init_weights, on='pid', how='left')
     grouped = pufsub.groupby('common_stub')
@@ -158,7 +161,7 @@ def puf_reweight(pufsub, init_weights, targets, method='lsq', drops=None):
 
 def stub_opt(df, targets, method, drops=None):
     # function to reweight a single stub of the puf
-    print(df.name)
+    print(f'\nIncome stub {df.name:3d}')
     stub = df.name
 
     target_names = targets.columns.tolist()
