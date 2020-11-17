@@ -11,13 +11,7 @@ import puf_utilities as pu
 sys.path.append('c:/programs_python/weighting/')  # needed
 import src.microweight as mw
 
-def ulist(thelist):
-    # return unique list with out changing order of original list
-    ulist = []
-    for x in thelist:
-        if x not in ulist:
-            ulist.append(x)
-    return ulist
+
 
 def get_possible_targets(targets_fname):
     targets_possible = pd.read_csv(targets_fname)
@@ -36,22 +30,25 @@ def get_possible_targets(targets_fname):
     possible_wide.columns.name = None
     return possible_wide
 
-def get_wtdsums(pufsub, sumvars, weightdf):
+
+def get_wtdsums(pufsub, sumvars, weightdf, stubvar='common_stub'):
     weightdf.columns = ['pid', 'weight']  # force this df to have proper names
 
     df = pufsub.copy().drop(columns='weight', errors='ignore')
     varnames = df.columns.tolist()
-    varnames.remove('common_stub')
+    varnames.remove(stubvar)
     varnames.remove('pid')
 
     df = pd.merge(df, weightdf, how='left', on='pid')
 
     df.update(df.loc[:, sumvars].multiply(df.weight, axis=0))
-    dfsums = df.groupby('common_stub')[sumvars].sum().reset_index()
-    dfsums = dfsums.append(dfsums[sumvars].sum(), ignore_index=True)
-    dfsums['common_stub'] = dfsums['common_stub'].fillna(0)
-    dfsums.sort_values(by='common_stub', axis=0, inplace=True)
-    dfsums = dfsums.set_index('common_stub', drop=False)
+    dfsums = df.groupby(stubvar)[sumvars].sum().reset_index()
+    grand_sums = dfsums[sumvars].sum().to_frame().transpose()
+    grand_sums[stubvar] = 0
+    dfsums = dfsums.append(grand_sums, ignore_index=True)
+    dfsums[stubvar] = dfsums[stubvar].fillna(0)
+    dfsums.sort_values(by=stubvar, axis=0, inplace=True)
+    dfsums = dfsums.set_index(stubvar, drop=False)
     return dfsums
 
 
@@ -101,12 +98,16 @@ def prep_puf(puf, targets):
         pc.COMMON_STUBS,
         labels=range(1, 19),
         right=False)
+    # avoid categorical variable, it causes problems!
+    puf['common_stub'] = puf.common_stub.astype('int64')
 
     puf['ht2_stub'] = pd.cut(
         puf['c00100'],
         pc.HT2_AGI_STUBS,
         labels=range(1, 11),
         right=False)
+    # avoid categorical variable, it causes problems!
+    puf['ht2_stub'] = puf.ht2_stub.astype('int64')
 
     puf['filer'] = pu.filers(puf)
 
@@ -129,7 +130,7 @@ def prep_puf(puf, targets):
         puf[var + '_nnz'] = puf[var].ne(0) * 1
 
     # safely drop columns we don't want to keep
-    idvars = ['pid', 'filer', 'common_stub']
+    idvars = ['pid', 'filer', 'common_stub', 'ht2_stub']
     numvars = ['nret_all', 'mars1', 'mars2', 'mars3', 'mars4']
     keep_vars = idvars + numvars + target_names
     keep_vars = ulist(keep_vars)  # keeps unique names in case there is overlap with idvars
@@ -192,6 +193,7 @@ def stub_opt(df, targets, method, drops=None):
         # opts = {'crange': 0.001, 'quiet': False}
         opts = {'crange': 0.001, 'xlb': 0.1, 'xub': 100, 'quiet': False}
 
+    # print(opts)
     rw = prob.reweight(method=method, options=opts)
     # np.quantile(rw.g, qtiles)
     # rw.pdiff
@@ -236,7 +238,7 @@ def comp_report(pufsub, weights_rwt, weights_init, targets, outfile, title):
     comp = pd.merge(comp, pc.irspuf_target_map, how='inner', on='pufvar')
     comp = pd.merge(comp, pc.irsstubs, how='inner', on='common_stub')
 
-    ordered_vars = ['common_stub', 'pufvar', 'target', 'puf', 'diff', 'pdiff', 'ipdiff', 'column_description']  # drop abspdiff
+    ordered_vars = ['common_stub', 'incrange', 'pufvar', 'target', 'puf', 'diff', 'pdiff', 'ipdiff', 'column_description']  # drop abspdiff
     comp = comp[ordered_vars]
 
     # sort by pufvar dictionary order (pd.Categorical)
@@ -245,6 +247,7 @@ def comp_report(pufsub, weights_rwt, weights_init, targets, outfile, title):
                                     ordered=True)
 
     comp.sort_values(by=['pufvar', 'common_stub'], axis=0, inplace=True)
+
     target_vars = comp.pufvar.unique()
 
     print(f'Writing report...')
@@ -286,4 +289,13 @@ def comp_report(pufsub, weights_rwt, weights_init, targets, outfile, title):
     tfile.close()
 
     return #  comp return nothing or return comp?
+
+
+def ulist(thelist):
+    # return unique list with out changing order of original list
+    ulist = []
+    for x in thelist:
+        if x not in ulist:
+            ulist.append(x)
+    return ulist
 

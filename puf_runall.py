@@ -8,7 +8,10 @@ from datetime import date
 
 import functions_advance_puf as adv
 import functions_reweight_puf as rwp
+import functions_geoweight_puf as gwp
+
 import puf_constants as pc
+import puf_utilities as pu
 
 # microweight - apparently we have to tell python where to find this
 sys.path.append('c:/programs_python/weighting/')  # needed
@@ -37,6 +40,8 @@ WEIGHTS_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'puf_weights.csv'
 
 POSSIBLE_TARGETS = DATADIR + 'targets2017_possible.csv'
 
+HT2_SHARES = DATADIR + 'ht2_shares.csv'
+
 
 # %% names of files to create
 PUF_DEFAULT = PUFDIR + 'puf2017_default.parquet'
@@ -47,11 +52,9 @@ PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
 qtiles = (0, .01, .1, .25, .5, .75, .9, .99, 1)
 
 
-# %% get puf.csv
+# %% ONETIME: create and save default and regrown 2017 pufs
 puf = pd.read_csv(LATEST_OFFICIAL_PUF)
 
-
-# %% ONETIME: create and save default and regrown 2017 pufs
 adv.advance_puf(puf, 2017, PUF_DEFAULT)
 
 adv.advance_puf_custom(puf, 2017,
@@ -87,6 +90,7 @@ ptarget_names
 
 pufrg = pd.read_parquet(PUF_REGROWN, engine='pyarrow')
 pufsub = rwp.prep_puf(pufrg, ptargets)
+pufsub.info()
 pufsub.columns
 
 
@@ -104,7 +108,7 @@ pdiff_init.head(15)
 pdiff_init.query('abspdiff > 10')
 
 
-# %% define any variable-stub combinations to drop via a drops dataframe
+# %% ipopt: define any variable-stub combinations to drop via a drops dataframe
 badvars = ['c02400', 'c02400_nnz']
 stub1_4_vars = ['c17000', 'c17000_nnz', 'c19700', 'c19700_nnz']
 qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
@@ -112,13 +116,38 @@ qx1 = "(pufvar in @badvars)"
 qx2 = "(common_stub in [1, 2, 3, 4] and pufvar in @stub1_4_vars)"
 qx = qxnan + " or " + qx1 + " or " + qx2
 qx
-drops = pdiff_init.query(qx).copy()
-drops.sort_values(by=['common_stub', 'pufvar'], inplace=True)
-drops
+drops_ipopt = pdiff_init.query(qx).copy()
+drops_ipopt.sort_values(by=['common_stub', 'pufvar'], inplace=True)
+drops_ipopt
+
+
+# %% lsq: define any variable-stub combinations to drop via a drops dataframe
+
+goodvars = ['nret_all', 'mars1', 'mars2', 'mars4',
+            'c00100',
+            'e00200', 'e00200_nnz',
+            'e00300', 'e00300_nnz',
+            'e00600', 'e00600_nnz',
+            'c01000pos', 'c01000pos_nnz',
+            'c01000neg', 'c01000neg_nnz',
+            'e01500', 'e01500_nnz',
+            'c02500', 'c02500_nnz',
+            'e26270pos', 'e26270pos_nnz',
+            'e26270neg', 'e26270neg_nnz',
+            # 'c17000',
+            'c18300', 'c18300_nnz',
+            'c19200',  # 'c19200_nnz',
+            'c19700'  # , 'c19700_nnz'
+            ]
+qx = '(pufvar not in @goodvars)'
+drops_lsq = pdiff_init.query(qx).copy()
+drops_lsq
 
 
 # %% reweight the puf file
 method = 'ipopt'  # ipopt or lsq
+drops = drops_ipopt  # use ipopt or lsq
+
 a = timer()
 new_weights = rwp.puf_reweight(pufsub, init_weights, ptargets, method=method, drops=drops)
 b = timer()
@@ -128,11 +157,14 @@ wtname = 'rwt1_' +  method
 wfname = PUFDIR + 'weights_rwt1_' + method + '.csv'
 new_weights[['pid', 'reweight']].rename(columns={'reweight': wtname}).to_csv(wfname, index=None)
 
+# new_weights.sum()
+
 
 # %% check pdiffs
+pd.set_option('display.max_columns', 7)
 pdiff_rwt = rwp.get_pctdiffs(pufsub, new_weights[['pid', 'reweight']], ptargets)
 pdiff_rwt.shape
-pdiff_rwt.head(20)
+pdiff_rwt.head(20)[['common_stub', 'pufvar', 'pdiff', 'abspdiff']]
 pdiff_rwt.query('abspdiff > 10')
 
 
@@ -144,7 +176,7 @@ pdiff_rwt.query('abspdiff > 10')
 date_id = date.today().strftime("%Y-%m-%d")
 
 # get weights for the comparison report
-wfname = PUFDIR + 'weights_reweight1_' + method + '.csv'
+wfname = PUFDIR + 'weights_rwt1_' + method + '.csv'
 comp_weights = pd.read_csv(wfname)
 
 rfname = RESULTDIR + 'compare_irs_pufregrown_reweighted_' + method + '_' + date_id + '.txt'
@@ -155,19 +187,139 @@ rwp.comp_report(pufsub,
                  targets=ptargets, outfile=rfname, title=rtitle)
 
 
-# %% get revised national weights based on independent construction of state weights
+# %% geoweight: get revised national weights based on independent state weights
+# get weights to use as starting point for ht2 stubs
+wfname = PUFDIR + 'weights_rwt1_ipopt.csv'
+weights = pd.read_csv(wfname)
+
+# get national pufsums with these weights, for ht2 stubs
+# these are the amounts we will share across states
+pufsums_ht2 = rwp.get_wtdsums(pufsub, ptarget_names, weights, stubvar='ht2_stub')
+pufsums_ht2long = pd.melt(pufsums_ht2, id_vars='ht2_stub', var_name='pufvar', value_name='pufsum')
+
+# collapse ht2 shares to the states we want
+compstates = ('NY', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX', 'VT')
+ht2_collapsed = gwp.collapse_ht2(HT2_SHARES, compstates)
+
+# create targets by state and ht2_stub from pufsums and collapsed shares
+ht2_collapsed
+ht2targets = pd.merge(ht2_collapsed, pufsums_ht2long, on=['pufvar', 'ht2_stub'])
+ht2targets.info()
+ht2targets['target'] = ht2targets.pufsum * ht2targets.share
+ht2targets['diff'] = ht2targets.target - ht2targets.ht2
+ht2targets['pdiff'] = ht2targets['diff'] / ht2targets.ht2 * 100
+ht2targets['abspdiff'] = np.abs(ht2targets['pdiff'])
+
+# explore the result
+check = ht2targets.sort_values(by='abspdiff', axis=0, ascending=False)
+np.nanquantile(check.abspdiff, qtiles)
 
 
-# %% create report on results with the revised national weights
+# create a wide boolean dataframe indicating whether a target will be dropped
+qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
+dropsdf = ht2targets.query(qxnan)[['stgroup', 'ht2_stub', 'pufvar']]
+dropsdf['drop'] = True
+dropsdf_stubs = ht2_collapsed.query('ht2_stub > 0')[['stgroup', 'ht2_stub', 'pufvar']]
+dropsdf_full = pd.merge(dropsdf_stubs, dropsdf, how='left', on=['stgroup', 'ht2_stub', 'pufvar'])
+dropsdf_full.fillna(False, inplace=True)
+dropsdf_wide = dropsdf_full.pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='drop').reset_index()
+
+keepvars = ['stgroup', 'ht2_stub', 'pufvar', 'target']
+ht2wide = ht2targets[keepvars].pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='target').reset_index()
+
+ht2_vars = pu.uvals(ht2_collapsed.pufvar)
+ptarget_names  # possible targets, if in ht2
+ht2_possible = [var for var in ptarget_names if var in ht2_vars]
+
+pufsub.columns
+pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
+
+targvars = ['nret_all', 'mars1', 'mars2', 'c00100', 'e00200', 'e00200_nnz',
+            'e00300', 'e00300_nnz', 'e00600', 'e00600_nnz',
+            # deductions
+            'c17000','c17000_nnz',
+            'c18300', 'c18300_nnz']
+['good' for var in targvars if var in ht2_possible]
 
 
-# %% reweight the revised national weights
+# %% get new national weights by getting weights for each state (for each record) and summing them
+grouped = pufsub.groupby('ht2_stub')
+
+a = timer()
+nat_geo_weights = grouped.apply(gwp.get_georwt, weights, targvars, ht2wide, dropsdf_wide)
+b = timer()
+b - a
+
+# note that the method here is lsq
+wfname = PUFDIR + 'weights_geo_rwt.csv'
+nat_geo_weights[['pid', 'geo_rwt']].to_csv(wfname, index=None)
 
 
-# %% create report on results with the revised national weights
+# %% create report on results with the geo revised national weights
+
+# CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
+# pid, the second will be the weight of interest
+wfname1 = PUFDIR + 'weights_rwt1_ipopt.csv'
+weights1 = pd.read_csv(wfname1)
+
+# method = 'ipopt'  # ipopt or lsq
+date_id = date.today().strftime("%Y-%m-%d")
+
+# get weights for the comparison report
+wfname = PUFDIR + 'weights_geo_rwt.csv'
+comp_weights = pd.read_csv(wfname)
+
+rfname = RESULTDIR + 'compare_irs_pufregrown_geo_reweighted_' + date_id + '.txt'
+rtitle = 'Regrown reweighted puf ipopt method then georeweighted lsq, compared to IRS values, run on ' + date_id
+rwp.comp_report(pufsub,
+                 weights_rwt=comp_weights,  # new_weights[['pid', 'reweight']],
+                 weights_init=weights1,
+                 targets=ptargets, outfile=rfname, title=rtitle)
+
+
+# %% reweight the geo revised national weights
+# in theory, these will be the weights we use to create the national file shared out to
+# states
+
+wfname = PUFDIR + 'weights_geo_rwt.csv'
+geo_weights = pd.read_csv(wfname).rename(columns={'geo_rwt': 'weight'})
+
+method = 'ipopt'  # ipopt or lsq
+drops = drops_ipopt
+
+a = timer()
+new_weights = rwp.puf_reweight(pufsub, geo_weights, ptargets, method=method, drops=drops)
+b = timer()
+b - a
+
+wtname = 'georwt1_' +  method
+wfname = PUFDIR + 'weights_georwt1_' + method + '.csv'
+new_weights[['pid', 'reweight']].rename(columns={'reweight': wtname}).to_csv(wfname, index=None)
+
+
+# %% create report on results with the revised georevised national weights
+# CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
+# pid, the second will be the weight of interest
+wfname1 = PUFDIR + 'weights_geo_rwt.csv'
+weights1 = pd.read_csv(wfname1)
+
+# method = 'ipopt'  # ipopt or lsq
+date_id = date.today().strftime("%Y-%m-%d")
+
+# get weights for the comparison report
+wfname = PUFDIR + 'weights_georwt1_ipopt.csv'
+comp_weights = pd.read_csv(wfname)
+
+rfname = RESULTDIR + 'compare_irs_pufregrown_geo_reweighted_reweighted_' + date_id + '.txt'
+rtitle = 'Regrown reweighted puf ipopt method, georeweighted lsq, reweighted ipopt, compared to IRS values, run on ' + date_id
+rwp.comp_report(pufsub,
+                 weights_rwt=comp_weights,  # new_weights[['pid', 'reweight']],
+                 weights_init=weights1,
+                 targets=ptargets, outfile=rfname, title=rtitle)
 
 
 # %% construct final state weights
+
 
 
 # %% create report on results with the state weights
@@ -176,11 +328,12 @@ rwp.comp_report(pufsub,
 
 # %% create file with multiple national weights
 # basenames of weight csv files
-weight_list = ['weights_default', 'weights_regrown', 'weights_reweight1_lsq', 'weights_reweight1_ipopt']
+weight_list = ['weights_default', 'weights_regrown', 'weights_rwt1_lsq',
+               'weights_rwt1_ipopt', 'weights_geo_rwt',
+               'weights_georwt1_ipopt']
 weight_df = rwp.merge_weights(weight_list, PUFDIR)  # they all must be in the same directory
 
 weight_df.to_csv(PUFDIR + 'all_weights.csv', index=None)
 weight_df.sum()
-
 
 

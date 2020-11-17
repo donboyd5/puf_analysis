@@ -56,6 +56,7 @@ import puf_constants as pc
 #     return xsort[xsort.columns[0]][xsort['index']==i]
 
 
+
 def wp(data, wt, percentiles):
     """Compute weighted percentiles.
     If the weights are equal, this is the same as normal percentiles.
@@ -326,6 +327,12 @@ def getmem(objects=dir()):
     mem = pd.Series(mem) / mb
     mem = mem.sort_values(ascending=False)
     return mem
+
+def uvals(series):
+    return sorted(series.unique())
+
+def flat(alist):
+    return ", ".join(alist)
 
 
 def xlrange(io, sheet_name=0,
