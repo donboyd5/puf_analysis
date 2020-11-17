@@ -75,6 +75,7 @@ pufrg_weights.to_csv(PUFDIR + 'weights_regrown.csv', index=None)
 # %% define possible targets
 ptargets = rwp.get_possible_targets(POSSIBLE_TARGETS)
 ptargets
+ptargets.info()
 ptarget_names = ptargets.columns.tolist()
 ptarget_names.remove('common_stub')
 ptarget_names
@@ -154,11 +155,11 @@ drops_lsq
 
 
 # %% reweight the puf file
-# method = 'ipopt'  # ipopt or lsq
-# drops = drops_ipopt  # use ipopt or lsq
+method = 'ipopt'  # ipopt or lsq
+drops = drops_ipopt  # use ipopt or lsq
 
-method = 'lsq'  # ipopt or lsq
-drops = drops_lsq  # use ipopt or lsq
+# method = 'lsq'  # ipopt or lsq
+# drops = drops_lsq  # use ipopt or lsq
 
 a = timer()
 new_weights = rwp.puf_reweight(pufsub, init_weights, ptargets, method=method, drops=drops)
@@ -184,8 +185,8 @@ pdiff_rwt.query('abspdiff > 10')
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
 # pid, the second will be the weight of interst
 
-# method = 'ipopt'  # ipopt or lsq
-method = 'lsq'
+method = 'ipopt'  # ipopt or lsq
+# method = 'lsq'
 date_id = date.today().strftime("%Y-%m-%d")
 
 # get weights for the comparison report
@@ -298,6 +299,8 @@ b - a
 wfname = PUFDIR + 'weights_geo_rwt.csv'
 nat_geo_weights[['pid', 'geoweight_sum']].to_csv(wfname, index=None)
 
+nat_geo_weights.sum()
+
 
 # %% create report on results with the geo revised national weights
 
@@ -360,7 +363,6 @@ rwp.comp_report(pufsub,
                  weights_rwt=comp_weights,  # new_weights[['pid', 'reweight']],
                  weights_init=weights1,
                  targets=ptargets, outfile=rfname, title=rtitle)
-
 
 
 # %% construct new targets geoweight: get revised national weights based on independent state weights
