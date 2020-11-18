@@ -25,61 +25,76 @@ def collapse_ht2(ht2_path, compstates):
     ht2_collapsed = ht2_shares.groupby(aggvars).agg({'share': 'sum', 'ht2': 'sum'}).reset_index()
     return ht2_collapsed
 
-# stub = 1
-# df =  pufsub.query('(ht2_stub == @stub)').copy()
-# weightdf = weights.copy()
 
-def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide, independent=False):
-    # print(df.name)
+def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide,
+                    independent,
+                    geomethod,
+                    options):
+
     print(f'\nIncome stub {df.name:3d}')
     stub = df.name
+    qx = '(ht2_stub == @stub)'
 
     weightdf.columns = ['pid', 'weight']  # force this df to have proper names
 
-    df = df.copy().drop(columns='weight', errors='ignore')
+    # df = df.copy().drop(columns='weight', errors='ignore')
+    df['ht2_stub'] = df.name
+    df = df.drop(columns='weight', errors='ignore')
     df = pd.merge(df, weightdf, how='left', on='pid')
 
-    # pufstub = df.loc[:, ['pid', 'weight'] + targvars]
-    pufstub =df[['pid', 'ht2_stub', 'weight'] + targvars]
+    pufstub = df[['pid', 'ht2_stub', 'weight'] + targvars]
 
     wh = pufstub.weight.to_numpy()
     xmat = np.asarray(pufstub[targvars], dtype=float)
 
     # set up targets - keep a dataframe and a matrix even though dataframe
     # is not absolutely necessary
-    qx = '(ht2_stub == @stub)'
     targetsdf = ht2wide.query(qx)[['stgroup'] + targvars]
     sts = targetsdf.stgroup.tolist()
     targets = targetsdf[targvars].to_numpy()
 
     dropsdf_stub = dropsdf_wide.query(qx)[['stgroup'] + targvars]
     drops = np.asarray(dropsdf_stub[targvars], dtype=bool)  # True means we drop
-    # print(targets.size)
-    # print(drops.sum())
-
-    # create initial Q, is n x m (# of households) x (# of areas)
-    init_shares = (targetsdf.nret_all / targetsdf.nret_all.sum()).to_numpy()
-    Q_init = np.tile(init_shares, (wh.size, 1))
 
     stub_prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targets)
 
     # call the solver
-    uo = {'Q': Q_init, 'drops': drops, 'independent': independent, 'qmax_iter': 10}
-    so = {'xlb': 0, 'xub': 50,
-          'tol': 1e-7, 'method': 'bvls',
-          'max_iter': 50, 'verbose': 0}
-    # print(so); return
-    gw = stub_prob.geoweight(method='qmatrix-lsq', user_options=uo, solver_options=so)
-    gw = stub_prob.geoweight(method='qmatrix-ipopt', user_options=uo)
-    # gw = stub_prob.geoweight(method='qmatrix', user_options=uo)
-    # gw = stub_prob.geoweight(method='qmatrix', user_options=uo)
-    # gw = stub_prob.geoweight(method='qmatrix-ec', user_options=uo)
+    options_defaults = {'drops': drops, 'independent': independent, 'qmax_iter': 20}
+    options_all = options_defaults.copy()
+    options_all.update(options)
+
+    # create Q_init matrix
+    # if 'Q' in options_all and options_all['Q'] is not None:
+    #     # create matrix from passed-in dataframe
+    #     qshares = options_all['Q']
+    #     qshares = qshares.query(qx).drop(columns=['pid', 'ht2_stub'])
+    #     Q_init = qshares.to_numpy()
+    # elif 'Q' not in options_all:
+    #     # create initial Q, is n x m (# of households) x (# of areas)
+    #     init_shares = (targetsdf.nret_all / targetsdf.nret_all.sum()).to_numpy()
+    #     Q_init = np.tile(init_shares, (wh.size, 1))
+
+    if 'qshares' in options_all and options_all['qshares'] is not None:
+        print('qshares found and is not None')
+        # create matrix from passed-in dataframe
+        qshares = options_all['qshares']
+        qshares = qshares.query(qx).drop(columns=['pid', 'ht2_stub'])
+        Q_init = qshares.to_numpy()
+    else:
+        print('qshares not found or is found but None')
+        # create initial Q, is n x m (# of households) x (# of areas)
+        init_shares = (targetsdf.nret_all / targetsdf.nret_all.sum()).to_numpy()
+        Q_init = np.tile(init_shares, (wh.size, 1))
+
+    # print(Q_init.shape)
+    options_all['Q'] = Q_init
+
+    gw = stub_prob.geoweight(method=geomethod, options=options_all)
     # gw = stub_prob.geoweight(method='poisson', user_options=uo)
     whsdf = pd.DataFrame(gw.whs_opt, columns=sts)
     whsdf['geoweight_sum'] = whsdf.sum(axis=1)
-    # df1 = pufstub.loc[:, ['pid', 'weight']]
-    # df1 = pufstub[['pid', 'weight']]
-    df2 = pd.concat([pufstub[['pid', 'weight']],
+    whsdf = whsdf[['geoweight_sum'] + sts]
+    df2 = pd.concat([pufstub[['pid', 'ht2_stub', 'weight']],
                       whsdf],
                     axis=1)
     return df2
