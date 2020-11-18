@@ -145,7 +145,7 @@ qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
 qx1 = '(pufvar not in @goodvars)'
 
 bad_stub1_4_vars = ['c17000', 'c17000_nnz', 'c19700', 'c19700_nnz']
-qx2 = "(common_stub in [1, 2, 3, 4] and pufvar in @stub1_4_vars)"
+qx2 = "(common_stub in [1, 2, 3, 4] and pufvar in @bad_stub1_4_vars)"
 
 qx = qxnan + " or " + qx1 + " or " + qx2
 qx
@@ -295,9 +295,14 @@ nat_geo_weights = grouped.apply(gwp.get_geo_weights, weights, targvars, ht2wide,
 b = timer()
 b - a
 
-# note that the method here is lsq
+# note that the method here depends on coding within the function
 wfname = PUFDIR + 'weights_geo_rwt.csv'
 nat_geo_weights[['pid', 'geoweight_sum']].to_csv(wfname, index=None)
+
+nat_geo_weights.to_csv(PUFDIR + 'weights_geo_independent.csv', index=None)
+
+g = nat_geo_weights.geoweight_sum / nat_geo_weights.weight
+np.quantile(g, qtiles)
 
 nat_geo_weights.sum()
 
@@ -423,8 +428,8 @@ targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
 
 
 # %% run the final loop
-wfname1 = PUFDIR + 'weights_rwt1_ipopt.csv'
-weights1 = pd.read_csv(wfname1)
+# wfname1 = PUFDIR + 'weights_rwt1_ipopt.csv'
+# weights1 = pd.read_csv(wfname1)
 
 wfname = PUFDIR + 'weights_georwt1_ipopt.csv'
 final_national_weights = pd.read_csv(wfname)
@@ -432,7 +437,7 @@ final_national_weights = pd.read_csv(wfname)
 grouped = pufsub.groupby('ht2_stub')
 
 a = timer()
-geo_weights = grouped.apply(gwp.get_geo_weights, weights, targvars, ht2wide, dropsdf_wide, independent=False)
+geo_weights = grouped.apply(gwp.get_geo_weights, final_national_weights, targvars, ht2wide, dropsdf_wide, independent=False)
 b = timer()
 b - a
 

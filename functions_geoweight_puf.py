@@ -64,12 +64,13 @@ def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide, independent=F
     stub_prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targets)
 
     # call the solver
-    uo = {'Q': Q_init, 'drops': drops, 'independent': independent, 'max_iter': 10}
+    uo = {'Q': Q_init, 'drops': drops, 'independent': independent, 'qmax_iter': 10}
     so = {'xlb': 0, 'xub': 50,
           'tol': 1e-7, 'method': 'bvls',
           'max_iter': 50, 'verbose': 0}
     # print(so); return
     gw = stub_prob.geoweight(method='qmatrix-lsq', user_options=uo, solver_options=so)
+    gw = stub_prob.geoweight(method='qmatrix-ipopt', user_options=uo)
     # gw = stub_prob.geoweight(method='qmatrix', user_options=uo)
     # gw = stub_prob.geoweight(method='qmatrix', user_options=uo)
     # gw = stub_prob.geoweight(method='qmatrix-ec', user_options=uo)
