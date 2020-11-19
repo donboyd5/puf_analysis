@@ -59,66 +59,66 @@ src,irsstub,incrange,variable,value,excel_column,table_description,column_descri
 17in11si.xls,17,"$2,000,000 under $5,000,000",nret_txbl,129741,G,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Number of taxable returns with taxable income
 17in11si.xls,18,"$5,000,000 under $10,000,000",nret_txbl,31602,G,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Number of taxable returns with taxable income
 17in11si.xls,19,"$10,000,000 or more",nret_txbl,20209,G,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Number of taxable returns with taxable income
-17in11si.xls,0,All returns,ti,7857396108,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,1,No adjusted gross income,ti,0,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,2,"$1 under $5,000",ti,271522,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,3,"$5,000 under $10,000",ti,3573583,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,4,"$10,000 under $15,000",ti,14937150,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,5,"$15,000 under $20,000",ti,36578638,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,6,"$20,000 under $25,000",ti,59374079,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,7,"$25,000 under $30,000",ti,80410993,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,8,"$30,000 under $40,000",ti,227618768,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,9,"$40,000 under $50,000",ti,285750881,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,10,"$50,000 under $75,000",ti,811534087,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,11,"$75,000 under $100,000",ti,812103261,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,12,"$100,000 under $200,000",ti,2032168271,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,13,"$200,000 under $500,000",ti,1449911100,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,14,"$500,000 under $1,000,000",ti,595494762,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,15,"$1,000,000 under $1,500,000",ti,236891551,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,16,"$1,500,000 under $2,000,000",ti,137549143,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,17,"$2,000,000 under $5,000,000",ti,340679096,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,18,"$5,000,000 under $10,000,000",ti,190638120,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,19,"$10,000,000 or more",ti,541911101,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Taxable income
-17in11si.xls,0,All returns,taxac,1581514014,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,1,No adjusted gross income,taxac,198231,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,2,"$1 under $5,000",taxac,31956,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,3,"$5,000 under $10,000",taxac,368064,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,4,"$10,000 under $15,000",taxac,1391657,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,5,"$15,000 under $20,000",taxac,3505521,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,6,"$20,000 under $25,000",taxac,6314256,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,7,"$25,000 under $30,000",taxac,9105303,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,8,"$30,000 under $40,000",taxac,26166552,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,9,"$40,000 under $50,000",taxac,33590286,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,10,"$50,000 under $75,000",taxac,105654965,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,11,"$75,000 under $100,000",taxac,112966329,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,12,"$100,000 under $200,000",taxac,340958752,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,13,"$200,000 under $500,000",taxac,336733818,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,14,"$500,000 under $1,000,000",taxac,169190566,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,15,"$1,000,000 under $1,500,000",taxac,72348263,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,16,"$1,500,000 under $2,000,000",taxac,42912660,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,17,"$2,000,000 under $5,000,000",taxac,107262711,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,18,"$5,000,000 under $10,000,000",taxac,59176668,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,19,"$10,000,000 or more",taxac,153637455,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Income tax after credits
-17in11si.xls,0,All returns,taxtot,1605281768,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,1,No adjusted gross income,taxtot,198770,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,2,"$1 under $5,000",taxtot,31956,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,3,"$5,000 under $10,000",taxtot,368064,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,4,"$10,000 under $15,000",taxtot,1391657,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,5,"$15,000 under $20,000",taxtot,3505521,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,6,"$20,000 under $25,000",taxtot,6314256,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,7,"$25,000 under $30,000",taxtot,9105303,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,8,"$30,000 under $40,000",taxtot,26166606,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,9,"$40,000 under $50,000",taxtot,33590399,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,10,"$50,000 under $75,000",taxtot,105652826,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,11,"$75,000 under $100,000",taxtot,112966409,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,12,"$100,000 under $200,000",taxtot,340992723,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,13,"$200,000 under $500,000",taxtot,339962887,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,14,"$500,000 under $1,000,000",taxtot,172977458,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,15,"$1,000,000 under $1,500,000",taxtot,74270402,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,16,"$1,500,000 under $2,000,000",taxtot,44168337,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,17,"$2,000,000 under $5,000,000",taxtot,110730178,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,18,"$5,000,000 under $10,000,000",taxtot,61274648,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
-17in11si.xls,19,"$10,000,000 or more",taxtot,161613368,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",Total income tax
+17in11si.xls,0,All returns,L,7857396108,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,1,No adjusted gross income,L,0,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,2,"$1 under $5,000",L,271522,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,3,"$5,000 under $10,000",L,3573583,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,4,"$10,000 under $15,000",L,14937150,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,5,"$15,000 under $20,000",L,36578638,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,6,"$20,000 under $25,000",L,59374079,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,7,"$25,000 under $30,000",L,80410993,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,8,"$30,000 under $40,000",L,227618768,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,9,"$40,000 under $50,000",L,285750881,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,10,"$50,000 under $75,000",L,811534087,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,11,"$75,000 under $100,000",L,812103261,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,12,"$100,000 under $200,000",L,2032168271,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,13,"$200,000 under $500,000",L,1449911100,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,14,"$500,000 under $1,000,000",L,595494762,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,15,"$1,000,000 under $1,500,000",L,236891551,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,16,"$1,500,000 under $2,000,000",L,137549143,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,17,"$2,000,000 under $5,000,000",L,340679096,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,18,"$5,000,000 under $10,000,000",L,190638120,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,19,"$10,000,000 or more",L,541911101,L,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,0,All returns,O,1581514014,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,1,No adjusted gross income,O,198231,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,2,"$1 under $5,000",O,31956,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,3,"$5,000 under $10,000",O,368064,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,4,"$10,000 under $15,000",O,1391657,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,5,"$15,000 under $20,000",O,3505521,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,6,"$20,000 under $25,000",O,6314256,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,7,"$25,000 under $30,000",O,9105303,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,8,"$30,000 under $40,000",O,26166552,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,9,"$40,000 under $50,000",O,33590286,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,10,"$50,000 under $75,000",O,105654965,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,11,"$75,000 under $100,000",O,112966329,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,12,"$100,000 under $200,000",O,340958752,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,13,"$200,000 under $500,000",O,336733818,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,14,"$500,000 under $1,000,000",O,169190566,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,15,"$1,000,000 under $1,500,000",O,72348263,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,16,"$1,500,000 under $2,000,000",O,42912660,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,17,"$2,000,000 under $5,000,000",O,107262711,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,18,"$5,000,000 under $10,000,000",O,59176668,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,19,"$10,000,000 or more",O,153637455,O,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,0,All returns,Q,1605281768,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,1,No adjusted gross income,Q,198770,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,2,"$1 under $5,000",Q,31956,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,3,"$5,000 under $10,000",Q,368064,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,4,"$10,000 under $15,000",Q,1391657,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,5,"$15,000 under $20,000",Q,3505521,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,6,"$20,000 under $25,000",Q,6314256,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,7,"$25,000 under $30,000",Q,9105303,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,8,"$30,000 under $40,000",Q,26166606,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,9,"$40,000 under $50,000",Q,33590399,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,10,"$50,000 under $75,000",Q,105652826,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,11,"$75,000 under $100,000",Q,112966409,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,12,"$100,000 under $200,000",Q,340992723,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,13,"$200,000 under $500,000",Q,339962887,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,14,"$500,000 under $1,000,000",Q,172977458,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,15,"$1,000,000 under $1,500,000",Q,74270402,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,16,"$1,500,000 under $2,000,000",Q,44168337,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,17,"$2,000,000 under $5,000,000",Q,110730178,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,18,"$5,000,000 under $10,000,000",Q,61274648,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
+17in11si.xls,19,"$10,000,000 or more",Q,161613368,Q,"Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income",
 17in12ms.xls,0,"All returns, total",nret_all,152903231,B,"Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status",Number of returns
 17in12ms.xls,1,No adjusted gross income (includes deficits),nret_all,2030316,B,"Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status",Number of returns
 17in12ms.xls,2,"$1 under $5,000",nret_all,9752106,B,"Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status",Number of returns

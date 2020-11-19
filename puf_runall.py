@@ -1,3 +1,7 @@
+# https://stackoverflow.com/questions/21868369/pycharm-hanging-for-a-long-time-in-ipython-console-with-big-data
+# to (maybe) fix pycharm hanging:
+# Files -> Settings -> Build, Execution, Deployment -> Python Debugger
+# switch on the "Gevent Compatible" flag
 
 # %% imports
 import sys
@@ -52,7 +56,7 @@ PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
 qtiles = (0, .01, .1, .25, .5, .75, .9, .99, 1)
 
 
-# %% ONETIME: create and save default and regrown 2017 pufs
+# %% ONETIME: create and save default and regrown 2017 pufs, and add filer indicator
 puf = pd.read_csv(LATEST_OFFICIAL_PUF)
 
 adv.advance_puf(puf, 2017, PUF_DEFAULT)
@@ -72,8 +76,8 @@ pufrg_weights = pd.read_parquet(PUF_REGROWN, engine='pyarrow')[['pid', 's006']].
 pufrg_weights.to_csv(PUFDIR + 'weights_regrown.csv', index=None)
 
 
-# %% define possible targets
-ptargets = rwp.get_possible_targets(POSSIBLE_TARGETS)
+# %% define possible targets - we may not use all of them
+ptargets = rwp.get_possible_targets(targets_fname=POSSIBLE_TARGETS)
 ptargets
 ptargets.info()
 ptarget_names = ptargets.columns.tolist()
@@ -83,13 +87,16 @@ ptarget_names
 
 # %% prepare a version of the puf for reweighting
 # do the following:
-#   add filer and stub variables
+#   add stub variables
 #   create mars1, mars2, ... marital status indicators
 #   create any positive or negative variables needed
 #   create any needed nnz indicators
 #   keep only the needed variables pid, common_stub,
 
 pufrg = pd.read_parquet(PUF_REGROWN, engine='pyarrow')
+pufrg.info()
+pufrg.filer.sum()
+
 pufsub = rwp.prep_puf(pufrg, ptargets)
 pufsub.info()
 pufsub.columns
@@ -110,12 +117,15 @@ pdiff_init.query('abspdiff > 10')
 
 
 # %% ipopt: define any variable-stub combinations to drop via a drops dataframe
-badvars = ['c02400', 'c02400_nnz']
+# we simply don't want to target taxable income or tax after credits
+untargeted = ['c04800', 'c04800_nnz', 'c09200', 'c09200_nnz']
+badvars = ['c02400', 'c02400_nnz']  # would like to target but values are bad
 bad_stub1_4_vars = ['c17000', 'c17000_nnz', 'c19700', 'c19700_nnz']
 qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
+qx0 = "(pufvar in @untargeted)"
 qx1 = "(pufvar in @badvars)"
 qx2 = "(common_stub in [1, 2, 3, 4] and pufvar in @bad_stub1_4_vars)"
-qx = qxnan + " or " + qx1 + " or " + qx2
+qx = qxnan + " or " + qx0 + " or " + qx1 + " or " + qx2
 qx
 drops_ipopt = pdiff_init.query(qx).copy()
 drops_ipopt.sort_values(by=['common_stub', 'pufvar'], inplace=True)

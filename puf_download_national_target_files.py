@@ -12,9 +12,8 @@ from io import StringIO
 
 # %% constants
 WEBDIR = 'https://www.irs.gov/pub/irs-soi/'  # static files
-DOWNDIR = 'C:/programs_python/puf_analysis/downloads/'
+DOWNDIR = 'C:/programs_python/puf_analysis/ignore/downloads/'
 DATADIR = 'C:/programs_python/puf_analysis/data/'
-# PUFDIR = 'C:/programs_python/weighting/puf/'
 
 
 # %% functions
@@ -336,8 +335,10 @@ targets_remap.value.max()
 
 # drop targets for which I haven't yet set column descriptions as we won't
 # use them
-mask = targets_remap.variable.str.len() <= 2  # Excel column names will have length 2
-targets_remap = targets_remap[~mask]
+# Excel column names will have length <= 2 and do not have a different variable name
+drops = (targets_remap.variable.str.len() <= 2) & (targets_remap.variable == targets_remap.excel_column)
+drops.sum()
+targets_remap = targets_remap[~drops]
 targets_remap = targets_remap.dropna(axis=0, subset=['column_description'])
 targets_remap
 targets_remap.columns

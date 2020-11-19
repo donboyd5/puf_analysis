@@ -80,6 +80,7 @@ import json
 
 import puf_utilities as pu
 
+
 # %% locations and file names
 DATADIR = r'C:\programs_python\puf_analysis\data/'
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
@@ -128,7 +129,14 @@ pufirs_map = {
     'c17000': 'id_medical_capped',
     'c18300': 'id_taxpaid',
     'c19200': 'id_intpaid',
-    'c19700': 'id_contributions'
+    'c19700': 'id_contributions',
+
+    # taxable income concepts
+    'c04800': 'ti',  # Taxable income, regular
+
+    # tax concepts
+    'c09200': 'taxac',  # Income tax after credits
+    # other tax variables do not map directly and would have to be constructed
     }
 # CAUTION: reverse xwalk relies on having only one keyword per value
 irspuf_map = {val: kw for kw, val in pufirs_map.items()}

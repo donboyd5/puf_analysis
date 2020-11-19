@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import taxcalc as tc
 import puf_extrapolate_custom as xc
+import puf_utilities as pu
+
 
 def advance_puf(puf, year, savepath):
     print('creating records object...')
@@ -15,6 +17,7 @@ def advance_puf(puf, year, savepath):
     calc.calc_all()
     pufdf = calc.dataframe(variable_list=[], all_vars=True)
     pufdf['pid'] = np.arange(len(pufdf))
+    pufdf['filer'] = pu.filers(pufdf)
 
     print('saving the advanced puf...')
     pufdf.to_parquet(savepath, engine='pyarrow')
@@ -45,6 +48,7 @@ def advance_puf_custom(puf, year, gfcustom, gfones, weights, savepath):
     calc_extrap.calc_all()
     pufdf_custom = calc_extrap.dataframe(variable_list=[], all_vars=True)
     pufdf_custom['pid'] = np.arange(len(pufdf_custom))
+    pufdf_custom['filer'] = pu.filers(pufdf_custom)
     print(f'saving the custom-grown puf to {savepath}')
     pufdf_custom.to_parquet(savepath, engine='pyarrow')
     return None

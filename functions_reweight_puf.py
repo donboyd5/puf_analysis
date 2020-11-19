@@ -109,8 +109,6 @@ def prep_puf(puf, targets):
     # avoid categorical variable, it causes problems!
     puf['ht2_stub'] = puf.ht2_stub.astype('int64')
 
-    puf['filer'] = pu.filers(puf)
-
     puf['nret_all'] = 1
 
     # marital status indicators
@@ -238,8 +236,8 @@ def comp_report(pufsub, weights_rwt, weights_init, targets, outfile, title):
 
     print(f'Preparing report...')
     comp = pd.merge(pdiffs, ipdiffs, on=['common_stub', 'pufvar'])
-    comp = pd.merge(comp, pc.irspuf_target_map, how='inner', on='pufvar')
-    comp = pd.merge(comp, pc.irsstubs, how='inner', on='common_stub')
+    comp = pd.merge(comp, pc.irspuf_target_map, how='left', on='pufvar')
+    comp = pd.merge(comp, pc.irsstubs, how='left', on='common_stub')
 
     ordered_vars = ['common_stub', 'incrange', 'pufvar', 'target', 'puf', 'diff', 'pdiff', 'ipdiff', 'column_description']  # drop abspdiff
     comp = comp[ordered_vars]
