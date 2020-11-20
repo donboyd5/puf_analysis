@@ -102,13 +102,13 @@ pufsub.info()
 pufsub.columns
 
 
-# %% get initial weights
-init_weights = pd.read_csv(PUFDIR + 'weights_regrown.csv').rename(columns={'s006_regrown': 'weight'})
-init_weights  # MUST have columns pid, weight -- no other columns or names
+# %% get weights for regrown file
+regrown_weights = pd.read_csv(PUFDIR + 'weights_regrown.csv').rename(columns={'s006_regrown': 'weight'})
+regrown_weights  # MUST have columns pid, weight -- no other columns or names
 
 
 # %% get % differences from targets at initial weights
-pdiff_init = rwp.get_pctdiffs(pufsub, init_weights, ptargets)
+pdiff_init = rwp.get_pctdiffs(pufsub, regrown_weights, ptargets)
 pdiff_init.shape
 np.nanquantile(pdiff_init.abspdiff, qtiles)
 np.nanquantile(pdiff_init.pdiff, qtiles)
@@ -171,8 +171,10 @@ drops = drops_ipopt  # use ipopt or lsq
 # method = 'lsq'  # ipopt or lsq
 # drops = drops_lsq  # use ipopt or lsq
 
+# temp = pufsub.query('common_stub==2')  # this stub is the hardest for both solvers
+
 a = timer()
-new_weights = rwp.puf_reweight(pufsub, init_weights, ptargets, method=method, drops=drops)
+new_weights = rwp.puf_reweight(pufsub, regrown_weights, ptargets, method=method, drops=drops)
 b = timer()
 b - a
 
@@ -207,7 +209,7 @@ rfname = RESULTDIR + 'compare_irs_pufregrown_reweighted_' + method + '_' + date_
 rtitle = 'Regrown reweighted puf, ' + method + ' method, compared to IRS values, run on ' + date_id
 rwp.comp_report(pufsub,
                  weights_rwt=comp_weights,  # new_weights[['pid', 'reweight']],
-                 weights_init=init_weights,
+                 weights_init=regrown_weights,
                  targets=ptargets, outfile=rfname, title=rtitle)
 
 
