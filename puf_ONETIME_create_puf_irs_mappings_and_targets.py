@@ -117,6 +117,7 @@ pufirs_map = {
     'e00200': 'wages',
     'e00300': 'taxint',
     'e00600': 'orddiv',
+    'c01000': 'cgnet',  # we must create IRS variable cgnet from cggross and cgloss
     'c01000pos': 'cggross',
     'c01000neg': 'cgloss',
     'e01500': 'pensions',
@@ -135,7 +136,10 @@ pufirs_map = {
     'c04800': 'ti',  # Taxable income, regular
 
     # tax concepts
-    'c09200': 'taxac',  # Income tax after credits
+    'c05800': 'taxbc',  # Income tax before credits (IRS definition, not PUF definition)
+    # Income tax after credits, max(0, c09200 - niit - refund) for now
+    # after tax-calculator is patched, we'll use max(0, c09200 - refund)
+    'taxac_irs': 'taxac',
     # other tax variables do not map directly and would have to be constructed
     }
 # CAUTION: reverse xwalk relies on having only one keyword per value
@@ -284,6 +288,7 @@ intsums = pufint[['intgroup', 'data_source', 'e00300']].groupby(['intgroup', 'da
 intsums.pivot(index='intgroup', columns=['data_source'], values='e00300')
 
 capgains.loc[:, keepvars].pivot(index=idvars, columns=['variable'], values='value')
+
 
 # %% scratch dividends
 # irs ordinary dividends line 9a form 1040 same as e00600 this is the larger one so target this

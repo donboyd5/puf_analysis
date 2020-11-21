@@ -75,6 +75,7 @@ irspuf_target_map = pd.read_csv(TARGET_MAP)
 # this dict defines the order in which we want tables sorted, so get it
 pufirs_fullmap = json.load(open(DATADIR + 'pufirs_fullmap.json'))
 
+ht2puf_fullmap = json.load(open(DATADIR + 'ht2puf_fullmap.json'))
 
 # %% target varnames (puf names and HT2 names and my names)
 targvars_all = ['nret_all', 'nret_mars1', 'nret_mars2', 'c00100', 'e00300', 'e00600']

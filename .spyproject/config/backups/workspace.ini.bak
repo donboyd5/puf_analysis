@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['puf_runall.py', 'functions_reweight_puf.py', 'functions_geoweight_puf.py', '..\\weighting\\src\\microweight.py', '..\\weighting\\src\\geoweight_qmatrix.py', 'puf_download_national_target_files.py', 'puf_constants.py', 'puf_ONETIME_create_puf_irs_mappings_and_targets.py']
+recent_files = ['puf_runall.py', 'functions_reweight_puf.py', 'functions_geoweight_puf.py', 'puf_constants.py', 'puf_utilities.py', 'temp.py', 'puf_ht2_shares.py', 'puf_download_state_HT2target_files.py']
 

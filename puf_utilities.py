@@ -328,6 +328,11 @@ def getmem(objects=dir()):
     mem = mem.sort_values(ascending=False)
     return mem
 
+def idx_rename(df, col_indexes, new_names, inplace=False):
+    # rename dataframe columns using indexes
+    old_names = df.columns[col_indexes]
+    return df.rename(columns=dict(zip(old_names, new_names)), inplace=inplace)
+
 def uvals(series):
     return sorted(series.unique())
 

@@ -14,6 +14,7 @@ from io import StringIO
 import json
 
 import puf_constants as pc
+import puf_utilities as pu
 
 
 # %% locations and file names
@@ -29,14 +30,17 @@ RESULTDIR = r'C:\programs_python\puf_analysis\results/'
 # json.dump(pufirs_fullmap, open(DATADIR + 'pufirs_fullmap.json', 'w'))
 # this dict defines the order in which we want tables sorted, so get it
 pufirs_fullmap = json.load(open(DATADIR + 'pufirs_fullmap.json'))
+# or just use pc.pufirs_fullmap
 
 targets_national = pd.read_csv(DATADIR + 'targets2017_possible.csv')
 targets_ht2 = pd.read_csv(DATADIR + 'ht2_long.csv')
 
+targets_national.columns
 # targets_national.common_stub.value_counts().sort_values()
 # targets_national.dtypes
 
-
+pu.uvals(targets_national.irsvar)
+pu.uvals(targets_national.pufvar)
 
 
 # %% create mergeable files
@@ -47,14 +51,13 @@ pc.ht2common_stubs  # map ht2stubs and common stubs to these stubs
 # keys are the original values, values are the new values
 # ht2 stubs are an easy mapping
 keys = range(0, 11)
-values = (0,1,1) + tuple(range(2, 10))
+values = (0, 1, 1) + tuple(range(2, 10))
 ht2_map = dict(zip(keys, values))
 
 keys = range(0, 19)
 values = (0, ) + (1,) * 2 + (2,) * 3 + (3,) * 3 + tuple(range(4, 9)) + (9,) * 5
 irs_map = dict(zip(keys, values))
 irs_map
-
 
 # national drop vars, add ht2common_stub
 targets_national.loc[:, ['ht2common_stub']] = targets_national.common_stub.map(irs_map)

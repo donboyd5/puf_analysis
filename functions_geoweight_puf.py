@@ -9,6 +9,7 @@ import sys
 import numpy as np
 import pandas as pd
 
+import puf_utilities as pu
 # microweight - apparently we have to tell python where to find this
 sys.path.append('c:/programs_python/weighting/')  # needed
 import src.microweight as mw
@@ -35,7 +36,11 @@ def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide,
     stub = df.name
     qx = '(ht2_stub == @stub)'
 
-    weightdf.columns = ['pid', 'weight']  # force this df to have proper names
+    # create local copy of weights with proper names
+    # weightdf.columns = ['pid', 'weight']
+    weightdf = pu.idx_rename(weightdf, col_indexes=[0, 1], new_names=['pid', 'weight'])
+    weightdf = weightdf.loc[:, ['pid', 'weight']]
+
 
     # df = df.copy().drop(columns='weight', errors='ignore')
     df['ht2_stub'] = df.name

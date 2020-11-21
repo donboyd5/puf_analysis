@@ -14,15 +14,18 @@ Created on Sat Sep 12 09:51:44 2020
 #  add variable labels
 #  save as csv
 
+
 # %% notes and urls
 # https://github.com/PSLmodels/Tax-Calculator
 
+# temp = ht2[['ht2var', 'ht2description', 'pufvar']].drop_duplicates()
 
 # %% imports
 import requests
 import pandas as pd
 from io import StringIO
 
+import json
 import puf_constants as pc
 
 
@@ -70,7 +73,7 @@ for f in files:
         file.write(r.content)
 
 
-# %% get variable labels
+# %% ONETIME: get variable labels
 fn = 'ht2_variable_labels.xlsx'
 vlabs = pd.read_excel(HT2DIR + fn, sheet_name = '2017')
 vlabs['variable'] = vlabs.variable.str.lower()
@@ -78,7 +81,7 @@ vlabs
 vlabs[vlabs.duplicated()]
 
 
-# %% read and adjust Historical Table 2
+# %% ONETIME: read and adjust Historical Table 2 and save the file
 
 ht2 = pd.read_csv(HT2DIR + HT2_2017, thousands=',')
 ht2
@@ -119,17 +122,23 @@ check = dfl[['variable', 'description']].drop_duplicates()
 
 dfl = dfl[['state', 'variable', 'description', 'ht2_stub', 'value']].sort_values(by=['state', 'variable', 'ht2_stub'])
 dfl = dfl.rename(columns={'variable': 'ht2var', 'description': 'ht2description', 'value': 'ht2'})
+dfl.to_csv(DATADIR + 'ht2_long_unmapped.csv', index=False)
 
 
-# %% map ht2 variable names to puf names
-dfl
-sorted(dfl.ht2var.unique())
+# %% map ht2 variable names to puf names and save mappings
 
-# first ht2, then pufvar
+# create a dict that maps ht2 variable names (keys) to pufvars (values)
+# we will build this from a set of dicts, as follows:
+    # vars_dict has variables that must be mapped laboriously, ht2 variable to puf variable
+    # vars_bar will have variables where the ht2 names and puf names are the same
+    # vars ennz has variables where an ht2 variable corresponds to a puf "e" variable, and we also want the nnz variables
+    # vars cnnz has variables where an ht2 variable corresponds to a puf "c" variable, and we also want the nnz variables
+
 vars_dict = {'n1': 'nret_all'}
 vars_bare = ('mars1', 'mars2', 'mars4')
+
 vars_ennz = ('00200', '00300', '00600', '01500', '02400')
-vars_cnnz = ('00100', '02500', '17000', '18300', '19200', '19700')
+vars_cnnz = ('00100', '01000', '02500', '17000', '18300', '19200', '19700')
 
 # posneg vars
 # c01000pos
@@ -165,9 +174,19 @@ ht2puf_map.update(dict_cnnz)
 
 ht2puf_map
 
-dfl['pufvar'] = dfl.ht2var.map(ht2puf_map)
+json.dump(ht2puf_map, open(DATADIR + 'ht2puf_fullmap.json', 'w'))
 
 
-# %% save
-dfl.to_csv(DATADIR + 'ht2_long.csv', index=False)
+# %% compare these mappings before finalizing
+
+
+
+# %% map and save
+
+dfl_mapped = pd.read_csv(DATADIR + 'ht2_long_unmapped.csv')
+dfl_mapped
+sorted(dfl_mapped.ht2var.unique())
+
+dfl_mapped['pufvar'] = dfl_mapped.ht2var.map(ht2puf_map)
+dfl_mapped.to_csv(DATADIR + 'ht2_long.csv', index=False)
 

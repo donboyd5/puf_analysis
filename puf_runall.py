@@ -22,6 +22,9 @@ sys.path.append('c:/programs_python/weighting/')  # needed
 import src.microweight as mw
 
 from timeit import default_timer as timer
+from importlib import reload
+# reload(pc)
+# reload(rwp)
 
 
 # %%  locations
@@ -54,6 +57,7 @@ PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
 
 # %% constants
 qtiles = (0, .01, .1, .25, .5, .75, .9, .99, 1)
+compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
 
 
 # %% ONETIME: create and save default and regrown 2017 pufs, and add filer indicator
@@ -66,14 +70,6 @@ adv.advance_puf_custom(puf, 2017,
                        gfones=GF_ONES,
                        weights=WEIGHTS_OFFICIAL,
                        savepath=PUF_REGROWN)
-
-
-# %% ONETIME: save weights from these files
-puf_weights = pd.read_parquet(PUF_DEFAULT, engine='pyarrow')[['pid', 's006']].rename(columns={'s006': 's006_default'})
-puf_weights.to_csv(PUFDIR + 'weights_default.csv', index=None)
-
-pufrg_weights = pd.read_parquet(PUF_REGROWN, engine='pyarrow')[['pid', 's006']].rename(columns={'s006': 's006_regrown'})
-pufrg_weights.to_csv(PUFDIR + 'weights_regrown.csv', index=None)
 
 
 # %% define possible targets - we may not use all of them
@@ -95,38 +91,51 @@ ptarget_names
 
 pufrg = pd.read_parquet(PUF_REGROWN, engine='pyarrow')
 pufrg.info()
+pu.uvals(pufrg.columns)
 pufrg.filer.sum()
 
 pufsub = rwp.prep_puf(pufrg, ptargets)
 pufsub.info()
-pufsub.columns
+pu.uvals(pufsub.columns)
 
 
 # %% get weights for regrown file
-regrown_weights = pd.read_csv(PUFDIR + 'weights_regrown.csv').rename(columns={'s006_regrown': 'weight'})
-regrown_weights  # MUST have columns pid, weight -- no other columns or names
+# all weight files will have pid, weight, shortname as columns
+weights_regrown = pd.read_csv(PUFDIR + 'weights_regrown.csv')
+weights_regrown  # MUST have columns pid, weight -- no other columns or names
+# weights_regrown.iloc[:, [0, 1]]
 
 
 # %% get % differences from targets at initial weights
-pdiff_init = rwp.get_pctdiffs(pufsub, regrown_weights, ptargets)
+pdiff_init = rwp.get_pctdiffs(pufsub, weights_regrown, ptargets)
 pdiff_init.shape
 np.nanquantile(pdiff_init.abspdiff, qtiles)
 np.nanquantile(pdiff_init.pdiff, qtiles)
 pdiff_init.head(15)
 pdiff_init.query('abspdiff > 10')
 
+pu.uvals(pdiff_init.pufvar)
+
 
 # %% ipopt: define any variable-stub combinations to drop via a drops dataframe
-# we simply don't want to target taxable income or tax after credits
-untargeted = ['c04800', 'c04800_nnz', 'c09200', 'c09200_nnz']
+
+# variables we don't want to target (e.g., taxable income or tax after credits)
+untargeted = ['c01000', 'c01000_nnz',  # we are targeting the pos and neg versions
+              'c04800', 'c04800_nnz',
+              'c09200', 'c09200_nnz',
+              'taxac_irs', 'taxac_irs_nnz']
+
 badvars = ['c02400', 'c02400_nnz']  # would like to target but values are bad
 bad_stub1_4_vars = ['c17000', 'c17000_nnz', 'c19700', 'c19700_nnz']
+
+# define query
 qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
 qx0 = "(pufvar in @untargeted)"
 qx1 = "(pufvar in @badvars)"
 qx2 = "(common_stub in [1, 2, 3, 4] and pufvar in @bad_stub1_4_vars)"
 qx = qxnan + " or " + qx0 + " or " + qx1 + " or " + qx2
 qx
+
 drops_ipopt = pdiff_init.query(qx).copy()
 drops_ipopt.sort_values(by=['common_stub', 'pufvar'], inplace=True)
 drops_ipopt
@@ -174,58 +183,66 @@ drops = drops_ipopt  # use ipopt or lsq
 # temp = pufsub.query('common_stub==2')  # this stub is the hardest for both solvers
 
 a = timer()
-new_weights = rwp.puf_reweight(pufsub, regrown_weights, ptargets, method=method, drops=drops)
+new_weights = rwp.puf_reweight(pufsub, weights_regrown, ptargets, method=method, drops=drops)
 b = timer()
 b - a
-
-wtname = 'rwt1_' +  method
-wfname = PUFDIR + 'weights_rwt1_' + method + '.csv'
-new_weights[['pid', 'reweight']].rename(columns={'reweight': wtname}).to_csv(wfname, index=None)
-
 # new_weights.sum()
+
+weights_save = new_weights.copy()
+weights_save['shortname'] = 'reweight1'
+weights_save = weights_save.drop(columns='weight').rename(columns={'reweight': 'weight'})
+
+wfname = PUFDIR + 'weights_reweight1_' + method + '.csv'
+weights_save.to_csv(wfname, index=None)
 
 
 # %% check pdiffs
-pd.set_option('display.max_columns', 7)
+# pd.set_option('display.max_columns', 7)
 pdiff_rwt = rwp.get_pctdiffs(pufsub, new_weights[['pid', 'reweight']], ptargets)
 pdiff_rwt.shape
 pdiff_rwt.head(20)[['common_stub', 'pufvar', 'pdiff', 'abspdiff']]
 pdiff_rwt.query('abspdiff > 10')
+pu.uvals(pdiff_rwt.pufvar)
 
 
 # %% create report on results from the reweighting
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
 # pid, the second will be the weight of interst
 
-method = 'ipopt'  # ipopt or lsq
-# method = 'lsq'
 date_id = date.today().strftime("%Y-%m-%d")
 
 # get weights for the comparison report
-wfname = PUFDIR + 'weights_rwt1_' + method + '.csv'
-comp_weights = pd.read_csv(wfname)
+wfname = PUFDIR + 'weights_reweight1_ipopt.csv'
+weights_comp = pd.read_csv(wfname)
 
-rfname = RESULTDIR + 'compare_irs_pufregrown_reweighted_' + method + '_' + date_id + '.txt'
-rtitle = 'Regrown reweighted puf, ' + method + ' method, compared to IRS values, run on ' + date_id
+rfname = RESULTDIR + 'compare_irs_pufregrown_reweighted_ipopt_' + date_id + '.txt'
+rtitle = 'Regrown reweighted puf, ipopt method, compared to IRS values, run on ' + date_id
 rwp.comp_report(pufsub,
-                 weights_rwt=comp_weights,  # new_weights[['pid', 'reweight']],
-                 weights_init=regrown_weights,
-                 targets=ptargets, outfile=rfname, title=rtitle)
+                 weights_reweight=weights_comp,  # new_weights[['pid', 'reweight']],
+                 weights_init=weights_regrown,
+                 compvars=ptargets,
+                 dropvars=None,
+                 outfile=rfname, title=rtitle)
+
+pu.uvals(pufsub.columns)
+pu.uvals(ptargets.columns)
 
 
-# %% geoweight: get revised national weights based on independent state weights
+# %% geoweight: get national weights by adding up unrestricted state weights
 # get weights to use as starting point for ht2 stubs
-wfname = PUFDIR + 'weights_rwt1_ipopt.csv'
-weights = pd.read_csv(wfname)
+wfname = PUFDIR + 'weights_reweight1_ipopt.csv'
+weights_national = pd.read_csv(wfname)
 
 # get national pufsums with these weights, for ht2 stubs
 # these are the amounts we will share across states
-pufsums_ht2 = rwp.get_wtdsums(pufsub, ptarget_names, weights, stubvar='ht2_stub')
+pufsums_ht2 = rwp.get_wtdsums(pufsub, ptarget_names, weights_national, stubvar='ht2_stub')
 pufsums_ht2long = pd.melt(pufsums_ht2, id_vars='ht2_stub', var_name='pufvar', value_name='pufsum')
+pu.uvals(pufsums_ht2long.pufvar)
 
 # collapse ht2 shares to the states we want
-compstates = ('NY', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX', 'VT')
 ht2_collapsed = gwp.collapse_ht2(HT2_SHARES, compstates)
+pu.uvals(ht2_collapsed.pufvar)
+pu.uvals(ht2_collapsed.ht2var)
 
 # create targets by state and ht2_stub from pufsums and collapsed shares
 ht2_collapsed
@@ -241,6 +258,7 @@ check = ht2targets.sort_values(by='abspdiff', axis=0, ascending=False)
 np.nanquantile(check.abspdiff, qtiles)
 
 
+# %% define HT2 targets to drop
 # create a wide boolean dataframe indicating whether a target will be dropped
 qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
 dropsdf = ht2targets.query(qxnan)[['stgroup', 'ht2_stub', 'pufvar']]
@@ -262,6 +280,7 @@ pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
 
 targvars = ['nret_all', 'mars1', 'mars2', 'c00100', 'e00200', 'e00200_nnz',
             'e00300', 'e00300_nnz', 'e00600', 'e00600_nnz',
+            'c01000',
             # deductions
             'c17000','c17000_nnz',
             'c18300', 'c18300_nnz']
@@ -274,26 +293,6 @@ targvars2 = ['nret_all', 'mars1', 'c00100']
 targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
 targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
 
-
-# %% DONOTRUN: take a first cut at state weights
-# wfname1 = PUFDIR + 'weights_rwt1_ipopt.csv'
-# weights1 = pd.read_csv(wfname1)
-
-# # for testing
-# # temp = pufsub.query('ht2_stub in [1, 2]').copy()
-# # grouped = temp.groupby('ht2_stub')
-
-# # for real
-# grouped = pufsub.groupby('ht2_stub')
-
-# # uo = {'Q': Q_init, 'drops': drops, 'independent': True, 'max_iter': 10}
-# a = timer()
-# geo_weights = grouped.apply(gwp.get_geo_weights, weights1, targvars2, ht2wide, dropsdf_wide, independent=False)
-# b = timer()
-# b - a
-
-
-# geo_weights[list(compstates) + ['other']].sum(axis=1)
 
 # %% common options for geoweighting
 
@@ -328,7 +327,7 @@ uo = {'qmax_iter': 10,
 
 
 # %% get new national weights by getting weights for each state (for each record) and summing them
-wfname_init = PUFDIR + 'weights_rwt1_ipopt.csv'
+wfname_init = PUFDIR + 'weights_reweight1_ipopt.csv'
 weights_init = pd.read_csv(wfname_init)
 
 grouped = pufsub.groupby('ht2_stub')
@@ -368,11 +367,13 @@ b - a
 
 # save just the pid and national weights
 wfname_result = PUFDIR + 'weights_geo_unrestricted_' + geomethod + '.csv'
-nat_geo_weights[['pid', 'geoweight_sum']].to_csv(wfname_result, index=None)
+weights_save = nat_geo_weights.copy()
+weights_save = weights_save.loc[:, ['pid', 'geoweight_sum']].rename(columns={'geoweight_sum': 'weight'})
+weights_save['shortname'] = 'geoweight_sum'
+weights_save.to_csv(wfname_result, index=None)
 
 # write the full file of state weights to disk
 nat_geo_weights.to_csv(PUFDIR + 'allweights_geo_unrestricted_' + geomethod + '.csv', index=None)
-
 
 nat_geo_weights.sum()
 
@@ -384,7 +385,7 @@ np.quantile(g, qtiles)
 
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
 # pid, the second will be the weight of interest
-wfname_base = PUFDIR + 'weights_rwt1_ipopt.csv'
+wfname_base = PUFDIR + 'weights_reweight1_ipopt.csv'
 weights_base = pd.read_csv(wfname_base)
 
 # method = 'ipopt'  # ipopt or lsq
@@ -399,9 +400,11 @@ weights_comp = pd.read_csv(wfname)
 rfname = RESULTDIR + 'compare_irs_pufregrown_geo_reweighted_' + geomethod + '_' + date_id + '.txt'
 rtitle = 'Regrown reweighted puf then georeweighted compared to IRS values, run on ' + date_id
 rwp.comp_report(pufsub,
-                 weights_rwt=weights_comp,
+                 weights_reweight=weights_comp,  # new_weights[['pid', 'reweight']],
                  weights_init=weights_base,
-                 targets=ptargets, outfile=rfname, title=rtitle)
+                 compvars=ptargets,
+                 dropvars=None,
+                 outfile=rfname, title=rtitle)
 
 
 # %% reweight the geo revised national weights
@@ -421,15 +424,22 @@ new_weights = rwp.puf_reweight(pufsub, weights_init, ptargets, method=reweight_m
 b = timer()
 b - a
 
-wtname_result = 'georwt1_' + geomethod + '_' + reweight_method
-wfname_result = PUFDIR + 'weights_georwt1_' + geomethod + '_' + reweight_method + '.csv'
-new_weights[['pid', 'reweight']].rename(columns={'reweight': wtname_result}).to_csv(wfname_result, index=None)
+# wtname_result = 'georwt1_' + geomethod + '_' + reweight_method
+# wfname_result = PUFDIR + 'weights_georwt1_' + geomethod + '_' + reweight_method + '.csv'
+# new_weights[['pid', 'reweight']].rename(columns={'reweight': wtname_result}).to_csv(wfname_result, index=None)
+
+weights_save = new_weights.copy()
+weights_save['shortname'] = 'georeweight1'
+weights_save = weights_save.drop(columns='weight').rename(columns={'reweight': 'weight'})
+
+wfname = PUFDIR + 'weights_georwt1_' + method + '.csv'
+weights_save.to_csv(wfname, index=None)
 
 
 # %% create report on results with the revised georevised national weights
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
 # pid, the second will be the weight of interest
-wfname_base = PUFDIR + 'weights_geo_rwt.csv'
+wfname_base = PUFDIR + 'weights_geo_unrestricted_qmatrix-ipopt.csv'
 weights_base = pd.read_csv(wfname_base)
 
 # method = 'ipopt'  # ipopt or lsq
@@ -437,25 +447,22 @@ date_id = date.today().strftime("%Y-%m-%d")
 
 # get weights for the comparison report
 # wfname = PUFDIR + 'weights_georwt1_ipopt.csv'
-geomethod = 'qmatrix-lsq'  # qmatrix-ipopt or qmatrix-lsq
-reweight_method = 'ipopt'  # ipopt or lsq
-wfname = PUFDIR + 'weights_georwt1_' + geomethod + '_' + reweight_method + '.csv'
-comp_weights = pd.read_csv(wfname)
+wfname = PUFDIR + 'weights_georwt1_ipopt.csv'
+weights_comp = pd.read_csv(wfname)
 
-rfname = RESULTDIR + 'compare_irs_pufregrown_geo_reweighted_reweighted_' + reweight_method + '_' + date_id + '.txt'
-rtitle = 'Regrown reweighted puf georeweighted reweighted ipopt, compared to IRS values, run on ' + date_id
+rfname = RESULTDIR + 'compare_irs_pufregrown_georeweighted_' + date_id + '.txt'
+rtitle = 'Regrown reweighted puf georeweighted ipopt, compared to IRS values, run on ' + date_id
 rwp.comp_report(pufsub,
-                 weights_rwt=comp_weights,
+                 weights_reweight=weights_comp,  # new_weights[['pid', 'reweight']],
                  weights_init=weights_base,
-                 targets=ptargets, outfile=rfname, title=rtitle)
+                 compvars=ptargets,
+                 dropvars=None,
+                 outfile=rfname, title=rtitle)
 
 
 # %% construct new targets for geoweighting geoweight: get revised national weights based on independent state weights
 # get weights to use as starting point for ht2 stubs
-geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
-reweight_method = 'ipopt'  # ipopt or lsq
-wfname = PUFDIR + 'weights_georwt1_' + geomethod + '_' + reweight_method + '.csv'
-# wfname = PUFDIR + 'weights_georwt1_ipopt.csv'
+wfname = PUFDIR + 'weights_georwt1_ipopt.csv'
 weights = pd.read_csv(wfname)
 
 # get national pufsums with these weights, for ht2 stubs
@@ -464,7 +471,6 @@ pufsums_ht2 = rwp.get_wtdsums(pufsub, ptarget_names, weights, stubvar='ht2_stub'
 pufsums_ht2long = pd.melt(pufsums_ht2, id_vars='ht2_stub', var_name='pufvar', value_name='pufsum')
 
 # collapse ht2 shares to the states we want
-compstates = ('NY', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX', 'VT')
 ht2_collapsed = gwp.collapse_ht2(HT2_SHARES, compstates)
 
 # create targets by state and ht2_stub from pufsums and collapsed shares
@@ -502,6 +508,7 @@ pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
 
 targvars = ['nret_all', 'mars1', 'mars2', 'c00100', 'e00200', 'e00200_nnz',
             'e00300', 'e00300_nnz', 'e00600', 'e00600_nnz',
+            'c01000',
             # deductions
             'c17000','c17000_nnz',
             'c18300', 'c18300_nnz']
@@ -511,12 +518,12 @@ targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
 
 
 # %% Use independent weights as starting point
-geomethod = 'ipopt-'  # qmatrix-ipopt or qmatrix-lsq
-wfname = PUFDIR + 'weights_geo_unrestricted_' + geomethod + '.csv'
+wfname = PUFDIR + 'allweights_geo_unrestricted_qmatrix-ipopt.csv'
 qshares = pd.read_csv(wfname)
 qshares.info()
 
-stvars = [s for s in qshares.columns if s not in ['pid', 'ht2_stub', 'weight', 'geoweight_sum']]
+# stvars = [s for s in qshares.columns if s not in ['pid', 'ht2_stub', 'weight', 'geoweight_sum']]
+stvars = compstates + ['other']
 qshares = qshares[['pid', 'ht2_stub'] + stvars]
 qshares[stvars] = qshares[stvars].div(qshares[stvars].sum(axis=1), axis=0)
 
@@ -527,14 +534,12 @@ qshares[stvars].sum(axis=1).sum()
 
 
 # %% run the final loop
-geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
-reweight_method = 'ipopt'  # ipopt or lsq
-wfname_national = PUFDIR + 'weights_georwt1_' + geomethod + '_' + reweight_method + '.csv'
+#geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
+#reweight_method = 'ipopt'  # ipopt or lsq
+#wfname_national = PUFDIR + 'weights_georwt1_' + geomethod + '_' + reweight_method + '.csv'
+wfname_national = PUFDIR + 'weights_georwt1_ipopt.csv'
 wfname_national
 final_national_weights = pd.read_csv(wfname_national)
-
-# wfname = PUFDIR + 'weights_rwt1_ipopt.csv'
-# weights = pd.read_csv(wfname)
 
 grouped = pufsub.groupby('ht2_stub')
 # targvars, ht2wide, dropsdf_wide, independent=False
@@ -646,3 +651,22 @@ weight_df.to_csv(PUFDIR + 'all_weights.csv', index=None)
 weight_df.sum()
 
 
+# %% DONOTRUN: state weights using the initial reweights
+# wfname1 = PUFDIR + 'weights_rwt1_ipopt.csv'
+# weights1 = pd.read_csv(wfname1)
+
+# # for testing
+# # temp = pufsub.query('ht2_stub in [1, 2]').copy()
+# # grouped = temp.groupby('ht2_stub')
+
+# # for real
+# grouped = pufsub.groupby('ht2_stub')
+
+# # uo = {'Q': Q_init, 'drops': drops, 'independent': True, 'max_iter': 10}
+# a = timer()
+# geo_weights = grouped.apply(gwp.get_geo_weights, weights1, targvars2, ht2wide, dropsdf_wide, independent=False)
+# b = timer()
+# b - a
+
+
+# geo_weights[list(compstates) + ['other']].sum(axis=1)

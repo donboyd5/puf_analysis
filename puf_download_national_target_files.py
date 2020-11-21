@@ -5,9 +5,13 @@ Created on Sat Sep 12 09:51:44 2020
 @author: donbo
 """
 # %% imports
-import requests
+
+import numpy as np
 import pandas as pd
+import requests
 from io import StringIO
+
+import puf_utilities as pu
 
 
 # %% constants
@@ -431,8 +435,50 @@ loss_mask.sum()
 check = targets_collapsed.loc[loss_mask, ['variable', 'value']]
 check.value.min()  # good, no negatives
 targets_collapsed.loc[loss_mask, 'value'] *= -1
+targets_collapsed.to_csv(DATADIR + 'targets' + YEAR + '_clean.csv', index=False)
 
-# save and finish
+
+# %% create any necessary new columns
+targets_clean = pd.read_csv(DATADIR + 'targets' + YEAR + '_clean.csv')
+targets_clean.columns
+
+# get just what we need for value creation, pivot, create, and add to the data
+pu.uvals(targets_clean.variable)
+keepcols = ['src', 'table_description', 'common_stub', 'incrange', 'variable', 'value']
+irsvars = ['cggross', 'cgloss', 'nret_cggross', 'nret_cgloss']
+sub = targets_clean.query("variable in @irsvars").loc[:, keepcols]
+
+# verify that src and table_description are the same for both; if so, then
+# get values to put back later
+# src = sub.src.iat[0]
+# td = sub.table_description.iat[0]
+
+stubs = ['src', 'table_description', 'common_stub', 'incrange']
+wide = sub.pivot(index=stubs, columns='variable', values='value').reset_index()
+wide
+wide['cgnet'] = wide.cggross + wide.cgloss
+wide['nret_cgnet'] = wide.nret_cggross + wide.nret_cgloss  # obviously this is just an assumption, we don't know for sure
+
+# long = pd.melt(wide.loc[:, ['common_stub', 'cgnet', 'nret_cgnet']], id_vars='common_stub')
+long = pd.melt(wide.drop(columns=irsvars), id_vars=stubs)
+pu.uvals(long.variable) # check
+
+long['column_description'] = np.where(long.variable=='cgnet',
+                                      'Net capital gains (calculated)',
+                                      'Number of returns with net capital gains (calculated)')
+long['excel_column'] = 'calculated'
+
+targets_clean.columns
+long.columns
+
+cols_ordered = ['common_stub', 'incrange', 'variable', 'value', 'src',
+                'table_description', 'column_description', 'excel_column']
+targets_collapsed = pd.concat([targets_clean, long])[cols_ordered]
+targets_collapsed.columns
+pu.uvals(targets_collapsed.variable)
+
+
+# %% save and finish
 targets_collapsed.to_csv(DATADIR + 'targets' + YEAR + '_collapsed.csv', index=False)
 
 

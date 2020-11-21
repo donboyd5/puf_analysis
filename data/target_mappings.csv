@@ -11,6 +11,8 @@ e00300,taxint,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax 
 e00300_nnz,nret_taxint,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with taxable interest,17in14ar.xls,H
 e00600,orddiv,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Ordinary dividends,17in14ar.xls,M
 e00600_nnz,nret_orddiv,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with ordinary dividends,17in14ar.xls,L
+c01000,cgnet,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Net capital gains (calculated),17in14ar.xls,calculated
+c01000_nnz,nret_cgnet,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with net capital gains (calculated),17in14ar.xls,calculated
 c01000pos,cggross,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable,17in14ar.xls,AA
 c01000pos_nnz,nret_cggross,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with capital gains gross taxable,17in14ar.xls,Z
 c01000neg,cgloss,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital loss taxable,17in14ar.xls,AC
@@ -35,5 +37,7 @@ c19700,id_contributions,"Table 2.1.  Returns with Itemized Deductions: Sources o
 c19700_nnz,nret_id_contributions,"Table 2.1.  Returns with Itemized Deductions: Sources of Income,  Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items, by Size of Adjusted Gross Income",Number of returns with contributions deduction,17in21id.xls,CU
 c04800,ti,"Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status",Taxable income,17in12ms.xls,J
 c04800_nnz,nret_ti,"Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status",Number of returns with taxable income,17in12ms.xls,I
-c09200,taxac,"Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status",Income tax after credits,17in12ms.xls,L
-c09200_nnz,nret_taxac,"Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status",Number of returns with income tax after credits,17in12ms.xls,K
+c05800,taxbc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income","Income tax before credits (IRS definition, not PUF definition)",17in14ar.xls,EM
+c05800_nnz,nret_taxbc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income","Number of returns with income tax before credits (IRS definition, not PUF definition)",17in14ar.xls,EL
+taxac_irs,taxac,"Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status",Income tax after credits,17in12ms.xls,L
+taxac_irs_nnz,nret_taxac,"Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status",Number of returns with income tax after credits,17in12ms.xls,K

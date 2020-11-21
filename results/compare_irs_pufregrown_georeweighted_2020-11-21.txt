@@ -1,0 +1,986 @@
+
+Regrown reweighted puf georeweighted ipopt, compared to IRS values, run on 2020-11-21
+
+Data are for filers only, using IRS filing requirements plus estimates of likely filing.
+
+This report is in 3 sections:
+  1. Summary report for all variables, summarized over all filers
+  2. Detailed report by AGI range for each variable
+  3. Table that provides details on puf variables and their mappings to irs data
+
+1. Summary report for all variables, summarized over all filers:
+
+     common_stub     incrange         pufvar                  irsvar              target                 puf            diff  pdiff ipdiff                                                                     column_description
+643            0  All returns       nret_all                nret_all         152,903,231         152,832,754         -70,477  -0.0%  -0.0%                                                                      Number of returns
+629            0  All returns          mars1             nret_single          73,021,932          72,984,404         -37,528  -0.1%  -0.0%                                                    Number of returns of single persons
+665            0  All returns          mars2              nret_mfjss          54,774,397          54,754,127         -20,270  -0.0%  -0.1%   Number of returns of married persons filing jointly and returns of surviving spouses
+689            0  All returns          mars3                nret_mfs           3,212,807           3,211,885            -922  -0.0%   0.5%                                 Number of returns of married persons filing separately
+622            0  All returns          mars4                nret_hoh          21,894,095          21,882,338         -11,757  -0.1%  -0.1%                                               Number of returns of heads of households
+705            0  All returns         c00100                     agi  11,009,900,155,000  11,007,234,198,469  -2,665,956,531  -0.0%  -0.0%                                                     Adjusted gross income less deficit
+748            0  All returns         e00200                   wages   7,577,563,943,000   7,578,270,994,499     707,051,499   0.0%  -0.0%                                                                     Salaries and wages
+552            0  All returns     e00200_nnz              nret_wages         126,264,481         126,368,516         104,035   0.1%   0.1%                                              Number of returns with salaries and wages
+685            0  All returns         e00300                  taxint     106,055,367,000     106,024,150,024     -31,216,976  -0.0%   0.0%                                                                       Taxable interest
+794            0  All returns     e00300_nnz             nret_taxint          44,193,009          44,193,113             104   0.0%   0.1%                                                Number of returns with taxable interest
+596            0  All returns         e00600                  orddiv     282,336,042,000     282,520,670,510     184,628,510   0.1%   0.1%                                                                     Ordinary dividends
+558            0  All returns     e00600_nnz             nret_orddiv          28,171,331          28,148,610         -22,721  -0.1%   0.1%                                              Number of returns with ordinary dividends
+703            0  All returns         c01000                   cgnet     843,115,530,000     843,322,766,044     207,236,044   0.0%   0.1%                                                         Net capital gains (calculated)
+624            0  All returns     c01000_nnz              nret_cgnet          21,169,727          21,180,992          11,265   0.1%   1.0%                                  Number of returns with net capital gains (calculated)
+700            0  All returns      c01000pos                 cggross     859,894,631,000     860,112,771,878     218,140,878   0.0%   0.1%                                                            Capital gains gross taxable
+564            0  All returns  c01000pos_nnz            nret_cggross          13,698,506          13,709,245          10,739   0.1%   0.7%                                     Number of returns with capital gains gross taxable
+598            0  All returns      c01000neg                  cgloss     -16,779,101,000     -16,790,005,834     -10,904,834   0.1%   2.4%                                                                   Capital loss taxable
+757            0  All returns  c01000neg_nnz             nret_cgloss           7,471,221           7,471,747             526   0.0%   1.7%                                            Number of returns with capital loss taxable
+544            0  All returns         e01500                pensions   1,171,791,907,000   1,170,793,814,067    -998,092,933  -0.1%  -0.8%                                    Total pensions and annuities (including nontaxable)
+638            0  All returns     e01500_nnz           nret_pensions          30,610,779          30,596,125         -14,654  -0.0%   0.0%             Number of returns with total pensions and annuities (including nontaxable)
+616            0  All returns         e02400               socsectot     644,989,570,000     645,358,053,007     368,483,007   0.1%   1.3%                                                         Total Social Security benefits
+648            0  All returns     e02400_nnz          nret_socsectot          28,967,603          28,955,165         -12,438  -0.0%   0.7%                                  Number of returns with total Social Security benefits
+647            0  All returns         c02500           socsectaxable     309,539,629,000     309,672,995,465     133,366,465   0.0%   1.8%                                                       Taxable Social Security benefits
+744            0  All returns     c02500_nnz      nret_socsectaxable          20,929,431          20,927,141          -2,290  -0.0%   0.8%                                Number of returns with taxable Social Security benefits
+778            0  All returns      e26270pos         partnerscorpinc     833,430,151,000     833,413,847,063     -16,303,937  -0.0%   0.1%                                                Partnership or S corporation net income
+652            0  All returns  e26270pos_nnz    nret_partnerscorpinc           6,240,408           6,242,910           2,502   0.0%   0.7%                         Number of returns with partnership or S corporation net income
+642            0  All returns      e26270neg        partnerscorploss    -153,150,406,000    -153,079,450,740      70,955,260  -0.0%  -1.3%                                                  Partnership or S corporation net loss
+740            0  All returns  e26270neg_nnz   nret_partnerscorploss           2,872,745           2,873,102             357   0.0%  -0.2%                           Number of returns with partnership or S corporation net loss
+25             0  All returns         c17000       id_medical_capped     102,533,387,000      95,444,464,767  -7,088,922,233  -6.9%  -6.8%                                                         Total medical expenses, capped
+28             0  All returns     c17000_nnz  nret_id_medical_capped          10,171,257           9,634,072        -537,185  -5.3%  -5.1%                                  Number of returns with total medical expenses, capped
+729            0  All returns         c18300              id_taxpaid     624,820,806,000     624,914,961,760      94,155,760   0.0%   0.1%                                                                   Taxes paid deduction
+617            0  All returns     c18300_nnz         nret_id_taxpaid          46,431,232          46,457,673          26,441   0.1%  -0.1%                                            Number of returns with taxes paid deduction
+578            0  All returns         c19200              id_intpaid     313,944,112,000     313,709,884,585    -234,227,415  -0.1%  -1.0%                                                                Interest paid deduction
+594            0  All returns     c19200_nnz         nret_id_intpaid          34,327,403          34,304,643         -22,760  -0.1%  -0.6%                                         Number of returns with interest paid deduction
+86             0  All returns         c19700        id_contributions     256,064,685,000     255,685,636,729    -379,048,271  -0.1%   6.1%                                                                Contributions deduction
+80             0  All returns     c19700_nnz   nret_id_contributions          37,979,015          38,084,519         105,504   0.3%   0.0%                                         Number of returns with contributions deduction
+82             0  All returns         c04800                      ti   8,008,418,180,000   8,028,198,436,098  19,780,256,098   0.2%   0.0%                                                                         Taxable income
+68             0  All returns     c04800_nnz                 nret_ti         119,045,254         119,623,421         578,167   0.5%   0.6%                                                  Number of returns with taxable income
+542            0  All returns         c05800                   taxbc   1,662,837,203,000   1,664,262,824,076   1,425,621,076   0.1%  -0.1%                         Income tax before credits (IRS definition, not PUF definition)
+604            0  All returns     c05800_nnz              nret_taxbc         118,644,112         118,718,150          74,038   0.1%   0.2%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+55             0  All returns      taxac_irs                   taxac   1,581,523,123,000   1,594,681,637,224  13,158,514,224   0.8%   0.7%                                                               Income tax after credits
+61             0  All returns  taxac_irs_nnz              nret_taxac         103,730,078         104,432,694         702,616   0.7%   0.8%                                        Number of returns with income tax after credits
+
+2. Detailed report by AGI range for each variable:
+
+     common_stub                      incrange    pufvar    irsvar       target          puf     diff  pdiff ipdiff column_description
+643            0                   All returns  nret_all  nret_all  152,903,231  152,832,754  -70,477  -0.0%  -0.0%  Number of returns
+290            1                  Under $5,000  nret_all  nret_all   11,782,422   11,770,639  -11,783  -0.1%  -0.2%  Number of returns
+599            2          $5,000 under $10,000  nret_all  nret_all   10,789,563   10,796,491    6,928   0.1%   0.1%  Number of returns
+318            3         $10,000 under $15,000  nret_all  nret_all   11,594,637   11,583,042  -11,595  -0.1%  -0.1%  Number of returns
+610            4         $15,000 under $20,000  nret_all  nret_all   10,665,270   10,671,598    6,328   0.1%   0.1%  Number of returns
+226            5         $20,000 under $25,000  nret_all  nret_all    9,983,829    9,973,845   -9,984  -0.1%  -0.1%  Number of returns
+551            6         $25,000 under $30,000  nret_all  nret_all    8,824,548    8,831,837    7,289   0.1%   0.1%  Number of returns
+508            7         $30,000 under $40,000  nret_all  nret_all   15,209,009   15,194,093  -14,916  -0.1%  -0.0%  Number of returns
+507            8         $40,000 under $50,000  nret_all  nret_all   11,915,599   11,903,862  -11,737  -0.1%  -0.2%  Number of returns
+512            9         $50,000 under $75,000  nret_all  nret_all   20,958,446   20,938,060  -20,386  -0.1%  -0.1%  Number of returns
+165           10        $75,000 under $100,000  nret_all  nret_all   13,508,353   13,494,845  -13,508  -0.1%  -0.1%  Number of returns
+750           11       $100,000 under $200,000  nret_all  nret_all   19,951,450   19,953,095    1,645   0.0%   0.0%  Number of returns
+730           12       $200,000 under $500,000  nret_all  nret_all    6,215,046    6,215,967      921   0.0%   0.0%  Number of returns
+654           13     $500,000 under $1,000,000  nret_all  nret_all    1,010,203    1,010,599      396   0.0%   0.0%  Number of returns
+653           14   $1,000,000 under $1,500,000  nret_all  nret_all      222,611      222,523      -88  -0.0%   6.6%  Number of returns
+661           15   $1,500,000 under $2,000,000  nret_all  nret_all       90,527       90,561       34   0.0%  -2.5%  Number of returns
+680           16   $2,000,000 under $5,000,000  nret_all  nret_all      129,868      129,828      -40  -0.0%  -7.1%  Number of returns
+588           17  $5,000,000 under $10,000,000  nret_all  nret_all       31,628       31,650       22   0.1%  -9.7%  Number of returns
+737           18           $10,000,000 or more  nret_all  nret_all       20,223       20,220       -3  -0.0%  -2.2%  Number of returns
+
+     common_stub                      incrange pufvar       irsvar      target         puf     diff  pdiff ipdiff                   column_description
+629            0                   All returns  mars1  nret_single  73,021,932  72,984,404  -37,528  -0.1%  -0.0%  Number of returns of single persons
+194            1                  Under $5,000  mars1  nret_single   9,624,749   9,615,124   -9,625  -0.1%  -0.0%  Number of returns of single persons
+575            2          $5,000 under $10,000  mars1  nret_single   8,354,084   8,360,398    6,314   0.1%   0.0%  Number of returns of single persons
+307            3         $10,000 under $15,000  mars1  nret_single   7,508,038   7,500,530   -7,508  -0.1%  -0.2%  Number of returns of single persons
+571            4         $15,000 under $20,000  mars1  nret_single   6,275,620   6,280,402    4,782   0.1%   0.2%  Number of returns of single persons
+184            5         $20,000 under $25,000  mars1  nret_single   5,619,627   5,614,007   -5,620  -0.1%  -0.1%  Number of returns of single persons
+485            6         $25,000 under $30,000  mars1  nret_single   4,879,918   4,884,798    4,880   0.1%   0.1%  Number of returns of single persons
+220            7         $30,000 under $40,000  mars1  nret_single   8,056,894   8,048,837   -8,057  -0.1%  -0.0%  Number of returns of single persons
+359            8         $40,000 under $50,000  mars1  nret_single   6,021,209   6,015,188   -6,021  -0.1%  -0.2%  Number of returns of single persons
+227            9         $50,000 under $75,000  mars1  nret_single   8,817,515   8,808,697   -8,818  -0.1%  -0.1%  Number of returns of single persons
+221           10        $75,000 under $100,000  mars1  nret_single   3,751,264   3,747,513   -3,751  -0.1%  -0.1%  Number of returns of single persons
+365           11       $100,000 under $200,000  mars1  nret_single   3,243,701   3,240,457   -3,244  -0.1%   0.1%  Number of returns of single persons
+291           12       $200,000 under $500,000  mars1  nret_single     699,528     698,828     -700  -0.1%  -0.1%  Number of returns of single persons
+268           13     $500,000 under $1,000,000  mars1  nret_single     110,266     110,156     -110  -0.1%  -0.1%  Number of returns of single persons
+235           14   $1,000,000 under $1,500,000  mars1  nret_single      26,192      26,166      -26  -0.1%   4.0%  Number of returns of single persons
+285           15   $1,500,000 under $2,000,000  mars1  nret_single      10,635      10,624      -11  -0.1%  -4.5%  Number of returns of single persons
+265           16   $2,000,000 under $5,000,000  mars1  nret_single      16,163      16,147      -16  -0.1%  -6.8%  Number of returns of single persons
+699           17  $5,000,000 under $10,000,000  mars1  nret_single       3,882       3,883        1   0.0%  -9.3%  Number of returns of single persons
+112           18           $10,000,000 or more  mars1  nret_single       2,646       2,649        3   0.1%  31.7%  Number of returns of single persons
+
+     common_stub                      incrange pufvar      irsvar      target         puf     diff  pdiff  ipdiff                                                                    column_description
+665            0                   All returns  mars2  nret_mfjss  54,774,397  54,754,127  -20,270  -0.0%   -0.1%  Number of returns of married persons filing jointly and returns of surviving spouses
+395            1                  Under $5,000  mars2  nret_mfjss   1,380,491   1,379,111   -1,380  -0.1%   -0.2%  Number of returns of married persons filing jointly and returns of surviving spouses
+662            2          $5,000 under $10,000  mars2  nret_mfjss     964,726     965,086      360   0.0%    0.5%  Number of returns of married persons filing jointly and returns of surviving spouses
+366            3         $10,000 under $15,000  mars2  nret_mfjss   1,320,912   1,319,591   -1,321  -0.1%    0.1%  Number of returns of married persons filing jointly and returns of surviving spouses
+538            4         $15,000 under $20,000  mars2  nret_mfjss   1,521,743   1,520,422   -1,321  -0.1%   -0.1%  Number of returns of married persons filing jointly and returns of surviving spouses
+216            5         $20,000 under $25,000  mars2  nret_mfjss   1,797,799   1,796,001   -1,798  -0.1%   -0.3%  Number of returns of married persons filing jointly and returns of surviving spouses
+386            6         $25,000 under $30,000  mars2  nret_mfjss   1,657,652   1,659,310    1,658   0.1%    0.2%  Number of returns of married persons filing jointly and returns of surviving spouses
+248            7         $30,000 under $40,000  mars2  nret_mfjss   3,456,996   3,453,539   -3,457  -0.1%   -0.1%  Number of returns of married persons filing jointly and returns of surviving spouses
+304            8         $40,000 under $50,000  mars2  nret_mfjss   3,372,258   3,368,886   -3,372  -0.1%   -0.2%  Number of returns of married persons filing jointly and returns of surviving spouses
+187            9         $50,000 under $75,000  mars2  nret_mfjss   8,786,118   8,777,332   -8,786  -0.1%   -0.1%  Number of returns of married persons filing jointly and returns of surviving spouses
+170           10        $75,000 under $100,000  mars2  nret_mfjss   8,396,454   8,388,057   -8,397  -0.1%   -0.1%  Number of returns of married persons filing jointly and returns of surviving spouses
+670           11       $100,000 under $200,000  mars2  nret_mfjss  15,538,630  15,544,143    5,513   0.0%   -0.0%  Number of returns of married persons filing jointly and returns of surviving spouses
+690           12       $200,000 under $500,000  mars2  nret_mfjss   5,303,488   5,305,000    1,512   0.0%    0.0%  Number of returns of married persons filing jointly and returns of surviving spouses
+603           13     $500,000 under $1,000,000  mars2  nret_mfjss     864,399     864,940      541   0.1%    0.1%  Number of returns of married persons filing jointly and returns of surviving spouses
+693           14   $1,000,000 under $1,500,000  mars2  nret_mfjss     187,207     187,154      -53  -0.0%    6.9%  Number of returns of married persons filing jointly and returns of surviving spouses
+597           15   $1,500,000 under $2,000,000  mars2  nret_mfjss      75,877      75,926       49   0.1%   -2.1%  Number of returns of married persons filing jointly and returns of surviving spouses
+684           16   $2,000,000 under $5,000,000  mars2  nret_mfjss     107,321     107,289      -32  -0.0%   -7.2%  Number of returns of married persons filing jointly and returns of surviving spouses
+566           17  $5,000,000 under $10,000,000  mars2  nret_mfjss      26,083      26,103       20   0.1%  -10.0%  Number of returns of married persons filing jointly and returns of surviving spouses
+679           18           $10,000,000 or more  mars2  nret_mfjss      16,242      16,237       -5  -0.0%   -7.5%  Number of returns of married persons filing jointly and returns of surviving spouses
+
+     common_stub                      incrange pufvar    irsvar     target        puf  diff  pdiff  ipdiff                                      column_description
+689            0                   All returns  mars3  nret_mfs  3,212,807  3,211,885  -922  -0.0%    0.5%  Number of returns of married persons filing separately
+375            1                  Under $5,000  mars3  nret_mfs    201,766    201,564  -202  -0.1%   -2.7%  Number of returns of married persons filing separately
+742            2          $5,000 under $10,000  mars3  nret_mfs    144,723    144,740    17   0.0%    2.4%  Number of returns of married persons filing separately
+504            3         $10,000 under $15,000  mars3  nret_mfs    151,753    151,602  -151  -0.1%   -0.1%  Number of returns of married persons filing separately
+473            4         $15,000 under $20,000  mars3  nret_mfs    165,662    165,828   166   0.1%    0.1%  Number of returns of married persons filing separately
+378            5         $20,000 under $25,000  mars3  nret_mfs    208,854    208,645  -209  -0.1%   -0.2%  Number of returns of married persons filing separately
+726            6         $25,000 under $30,000  mars3  nret_mfs    237,759    237,720   -39  -0.0%   -0.0%  Number of returns of married persons filing separately
+674            7         $30,000 under $40,000  mars3  nret_mfs    441,031    440,883  -148  -0.0%    0.8%  Number of returns of married persons filing separately
+620            8         $40,000 under $50,000  mars3  nret_mfs    396,157    395,941  -216  -0.1%   -0.2%  Number of returns of married persons filing separately
+747            9         $50,000 under $75,000  mars3  nret_mfs    635,460    635,398   -62  -0.0%    0.1%  Number of returns of married persons filing separately
+500           10        $75,000 under $100,000  mars3  nret_mfs    285,591    285,306  -285  -0.1%    1.0%  Number of returns of married persons filing separately
+373           11       $100,000 under $200,000  mars3  nret_mfs    271,847    272,119   272   0.1%    5.2%  Number of returns of married persons filing separately
+342           12       $200,000 under $500,000  mars3  nret_mfs     51,414     51,363   -51  -0.1%   -3.1%  Number of returns of married persons filing separately
+332           13     $500,000 under $1,000,000  mars3  nret_mfs     10,784     10,773   -11  -0.1%    5.0%  Number of returns of married persons filing separately
+258           14   $1,000,000 under $1,500,000  mars3  nret_mfs      3,100      3,097    -3  -0.1%   -4.0%  Number of returns of married persons filing separately
+345           15   $1,500,000 under $2,000,000  mars3  nret_mfs      1,891      1,889    -2  -0.1%   -6.9%  Number of returns of married persons filing separately
+252           16   $2,000,000 under $5,000,000  mars3  nret_mfs      3,165      3,168     3   0.1%   -7.1%  Number of returns of married persons filing separately
+760           17  $5,000,000 under $10,000,000  mars3  nret_mfs        994        994     0   0.0%  -12.7%  Number of returns of married persons filing separately
+273           18           $10,000,000 or more  mars3  nret_mfs        855        854    -1  -0.1%    0.9%  Number of returns of married persons filing separately
+
+     common_stub                      incrange pufvar    irsvar      target         puf     diff  pdiff  ipdiff                        column_description
+622            0                   All returns  mars4  nret_hoh  21,894,095  21,882,338  -11,757  -0.1%   -0.1%  Number of returns of heads of households
+347            1                  Under $5,000  mars4  nret_hoh     575,416     574,841     -575  -0.1%   -1.3%  Number of returns of heads of households
+723            2          $5,000 under $10,000  mars4  nret_hoh   1,326,029   1,326,266      237   0.0%    0.5%  Number of returns of heads of households
+439            3         $10,000 under $15,000  mars4  nret_hoh   2,613,933   2,611,319   -2,614  -0.1%   -0.1%  Number of returns of heads of households
+337            4         $15,000 under $20,000  mars4  nret_hoh   2,702,244   2,704,946    2,702   0.1%    0.1%  Number of returns of heads of households
+231            5         $20,000 under $25,000  mars4  nret_hoh   2,357,549   2,355,191   -2,358  -0.1%   -0.1%  Number of returns of heads of households
+656            6         $25,000 under $30,000  mars4  nret_hoh   2,049,219   2,050,010      791   0.0%    0.0%  Number of returns of heads of households
+271            7         $30,000 under $40,000  mars4  nret_hoh   3,254,088   3,250,834   -3,254  -0.1%   -0.1%  Number of returns of heads of households
+349            8         $40,000 under $50,000  mars4  nret_hoh   2,125,974   2,123,848   -2,126  -0.1%   -0.2%  Number of returns of heads of households
+298            9         $50,000 under $75,000  mars4  nret_hoh   2,719,352   2,716,633   -2,719  -0.1%   -0.1%  Number of returns of heads of households
+283           10        $75,000 under $100,000  mars4  nret_hoh   1,075,043   1,073,968   -1,075  -0.1%   -0.3%  Number of returns of heads of households
+350           11       $100,000 under $200,000  mars4  nret_hoh     897,273     896,376     -897  -0.1%   -1.3%  Number of returns of heads of households
+317           12       $200,000 under $500,000  mars4  nret_hoh     160,616     160,777      161   0.1%    1.2%  Number of returns of heads of households
+353           13     $500,000 under $1,000,000  mars4  nret_hoh      24,755      24,730      -25  -0.1%   -2.0%  Number of returns of heads of households
+275           14   $1,000,000 under $1,500,000  mars4  nret_hoh       6,112       6,106       -6  -0.1%   15.5%  Number of returns of heads of households
+354           15   $1,500,000 under $2,000,000  mars4  nret_hoh       2,123       2,121       -2  -0.1%   -1.2%  Number of returns of heads of households
+326           16   $2,000,000 under $5,000,000  mars4  nret_hoh       3,220       3,223        3   0.1%   -7.7%  Number of returns of heads of households
+731           17  $5,000,000 under $10,000,000  mars4  nret_hoh         669         669        0   0.0%    3.7%  Number of returns of heads of households
+392           18           $10,000,000 or more  mars4  nret_hoh         480         480        0   0.1%  -13.5%  Number of returns of heads of households
+
+     common_stub                      incrange  pufvar irsvar              target                 puf            diff  pdiff ipdiff                  column_description
+705            0                   All returns  c00100    agi  11,009,900,155,000  11,007,234,198,469  -2,665,956,531  -0.0%  -0.0%  Adjusted gross income less deficit
+377            1                  Under $5,000  c00100    agi    -207,008,365,000    -207,215,374,744    -207,009,744   0.1%   0.0%  Adjusted gross income less deficit
+719            2          $5,000 under $10,000  c00100    agi      81,447,661,000      81,431,303,205     -16,357,795  -0.0%   0.2%  Adjusted gross income less deficit
+523            3         $10,000 under $15,000  c00100    agi     145,001,169,000     145,136,944,050     135,775,050   0.1%   0.1%  Adjusted gross income less deficit
+525            4         $15,000 under $20,000  c00100    agi     186,097,793,000     186,270,487,401     172,694,401   0.1%   0.2%  Adjusted gross income less deficit
+143            5         $20,000 under $25,000  c00100    agi     224,218,126,000     224,442,346,361     224,220,361   0.1%   0.1%  Adjusted gross income less deficit
+537            6         $25,000 under $30,000  c00100    agi     242,450,897,000     242,662,968,419     212,071,419   0.1%   0.1%  Adjusted gross income less deficit
+175            7         $30,000 under $40,000  c00100    agi     529,629,959,000     530,159,594,195     529,635,195   0.1%   0.2%  Adjusted gross income less deficit
+668            8         $40,000 under $50,000  c00100    agi     533,337,760,000     533,532,149,451     194,389,451   0.0%  -0.1%  Adjusted gross income less deficit
+602            9         $50,000 under $75,000  c00100    agi   1,286,848,073,000   1,287,665,624,804     817,551,804   0.1%   0.1%  Adjusted gross income less deficit
+577           10        $75,000 under $100,000  c00100    agi   1,170,354,458,000   1,171,234,518,722     880,060,722   0.1%   0.1%  Adjusted gross income less deficit
+136           11       $100,000 under $200,000  c00100    agi   2,707,840,958,000   2,705,133,090,028  -2,707,867,972  -0.1%  -0.1%  Adjusted gross income less deficit
+133           12       $200,000 under $500,000  c00100    agi   1,770,815,570,000   1,769,044,736,756  -1,770,833,244  -0.1%  -0.1%  Adjusted gross income less deficit
+121           13     $500,000 under $1,000,000  c00100    agi     679,941,585,000     679,261,636,623    -679,948,377  -0.1%  -0.1%  Adjusted gross income less deficit
+135           14   $1,000,000 under $1,500,000  c00100    agi     268,740,908,000     268,472,164,410    -268,743,590  -0.1%   6.2%  Adjusted gross income less deficit
+126           15   $1,500,000 under $2,000,000  c00100    agi     155,813,355,000     155,657,540,089    -155,814,911  -0.1%  -2.7%  Adjusted gross income less deficit
+123           16   $2,000,000 under $5,000,000  c00100    agi     386,043,696,000     385,657,648,448    -386,047,552  -0.1%  -7.5%  Adjusted gross income less deficit
+540           17  $5,000,000 under $10,000,000  c00100    agi     216,163,537,000     215,976,616,795    -186,920,205  -0.1%  -9.4%  Adjusted gross income less deficit
+539           18           $10,000,000 or more  c00100    agi     632,163,016,000     632,710,203,456     547,187,456   0.1%   5.5%  Adjusted gross income less deficit
+
+     common_stub                      incrange  pufvar irsvar             target                puf           diff  pdiff ipdiff  column_description
+748            0                   All returns  e00200  wages  7,577,563,943,000  7,578,270,994,499    707,051,499   0.0%  -0.0%  Salaries and wages
+380            1                  Under $5,000  e00200  wages     45,624,860,000     45,579,234,837    -45,625,163  -0.1%  -0.3%  Salaries and wages
+755            2          $5,000 under $10,000  e00200  wages     61,751,519,000     61,756,268,530      4,749,530   0.0%   0.3%  Salaries and wages
+209            3         $10,000 under $15,000  e00200  wages    102,641,467,000    102,538,824,526   -102,642,474  -0.1%  -0.2%  Salaries and wages
+178            4         $15,000 under $20,000  e00200  wages    144,870,411,000    144,725,539,157   -144,871,843  -0.1%  -0.2%  Salaries and wages
+608            5         $20,000 under $25,000  e00200  wages    182,708,792,000    182,818,941,380    110,149,380   0.1%   0.0%  Salaries and wages
+503            6         $25,000 under $30,000  e00200  wages    200,080,435,000    199,881,388,261   -199,046,739  -0.1%  -0.1%  Salaries and wages
+534            7         $30,000 under $40,000  e00200  wages    441,282,302,000    440,893,429,735   -388,872,265  -0.1%  -0.1%  Salaries and wages
+586            8         $40,000 under $50,000  e00200  wages    437,485,582,000    437,182,384,178   -303,197,822  -0.1%  -0.1%  Salaries and wages
+560            9         $50,000 under $75,000  e00200  wages  1,000,500,360,000    999,702,536,355   -797,823,645  -0.1%  -0.1%  Salaries and wages
+639           10        $75,000 under $100,000  e00200  wages    870,406,373,000    869,990,145,029   -416,227,971  -0.0%  -0.1%  Salaries and wages
+130           11       $100,000 under $200,000  e00200  wages  2,015,029,480,000  2,017,044,529,595  2,015,049,595   0.1%   0.1%  Salaries and wages
+120           12       $200,000 under $500,000  e00200  wages  1,206,754,121,000  1,207,960,887,178  1,206,766,178   0.1%  -0.1%  Salaries and wages
+682           13     $500,000 under $1,000,000  e00200  wages    379,375,686,000    379,260,637,647   -115,048,353  -0.0%  -0.1%  Salaries and wages
+593           14   $1,000,000 under $1,500,000  e00200  wages    121,320,814,000    121,401,344,252     80,530,252   0.1%   2.7%  Salaries and wages
+146           15   $1,500,000 under $2,000,000  e00200  wages     62,643,611,000     62,706,255,235     62,644,235   0.1%  -4.2%  Salaries and wages
+182           16   $2,000,000 under $5,000,000  e00200  wages    134,372,608,000    134,238,234,065   -134,373,935  -0.1%  -8.7%  Salaries and wages
+683           17  $5,000,000 under $10,000,000  e00200  wages     64,755,746,000     64,736,600,261    -19,145,739  -0.0%  -7.2%  Salaries and wages
+312           18           $10,000,000 or more  e00200  wages    105,959,775,000    105,853,814,278   -105,960,722  -0.1%  14.8%  Salaries and wages
+
+     common_stub                      incrange      pufvar      irsvar       target          puf     diff  pdiff ipdiff                         column_description
+552            0                   All returns  e00200_nnz  nret_wages  126,264,481  126,368,516  104,035   0.1%   0.1%  Number of returns with salaries and wages
+306            1                  Under $5,000  e00200_nnz  nret_wages    7,498,743    7,506,242    7,499   0.1%   0.6%  Number of returns with salaries and wages
+555            2          $5,000 under $10,000  e00200_nnz  nret_wages    8,269,276    8,276,026    6,750   0.1%  -0.5%  Number of returns with salaries and wages
+183            3         $10,000 under $15,000  e00200_nnz  nret_wages    8,640,300    8,648,940    8,640   0.1%   0.2%  Number of returns with salaries and wages
+172            4         $15,000 under $20,000  e00200_nnz  nret_wages    8,574,161    8,582,735    8,574   0.1%   0.1%  Number of returns with salaries and wages
+514            5         $20,000 under $25,000  e00200_nnz  nret_wages    8,364,949    8,373,065    8,116   0.1%   0.0%  Number of returns with salaries and wages
+529            6         $25,000 under $30,000  e00200_nnz  nret_wages    7,546,010    7,552,851    6,841   0.1%   0.1%  Number of returns with salaries and wages
+289            7         $30,000 under $40,000  e00200_nnz  nret_wages   13,247,533   13,260,781   13,248   0.1%   0.1%  Number of returns with salaries and wages
+510            8         $40,000 under $50,000  e00200_nnz  nret_wages   10,403,747   10,413,915   10,168   0.1%   0.0%  Number of returns with salaries and wages
+167            9         $50,000 under $75,000  e00200_nnz  nret_wages   17,936,912   17,954,849   17,937   0.1%   0.1%  Number of returns with salaries and wages
+591           10        $75,000 under $100,000  e00200_nnz  nret_wages   11,528,881   11,521,164   -7,717  -0.1%  -0.1%  Number of returns with salaries and wages
+245           11       $100,000 under $200,000  e00200_nnz  nret_wages   17,460,941   17,478,402   17,461   0.1%   0.1%  Number of returns with salaries and wages
+454           12       $200,000 under $500,000  e00200_nnz  nret_wages    5,511,434    5,516,945    5,511   0.1%   0.1%  Number of returns with salaries and wages
+576           13     $500,000 under $1,000,000  e00200_nnz  nret_wages      871,177      871,832      655   0.1%  -0.1%  Number of returns with salaries and wages
+185           14   $1,000,000 under $1,500,000  e00200_nnz  nret_wages      187,004      187,191      187   0.1%   6.7%  Number of returns with salaries and wages
+189           15   $1,500,000 under $2,000,000  e00200_nnz  nret_wages       74,469       74,543       74   0.1%  -2.8%  Number of returns with salaries and wages
+141           16   $2,000,000 under $5,000,000  e00200_nnz  nret_wages      106,641      106,748      107   0.1%  -7.1%  Number of returns with salaries and wages
+785           17  $5,000,000 under $10,000,000  e00200_nnz  nret_wages       25,938       25,938        0   0.0%  -9.6%  Number of returns with salaries and wages
+190           18           $10,000,000 or more  e00200_nnz  nret_wages       16,364       16,348      -16  -0.1%  -4.7%  Number of returns with salaries and wages
+
+     common_stub                      incrange  pufvar  irsvar           target              puf         diff  pdiff  ipdiff column_description
+685            0                   All returns  e00300  taxint  106,055,367,000  106,024,150,024  -31,216,976  -0.0%    0.0%   Taxable interest
+627            1                  Under $5,000  e00300  taxint    6,313,334,000    6,310,058,428   -3,275,572  -0.1%   -0.6%   Taxable interest
+795            2          $5,000 under $10,000  e00300  taxint      750,884,000      750,883,837         -163  -0.0%    4.7%   Taxable interest
+426            3         $10,000 under $15,000  e00300  taxint      910,294,000      909,383,702     -910,298  -0.1%   -0.6%   Taxable interest
+492            4         $15,000 under $20,000  e00300  taxint    1,023,518,000    1,022,494,581   -1,023,419  -0.1%    1.5%   Taxable interest
+427            5         $20,000 under $25,000  e00300  taxint    1,022,021,000    1,020,998,975   -1,022,025  -0.1%   -0.7%   Taxable interest
+407            6         $25,000 under $30,000  e00300  taxint      941,757,000      940,815,238     -941,762  -0.1%   -0.4%   Taxable interest
+483            7         $30,000 under $40,000  e00300  taxint    1,942,630,000    1,944,572,530    1,942,530   0.1%    0.8%   Taxable interest
+388            8         $40,000 under $50,000  e00300  taxint    1,735,295,000    1,733,559,694   -1,735,306  -0.1%   -0.4%   Taxable interest
+416            9         $50,000 under $75,000  e00300  taxint    5,574,683,000    5,569,108,290   -5,574,710  -0.1%    0.1%   Taxable interest
+362           10        $75,000 under $100,000  e00300  taxint    5,046,194,000    5,041,147,768   -5,046,232  -0.1%    0.1%   Taxable interest
+434           11       $100,000 under $200,000  e00300  taxint   14,295,833,000   14,281,537,129  -14,295,871  -0.1%    0.1%   Taxable interest
+371           12       $200,000 under $500,000  e00300  taxint   14,390,980,000   14,405,371,084   14,391,084   0.1%   -0.1%   Taxable interest
+267           13     $500,000 under $1,000,000  e00300  taxint    8,601,677,000    8,593,075,241   -8,601,759  -0.1%   -0.1%   Taxable interest
+198           14   $1,000,000 under $1,500,000  e00300  taxint    4,459,093,000    4,463,552,137    4,459,137   0.1%    8.9%   Taxable interest
+229           15   $1,500,000 under $2,000,000  e00300  taxint    2,988,390,000    2,991,378,419    2,988,419   0.1%   -2.4%   Taxable interest
+215           16   $2,000,000 under $5,000,000  e00300  taxint    8,879,902,000    8,888,781,989    8,879,989   0.1%    2.5%   Taxable interest
+787           17  $5,000,000 under $10,000,000  e00300  taxint    5,684,017,000    5,684,060,056       43,056   0.0%  -16.8%   Taxable interest
+247           18           $10,000,000 or more  e00300  taxint   21,494,866,000   21,473,370,928  -21,495,072  -0.1%    1.9%   Taxable interest
+
+     common_stub                      incrange      pufvar       irsvar      target         puf    diff  pdiff ipdiff                       column_description
+794            0                   All returns  e00300_nnz  nret_taxint  44,193,009  44,193,113     104   0.0%   0.1%  Number of returns with taxable interest
+279            1                  Under $5,000  e00300_nnz  nret_taxint   2,116,158   2,118,274   2,116   0.1%  -2.2%  Number of returns with taxable interest
+727            2          $5,000 under $10,000  e00300_nnz  nret_taxint   1,334,991   1,335,199     208   0.0%   3.5%  Number of returns with taxable interest
+423            3         $10,000 under $15,000  e00300_nnz  nret_taxint   1,452,616   1,454,069   1,453   0.1%   0.3%  Number of returns with taxable interest
+314            4         $15,000 under $20,000  e00300_nnz  nret_taxint   1,366,790   1,365,423  -1,367  -0.1%   0.2%  Number of returns with taxable interest
+294            5         $20,000 under $25,000  e00300_nnz  nret_taxint   1,433,085   1,431,652  -1,433  -0.1%  -0.2%  Number of returns with taxable interest
+758            6         $25,000 under $30,000  e00300_nnz  nret_taxint   1,326,946   1,326,858     -88  -0.0%   0.0%  Number of returns with taxable interest
+678            7         $30,000 under $40,000  e00300_nnz  nret_taxint   2,719,924   2,720,788     864   0.0%   0.4%  Number of returns with taxable interest
+739            8         $40,000 under $50,000  e00300_nnz  nret_taxint   2,704,026   2,704,365     339   0.0%  -0.2%  Number of returns with taxable interest
+712            9         $50,000 under $75,000  e00300_nnz  nret_taxint   6,608,661   6,610,089   1,428   0.0%   0.1%  Number of returns with taxable interest
+733           10        $75,000 under $100,000  e00300_nnz  nret_taxint   5,854,757   5,853,907    -850  -0.0%   0.1%  Number of returns with taxable interest
+752           11       $100,000 under $200,000  e00300_nnz  nret_taxint  11,121,958  11,122,822     864   0.0%   0.1%  Number of returns with taxable interest
+159           12       $200,000 under $500,000  e00300_nnz  nret_taxint   4,755,311   4,750,556  -4,755  -0.1%   0.1%  Number of returns with taxable interest
+217           13     $500,000 under $1,000,000  e00300_nnz  nret_taxint     918,148     919,066     918   0.1%   0.1%  Number of returns with taxable interest
+118           14   $1,000,000 under $1,500,000  e00300_nnz  nret_taxint     213,278     213,491     213   0.1%   6.9%  Number of returns with taxable interest
+515           15   $1,500,000 under $2,000,000  e00300_nnz  nret_taxint      87,836      87,921      85   0.1%  -2.4%  Number of returns with taxable interest
+177           16   $2,000,000 under $5,000,000  e00300_nnz  nret_taxint     127,158     127,285     127   0.1%  -6.9%  Number of returns with taxable interest
+761           17  $5,000,000 under $10,000,000  e00300_nnz  nret_taxint      31,277      31,279       2   0.0%  -9.8%  Number of returns with taxable interest
+502           18           $10,000,000 or more  e00300_nnz  nret_taxint      20,088      20,068     -20  -0.1%  -2.3%  Number of returns with taxable interest
+
+     common_stub                      incrange  pufvar  irsvar           target              puf         diff  pdiff  ipdiff  column_description
+596            0                   All returns  e00600  orddiv  282,336,042,000  282,520,670,510  184,628,510   0.1%    0.1%  Ordinary dividends
+494            1                  Under $5,000  e00600  orddiv    6,297,087,000    6,303,383,231    6,296,231   0.1%   -2.8%  Ordinary dividends
+735            2          $5,000 under $10,000  e00600  orddiv    1,282,506,000    1,282,689,486      183,486   0.0%   14.0%  Ordinary dividends
+499            3         $10,000 under $15,000  e00600  orddiv    1,834,544,000    1,832,713,963   -1,830,037  -0.1%    0.0%  Ordinary dividends
+391            4         $15,000 under $20,000  e00600  orddiv    1,830,363,000    1,832,193,374    1,830,374   0.1%    0.3%  Ordinary dividends
+688            5         $20,000 under $25,000  e00600  orddiv    1,903,404,000    1,902,848,447     -555,553  -0.0%   -0.0%  Ordinary dividends
+481            6         $25,000 under $30,000  e00600  orddiv    1,924,456,000    1,922,531,621   -1,924,379  -0.1%   -0.0%  Ordinary dividends
+478            7         $30,000 under $40,000  e00600  orddiv    4,106,378,000    4,102,271,744   -4,106,256  -0.1%    0.8%  Ordinary dividends
+372            8         $40,000 under $50,000  e00600  orddiv    3,903,451,000    3,899,547,521   -3,903,479  -0.1%   -0.5%  Ordinary dividends
+352            9         $50,000 under $75,000  e00600  orddiv   13,168,278,000   13,155,109,619  -13,168,381  -0.1%    0.1%  Ordinary dividends
+400           10        $75,000 under $100,000  e00600  orddiv   15,424,556,000   15,409,131,356  -15,424,644  -0.1%    0.1%  Ordinary dividends
+424           11       $100,000 under $200,000  e00600  orddiv   46,748,395,000   46,795,143,589   46,748,589   0.1%    0.1%  Ordinary dividends
+447           12       $200,000 under $500,000  e00600  orddiv   53,605,486,000   53,659,091,478   53,605,478   0.1%    0.1%  Ordinary dividends
+158           13     $500,000 under $1,000,000  e00600  orddiv   28,937,256,000   28,966,193,544   28,937,544   0.1%    0.1%  Ordinary dividends
+152           14   $1,000,000 under $1,500,000  e00600  orddiv   13,010,147,000   13,023,157,276   13,010,276   0.1%    7.1%  Ordinary dividends
+381           15   $1,500,000 under $2,000,000  e00600  orddiv    8,391,122,000    8,399,513,177    8,391,177   0.1%   -2.0%  Ordinary dividends
+257           16   $2,000,000 under $5,000,000  e00600  orddiv   22,009,340,000   22,031,349,550   22,009,550   0.1%   -7.2%  Ordinary dividends
+782           17  $5,000,000 under $10,000,000  e00600  orddiv   13,243,761,000   13,243,573,570     -187,430  -0.0%  -11.7%  Ordinary dividends
+105           18           $10,000,000 or more  e00600  orddiv   44,715,512,000   44,760,227,963   44,715,963   0.1%    5.6%  Ordinary dividends
+
+     common_stub                      incrange      pufvar       irsvar      target         puf     diff  pdiff ipdiff                         column_description
+558            0                   All returns  e00600_nnz  nret_orddiv  28,171,331  28,148,610  -22,721  -0.1%   0.1%  Number of returns with ordinary dividends
+295            1                  Under $5,000  e00600_nnz  nret_orddiv   1,364,222   1,362,858   -1,364  -0.1%  -2.5%  Number of returns with ordinary dividends
+751            2          $5,000 under $10,000  e00600_nnz  nret_orddiv     815,099     815,034      -65  -0.0%   4.3%  Number of returns with ordinary dividends
+421            3         $10,000 under $15,000  e00600_nnz  nret_orddiv     875,416     876,291      875   0.1%   0.3%  Number of returns with ordinary dividends
+301            4         $15,000 under $20,000  e00600_nnz  nret_orddiv     794,490     793,696     -794  -0.1%  -0.3%  Number of returns with ordinary dividends
+645            5         $20,000 under $25,000  e00600_nnz  nret_orddiv     775,451     775,107     -344  -0.0%   0.1%  Number of returns with ordinary dividends
+446            6         $25,000 under $30,000  e00600_nnz  nret_orddiv     744,390     743,646     -744  -0.1%  -0.1%  Number of returns with ordinary dividends
+779            7         $30,000 under $40,000  e00600_nnz  nret_orddiv   1,499,953   1,499,981       28   0.0%   0.6%  Number of returns with ordinary dividends
+536            8         $40,000 under $50,000  e00600_nnz  nret_orddiv   1,448,472   1,447,205   -1,267  -0.1%  -0.4%  Number of returns with ordinary dividends
+343            9         $50,000 under $75,000  e00600_nnz  nret_orddiv   3,812,081   3,808,269   -3,812  -0.1%   0.1%  Number of returns with ordinary dividends
+309           10        $75,000 under $100,000  e00600_nnz  nret_orddiv   3,510,707   3,507,196   -3,511  -0.1%   0.1%  Number of returns with ordinary dividends
+239           11       $100,000 under $200,000  e00600_nnz  nret_orddiv   7,416,984   7,409,567   -7,417  -0.1%   0.1%  Number of returns with ordinary dividends
+157           12       $200,000 under $500,000  e00600_nnz  nret_orddiv   3,869,169   3,865,300   -3,869  -0.1%   0.1%  Number of returns with ordinary dividends
+210           13     $500,000 under $1,000,000  e00600_nnz  nret_orddiv     810,519     809,708     -811  -0.1%   0.1%  Number of returns with ordinary dividends
+119           14   $1,000,000 under $1,500,000  e00600_nnz  nret_orddiv     188,882     189,071      189   0.1%   7.2%  Number of returns with ordinary dividends
+131           15   $1,500,000 under $2,000,000  e00600_nnz  nret_orddiv      79,972      80,052       80   0.1%  -2.3%  Number of returns with ordinary dividends
+204           16   $2,000,000 under $5,000,000  e00600_nnz  nret_orddiv     116,753     116,870      117   0.1%  -6.9%  Number of returns with ordinary dividends
+759           17  $5,000,000 under $10,000,000  e00600_nnz  nret_orddiv      29,452      29,454        2   0.0%  -9.8%  Number of returns with ordinary dividends
+607           18           $10,000,000 or more  e00600_nnz  nret_orddiv      19,317      19,305      -12  -0.1%  -1.8%  Number of returns with ordinary dividends
+
+     common_stub                      incrange  pufvar irsvar           target              puf          diff  pdiff  ipdiff              column_description
+703            0                   All returns  c01000  cgnet  843,115,530,000  843,322,766,044   207,236,044   0.0%    0.1%  Net capital gains (calculated)
+93             1                  Under $5,000  c01000  cgnet   18,130,300,000   18,151,317,685    21,017,685   0.1%   -2.8%  Net capital gains (calculated)
+694            2          $5,000 under $10,000  c01000  cgnet      332,893,000      332,800,609       -92,391  -0.0%  151.7%  Net capital gains (calculated)
+713            3         $10,000 under $15,000  c01000  cgnet      958,936,000      958,731,075      -204,925  -0.0%   -1.6%  Net capital gains (calculated)
+88             4         $15,000 under $20,000  c01000  cgnet      884,746,000      885,937,744     1,191,744   0.1%   -0.4%  Net capital gains (calculated)
+403            5         $20,000 under $25,000  c01000  cgnet    1,297,368,000    1,298,665,375     1,297,375   0.1%    1.7%  Net capital gains (calculated)
+91             6         $25,000 under $30,000  c01000  cgnet    1,071,104,000    1,072,390,938     1,286,938   0.1%    0.8%  Net capital gains (calculated)
+94             7         $30,000 under $40,000  c01000  cgnet    2,978,233,000    2,981,383,964     3,150,964   0.1%   -0.3%  Net capital gains (calculated)
+90             8         $40,000 under $50,000  c01000  cgnet    3,953,248,000    3,958,006,508     4,758,508   0.1%    0.3%  Net capital gains (calculated)
+460            9         $50,000 under $75,000  c01000  cgnet   11,468,878,000   11,480,346,787    11,468,787   0.1%    0.1%  Net capital gains (calculated)
+425           10        $75,000 under $100,000  c01000  cgnet   16,586,379,000   16,602,965,448    16,586,448   0.1%    0.1%  Net capital gains (calculated)
+327           11       $100,000 under $200,000  c01000  cgnet   62,233,503,000   62,295,737,042    62,234,042   0.1%    0.1%  Net capital gains (calculated)
+207           12       $200,000 under $500,000  c01000  cgnet  107,574,589,000  107,682,164,645   107,575,645   0.1%    0.1%  Net capital gains (calculated)
+124           13     $500,000 under $1,000,000  c01000  cgnet   78,873,254,000   78,952,128,042    78,874,042   0.1%    0.1%  Net capital gains (calculated)
+95            14   $1,000,000 under $1,500,000  c01000  cgnet   42,840,001,000   42,882,886,130    42,885,130   0.1%   19.9%  Net capital gains (calculated)
+192           15   $1,500,000 under $2,000,000  c01000  cgnet   29,758,780,000   29,788,539,073    29,759,073   0.1%    2.0%  Net capital gains (calculated)
+116           16   $2,000,000 under $5,000,000  c01000  cgnet   93,429,149,000   93,522,579,083    93,430,083   0.1%   -3.8%  Net capital gains (calculated)
+634           17  $5,000,000 under $10,000,000  c01000  cgnet   68,977,756,000   69,011,546,587    33,790,587   0.0%   -7.7%  Net capital gains (calculated)
+96            18           $10,000,000 or more  c01000  cgnet  301,766,414,000  301,464,639,309  -301,774,691  -0.1%    0.1%  Net capital gains (calculated)
+
+     common_stub                      incrange      pufvar      irsvar      target         puf    diff  pdiff ipdiff                                     column_description
+624            0                   All returns  c01000_nnz  nret_cgnet  21,169,727  21,180,992  11,265   0.1%   1.0%  Number of returns with net capital gains (calculated)
+521            1                  Under $5,000  c01000_nnz  nret_cgnet   1,146,675   1,147,756   1,081   0.1%  -2.0%  Number of returns with net capital gains (calculated)
+774            2          $5,000 under $10,000  c01000_nnz  nret_cgnet     589,101     589,085     -16  -0.0%   6.4%  Number of returns with net capital gains (calculated)
+613            3         $10,000 under $15,000  c01000_nnz  nret_cgnet     581,780     581,446    -334  -0.1%  -0.1%  Number of returns with net capital gains (calculated)
+771            4         $15,000 under $20,000  c01000_nnz  nret_cgnet     510,653     510,669      16   0.0%   0.2%  Number of returns with net capital gains (calculated)
+614            5         $20,000 under $25,000  c01000_nnz  nret_cgnet     514,920     515,216     296   0.1%   0.7%  Number of returns with net capital gains (calculated)
+686            6         $25,000 under $30,000  c01000_nnz  nret_cgnet     518,192     518,344     152   0.0%   0.0%  Number of returns with net capital gains (calculated)
+725            7         $30,000 under $40,000  c01000_nnz  nret_cgnet     991,225     991,058    -167  -0.0%   1.1%  Number of returns with net capital gains (calculated)
+676            8         $40,000 under $50,000  c01000_nnz  nret_cgnet     965,986     966,295     309   0.0%  -0.3%  Number of returns with net capital gains (calculated)
+549            9         $50,000 under $75,000  c01000_nnz  nret_cgnet   2,615,712   2,617,879   2,167   0.1%   0.6%  Number of returns with net capital gains (calculated)
+601           10        $75,000 under $100,000  c01000_nnz  nret_cgnet   2,553,808   2,555,432   1,624   0.1%   0.7%  Number of returns with net capital gains (calculated)
+672           11       $100,000 under $200,000  c01000_nnz  nret_cgnet   5,551,044   5,552,991   1,947   0.0%   1.6%  Number of returns with net capital gains (calculated)
+162           12       $200,000 under $500,000  c01000_nnz  nret_cgnet   3,398,791   3,402,190   3,399   0.1%   1.9%  Number of returns with net capital gains (calculated)
+612           13     $500,000 under $1,000,000  c01000_nnz  nret_cgnet     788,507     788,960     453   0.1%   0.5%  Number of returns with net capital gains (calculated)
+148           14   $1,000,000 under $1,500,000  c01000_nnz  nret_cgnet     191,335     191,526     191   0.1%   8.0%  Number of returns with net capital gains (calculated)
+584           15   $1,500,000 under $2,000,000  c01000_nnz  nret_cgnet      81,600      81,659      59   0.1%  -2.2%  Number of returns with net capital gains (calculated)
+546           16   $2,000,000 under $5,000,000  c01000_nnz  nret_cgnet     120,348     120,448     100   0.1%  -7.0%  Number of returns with net capital gains (calculated)
+746           17  $5,000,000 under $10,000,000  c01000_nnz  nret_cgnet      30,254      30,257       3   0.0%  -9.7%  Number of returns with net capital gains (calculated)
+585           18           $10,000,000 or more  c01000_nnz  nret_cgnet      19,795      19,781     -14  -0.1%  -2.0%  Number of returns with net capital gains (calculated)
+
+     common_stub                      incrange     pufvar   irsvar           target              puf          diff  pdiff ipdiff           column_description
+700            0                   All returns  c01000pos  cggross  859,894,631,000  860,112,771,878   218,140,878   0.0%   0.1%  Capital gains gross taxable
+482            1                  Under $5,000  c01000pos  cggross   19,771,923,000   19,791,694,117    19,771,117   0.1%  -2.8%  Capital gains gross taxable
+749            2          $5,000 under $10,000  c01000pos  cggross      879,902,000      879,827,962       -74,038  -0.0%  56.3%  Capital gains gross taxable
+716            3         $10,000 under $15,000  c01000pos  cggross    1,475,473,000    1,475,784,609       311,609   0.0%  -0.7%  Capital gains gross taxable
+550            4         $15,000 under $20,000  c01000pos  cggross    1,325,812,000    1,326,908,246     1,096,246   0.1%  -0.0%  Capital gains gross taxable
+398            5         $20,000 under $25,000  c01000pos  cggross    1,712,450,000    1,714,162,460     1,712,460   0.1%   1.4%  Capital gains gross taxable
+618            6         $25,000 under $30,000  c01000pos  cggross    1,508,109,000    1,508,958,935       849,935   0.1%   0.4%  Capital gains gross taxable
+461            7         $30,000 under $40,000  c01000pos  cggross    3,799,333,000    3,803,132,291     3,799,291   0.1%   0.5%  Capital gains gross taxable
+428            8         $40,000 under $50,000  c01000pos  cggross    4,655,431,000    4,660,086,449     4,655,449   0.1%   0.2%  Capital gains gross taxable
+456            9         $50,000 under $75,000  c01000pos  cggross   13,508,802,000   13,522,310,729    13,508,729   0.1%   0.3%  Capital gains gross taxable
+419           10        $75,000 under $100,000  c01000pos  cggross   18,527,349,000   18,545,876,435    18,527,435   0.1%   0.4%  Capital gains gross taxable
+323           11       $100,000 under $200,000  c01000pos  cggross   66,274,073,000   66,340,347,650    66,274,650   0.1%   0.3%  Capital gains gross taxable
+208           12       $200,000 under $500,000  c01000pos  cggross  109,971,765,000  110,081,737,844   109,972,844   0.1%   0.3%  Capital gains gross taxable
+125           13     $500,000 under $1,000,000  c01000pos  cggross   79,424,756,000   79,504,181,549    79,425,549   0.1%   0.1%  Capital gains gross taxable
+107           14   $1,000,000 under $1,500,000  c01000pos  cggross   42,974,938,000   43,017,913,370    42,975,370   0.1%  19.9%  Capital gains gross taxable
+193           15   $1,500,000 under $2,000,000  c01000pos  cggross   29,813,179,000   29,842,992,473    29,813,473   0.1%   2.0%  Capital gains gross taxable
+117           16   $2,000,000 under $5,000,000  c01000pos  cggross   93,502,832,000   93,596,335,767    93,503,767   0.1%  -3.8%  Capital gains gross taxable
+635           17  $5,000,000 under $10,000,000  c01000pos  cggross   68,993,824,000   69,027,617,682    33,793,682   0.0%  -7.7%  Capital gains gross taxable
+142           18           $10,000,000 or more  c01000pos  cggross  301,774,681,000  301,472,903,311  -301,777,689  -0.1%   0.1%  Capital gains gross taxable
+
+     common_stub                      incrange         pufvar        irsvar      target         puf    diff  pdiff ipdiff                                  column_description
+564            0                   All returns  c01000pos_nnz  nret_cggross  13,698,506  13,709,245  10,739   0.1%   0.7%  Number of returns with capital gains gross taxable
+440            1                  Under $5,000  c01000pos_nnz  nret_cggross     437,630     438,068     438   0.1%  -1.6%  Number of returns with capital gains gross taxable
+791            2          $5,000 under $10,000  c01000pos_nnz  nret_cggross     324,549     324,547      -2  -0.0%  15.2%  Number of returns with capital gains gross taxable
+442            3         $10,000 under $15,000  c01000pos_nnz  nret_cggross     347,534     347,186    -348  -0.1%  -0.6%  Number of returns with capital gains gross taxable
+605            4         $15,000 under $20,000  c01000pos_nnz  nret_cggross     305,884     305,695    -189  -0.1%  -0.3%  Number of returns with capital gains gross taxable
+667            5         $20,000 under $25,000  c01000pos_nnz  nret_cggross     324,651     324,770     119   0.0%   0.8%  Number of returns with capital gains gross taxable
+470            6         $25,000 under $30,000  c01000pos_nnz  nret_cggross     313,023     313,336     313   0.1%   0.3%  Number of returns with capital gains gross taxable
+532            7         $30,000 under $40,000  c01000pos_nnz  nret_cggross     610,424     609,876    -548  -0.1%   0.1%  Number of returns with capital gains gross taxable
+479            8         $40,000 under $50,000  c01000pos_nnz  nret_cggross     637,343     637,980     637   0.1%  -0.1%  Number of returns with capital gains gross taxable
+316            9         $50,000 under $75,000  c01000pos_nnz  nret_cggross   1,693,384   1,695,077   1,693   0.1%   0.4%  Number of returns with capital gains gross taxable
+367           10        $75,000 under $100,000  c01000pos_nnz  nret_cggross   1,673,930   1,675,604   1,674   0.1%   0.1%  Number of returns with capital gains gross taxable
+232           11       $100,000 under $200,000  c01000pos_nnz  nret_cggross   3,748,985   3,752,734   3,749   0.1%   1.0%  Number of returns with capital gains gross taxable
+149           12       $200,000 under $500,000  c01000pos_nnz  nret_cggross   2,366,587   2,368,954   2,367   0.1%  -0.1%  Number of returns with capital gains gross taxable
+161           13     $500,000 under $1,000,000  c01000pos_nnz  nret_cggross     575,245     575,820     575   0.1%   0.6%  Number of returns with capital gains gross taxable
+137           14   $1,000,000 under $1,500,000  c01000pos_nnz  nret_cggross     142,145     142,287     142   0.1%   9.6%  Number of returns with capital gains gross taxable
+600           15   $1,500,000 under $2,000,000  c01000pos_nnz  nret_cggross      61,878      61,918      40   0.1%  -1.8%  Number of returns with capital gains gross taxable
+278           16   $2,000,000 under $5,000,000  c01000pos_nnz  nret_cggross      93,801      93,895      94   0.1%  -6.7%  Number of returns with capital gains gross taxable
+734           17  $5,000,000 under $10,000,000  c01000pos_nnz  nret_cggross      24,609      24,613       4   0.0%  -8.4%  Number of returns with capital gains gross taxable
+244           18           $10,000,000 or more  c01000pos_nnz  nret_cggross      16,902      16,885     -17  -0.1%  -7.9%  Number of returns with capital gains gross taxable
+
+     common_stub                      incrange     pufvar  irsvar           target              puf         diff  pdiff  ipdiff    column_description
+598            0                   All returns  c01000neg  cgloss  -16,779,101,000  -16,790,005,834  -10,904,834   0.1%    2.4%  Capital loss taxable
+574            1                  Under $5,000  c01000neg  cgloss   -1,641,623,000   -1,640,376,432    1,246,568  -0.1%   -2.3%  Capital loss taxable
+770            2          $5,000 under $10,000  c01000neg  cgloss     -547,009,000     -547,027,354      -18,354   0.0%   -1.8%  Capital loss taxable
+459            3         $10,000 under $15,000  c01000neg  cgloss     -516,537,000     -517,053,533     -516,533   0.1%    0.9%  Capital loss taxable
+711            4         $15,000 under $20,000  c01000neg  cgloss     -441,066,000     -440,970,502       95,498  -0.0%    0.8%  Capital loss taxable
+384            5         $20,000 under $25,000  c01000neg  cgloss     -415,082,000     -415,497,085     -415,085   0.1%    0.6%  Capital loss taxable
+455            6         $25,000 under $30,000  c01000neg  cgloss     -437,005,000     -436,567,997      437,003  -0.1%   -0.6%  Capital loss taxable
+561            7         $30,000 under $40,000  c01000neg  cgloss     -821,100,000     -821,748,327     -648,327   0.1%    3.1%  Capital loss taxable
+732            8         $40,000 under $50,000  c01000neg  cgloss     -702,183,000     -702,079,941      103,059  -0.0%   -0.6%  Capital loss taxable
+303            9         $50,000 under $75,000  c01000neg  cgloss   -2,039,924,000   -2,041,963,942   -2,039,942   0.1%    1.4%  Capital loss taxable
+310           10        $75,000 under $100,000  c01000neg  cgloss   -1,940,970,000   -1,942,910,987   -1,940,987   0.1%    2.7%  Capital loss taxable
+262           11       $100,000 under $200,000  c01000neg  cgloss   -4,040,570,000   -4,044,610,609   -4,040,609   0.1%    4.1%  Capital loss taxable
+214           12       $200,000 under $500,000  c01000neg  cgloss   -2,397,176,000   -2,399,573,199   -2,397,199   0.1%    7.4%  Capital loss taxable
+201           13     $500,000 under $1,000,000  c01000neg  cgloss     -551,502,000     -552,053,507     -551,507   0.1%    0.7%  Capital loss taxable
+592           14   $1,000,000 under $1,500,000  c01000neg  cgloss     -134,937,000     -135,027,239      -90,239   0.1%    3.6%  Capital loss taxable
+222           15   $1,500,000 under $2,000,000  c01000neg  cgloss      -54,399,000      -54,453,400      -54,400   0.1%   -3.4%  Capital loss taxable
+234           16   $2,000,000 under $5,000,000  c01000neg  cgloss      -73,683,000      -73,756,684      -73,684   0.1%   -8.4%  Capital loss taxable
+720           17  $5,000,000 under $10,000,000  c01000neg  cgloss      -16,068,000      -16,071,094       -3,094   0.0%  -15.4%  Capital loss taxable
+669           18           $10,000,000 or more  c01000neg  cgloss       -8,267,000       -8,264,002        2,998  -0.0%   32.9%  Capital loss taxable
+
+     common_stub                      incrange         pufvar       irsvar     target        puf    diff  pdiff  ipdiff                           column_description
+757            0                   All returns  c01000neg_nnz  nret_cgloss  7,471,221  7,471,747     526   0.0%    1.7%  Number of returns with capital loss taxable
+528            1                  Under $5,000  c01000neg_nnz  nret_cgloss    709,045    709,689     644   0.1%   -2.3%  Number of returns with capital loss taxable
+766            2          $5,000 under $10,000  c01000neg_nnz  nret_cgloss    264,552    264,538     -14  -0.0%   -4.4%  Number of returns with capital loss taxable
+763            3         $10,000 under $15,000  c01000neg_nnz  nret_cgloss    234,246    234,259      13   0.0%    0.6%  Number of returns with capital loss taxable
+399            4         $15,000 under $20,000  c01000neg_nnz  nret_cgloss    204,769    204,974     205   0.1%    0.8%  Number of returns with capital loss taxable
+524            5         $20,000 under $25,000  c01000neg_nnz  nret_cgloss    190,269    190,446     177   0.1%    0.5%  Number of returns with capital loss taxable
+565            6         $25,000 under $30,000  c01000neg_nnz  nret_cgloss    205,169    205,008    -161  -0.1%   -0.5%  Number of returns with capital loss taxable
+363            7         $30,000 under $40,000  c01000neg_nnz  nret_cgloss    380,801    381,182     381   0.1%    2.7%  Number of returns with capital loss taxable
+397            8         $40,000 under $50,000  c01000neg_nnz  nret_cgloss    328,643    328,314    -329  -0.1%   -0.6%  Number of returns with capital loss taxable
+630            9         $50,000 under $75,000  c01000neg_nnz  nret_cgloss    922,328    922,801     473   0.1%    1.1%  Number of returns with capital loss taxable
+764           10        $75,000 under $100,000  c01000neg_nnz  nret_cgloss    879,878    879,828     -50  -0.0%    1.9%  Number of returns with capital loss taxable
+411           11       $100,000 under $200,000  c01000neg_nnz  nret_cgloss  1,802,059  1,800,257  -1,802  -0.1%    2.8%  Number of returns with capital loss taxable
+179           12       $200,000 under $500,000  c01000neg_nnz  nret_cgloss  1,032,204  1,033,236   1,032   0.1%    6.4%  Number of returns with capital loss taxable
+615           13     $500,000 under $1,000,000  c01000neg_nnz  nret_cgloss    213,262    213,140    -122  -0.1%    0.3%  Number of returns with capital loss taxable
+173           14   $1,000,000 under $1,500,000  c01000neg_nnz  nret_cgloss     49,190     49,239      49   0.1%    3.4%  Number of returns with capital loss taxable
+513           15   $1,500,000 under $2,000,000  c01000neg_nnz  nret_cgloss     19,722     19,741      19   0.1%   -3.7%  Number of returns with capital loss taxable
+707           16   $2,000,000 under $5,000,000  c01000neg_nnz  nret_cgloss     26,547     26,553       6   0.0%   -8.4%  Number of returns with capital loss taxable
+754           17  $5,000,000 under $10,000,000  c01000neg_nnz  nret_cgloss      5,645      5,645      -0  -0.0%  -15.4%  Number of returns with capital loss taxable
+98            18           $10,000,000 or more  c01000neg_nnz  nret_cgloss      2,893      2,896       3   0.1%   32.8%  Number of returns with capital loss taxable
+
+     common_stub                      incrange  pufvar    irsvar             target                puf          diff  pdiff  ipdiff                                   column_description
+544            0                   All returns  e01500  pensions  1,171,791,907,000  1,170,793,814,067  -998,092,933  -0.1%   -0.8%  Total pensions and annuities (including nontaxable)
+438            1                  Under $5,000  e01500  pensions     13,204,540,000     13,191,335,434   -13,204,566  -0.1%   -1.6%  Total pensions and annuities (including nontaxable)
+781            2          $5,000 under $10,000  e01500  pensions     10,211,529,000     10,211,374,421      -154,579  -0.0%    3.2%  Total pensions and annuities (including nontaxable)
+637            3         $10,000 under $15,000  e01500  pensions     18,171,930,000     18,163,151,866    -8,778,134  -0.0%   -0.2%  Total pensions and annuities (including nontaxable)
+305            4         $15,000 under $20,000  e01500  pensions     20,721,157,000     20,741,878,343    20,721,343   0.1%    1.0%  Total pensions and annuities (including nontaxable)
+396            5         $20,000 under $25,000  e01500  pensions     23,912,287,000     23,936,199,428    23,912,428   0.1%    0.1%  Total pensions and annuities (including nontaxable)
+580            6         $25,000 under $30,000  e01500  pensions     23,998,290,000     24,015,790,676    17,500,676   0.1%    0.3%  Total pensions and annuities (including nontaxable)
+471            7         $30,000 under $40,000  e01500  pensions     48,794,181,000     48,745,387,638   -48,793,362  -0.1%    0.1%  Total pensions and annuities (including nontaxable)
+590            8         $40,000 under $50,000  e01500  pensions     51,533,778,000     51,499,273,701   -34,504,299  -0.1%   -0.3%  Total pensions and annuities (including nontaxable)
+241            9         $50,000 under $75,000  e01500  pensions    158,863,197,000    158,704,332,266  -158,864,734  -0.1%   -0.6%  Total pensions and annuities (including nontaxable)
+320           10        $75,000 under $100,000  e01500  pensions    166,773,240,000    166,606,465,297  -166,774,703  -0.1%   -0.5%  Total pensions and annuities (including nontaxable)
+287           11       $100,000 under $200,000  e01500  pensions    372,883,554,000    372,510,666,975  -372,887,025  -0.1%   -1.5%  Total pensions and annuities (including nontaxable)
+266           12       $200,000 under $500,000  e01500  pensions    195,414,646,000    195,219,229,497  -195,416,503  -0.1%   -0.9%  Total pensions and annuities (including nontaxable)
+202           13     $500,000 under $1,000,000  e01500  pensions     41,237,548,000     41,196,310,047   -41,237,953  -0.1%   -2.7%  Total pensions and annuities (including nontaxable)
+356           14   $1,000,000 under $1,500,000  e01500  pensions     10,150,853,000     10,140,702,069   -10,150,931  -0.1%    1.6%  Total pensions and annuities (including nontaxable)
+269           15   $1,500,000 under $2,000,000  e01500  pensions      4,472,303,000      4,467,830,655    -4,472,345  -0.1%   -3.5%  Total pensions and annuities (including nontaxable)
+369           16   $2,000,000 under $5,000,000  e01500  pensions      7,144,885,000      7,137,740,063    -7,144,937  -0.1%   -6.6%  Total pensions and annuities (including nontaxable)
+790           17  $5,000,000 under $10,000,000  e01500  pensions      2,160,456,000      2,160,470,135        14,135   0.0%  -10.0%  Total pensions and annuities (including nontaxable)
+99            18           $10,000,000 or more  e01500  pensions      2,143,532,000      2,145,675,556     2,143,556   0.1%   41.8%  Total pensions and annuities (including nontaxable)
+
+     common_stub                      incrange      pufvar         irsvar      target         puf     diff  pdiff  ipdiff                                                          column_description
+638            0                   All returns  e01500_nnz  nret_pensions  30,610,779  30,596,125  -14,654  -0.0%    0.0%  Number of returns with total pensions and annuities (including nontaxable)
+382            1                  Under $5,000  e01500_nnz  nret_pensions   1,004,073   1,003,069   -1,004  -0.1%   -0.1%  Number of returns with total pensions and annuities (including nontaxable)
+792            2          $5,000 under $10,000  e01500_nnz  nret_pensions   1,208,473   1,208,480        7   0.0%    4.6%  Number of returns with total pensions and annuities (including nontaxable)
+582            3         $10,000 under $15,000  e01500_nnz  nret_pensions   1,573,498   1,572,358   -1,140  -0.1%    0.0%  Number of returns with total pensions and annuities (including nontaxable)
+311            4         $15,000 under $20,000  e01500_nnz  nret_pensions   1,545,385   1,543,840   -1,545  -0.1%    0.4%  Number of returns with total pensions and annuities (including nontaxable)
+553            5         $20,000 under $25,000  e01500_nnz  nret_pensions   1,507,057   1,505,817   -1,240  -0.1%   -0.2%  Number of returns with total pensions and annuities (including nontaxable)
+567            6         $25,000 under $30,000  e01500_nnz  nret_pensions   1,360,383   1,361,446    1,063   0.1%    0.2%  Number of returns with total pensions and annuities (including nontaxable)
+417            7         $30,000 under $40,000  e01500_nnz  nret_pensions   2,496,150   2,493,654   -2,496  -0.1%    0.1%  Number of returns with total pensions and annuities (including nontaxable)
+687            8         $40,000 under $50,000  e01500_nnz  nret_pensions   2,203,783   2,203,139     -644  -0.0%   -0.3%  Number of returns with total pensions and annuities (including nontaxable)
+625            9         $50,000 under $75,000  e01500_nnz  nret_pensions   5,129,174   5,131,880    2,706   0.1%    0.0%  Number of returns with total pensions and annuities (including nontaxable)
+606           10        $75,000 under $100,000  e01500_nnz  nret_pensions   4,060,177   4,057,710   -2,467  -0.1%   -0.1%  Number of returns with total pensions and annuities (including nontaxable)
+253           11       $100,000 under $200,000  e01500_nnz  nret_pensions   6,326,557   6,320,230   -6,327  -0.1%   -1.0%  Number of returns with total pensions and annuities (including nontaxable)
+254           12       $200,000 under $500,000  e01500_nnz  nret_pensions   1,838,752   1,836,913   -1,839  -0.1%    0.5%  Number of returns with total pensions and annuities (including nontaxable)
+276           13     $500,000 under $1,000,000  e01500_nnz  nret_pensions     240,808     241,049      241   0.1%   -0.2%  Number of returns with total pensions and annuities (including nontaxable)
+251           14   $1,000,000 under $1,500,000  e01500_nnz  nret_pensions      52,066      52,118       52   0.1%    6.3%  Number of returns with total pensions and annuities (including nontaxable)
+255           15   $1,500,000 under $2,000,000  e01500_nnz  nret_pensions      21,292      21,271      -21  -0.1%   -2.5%  Number of returns with total pensions and annuities (including nontaxable)
+704           16   $2,000,000 under $5,000,000  e01500_nnz  nret_pensions      30,807      30,814        7   0.0%   -6.3%  Number of returns with total pensions and annuities (including nontaxable)
+714           17  $5,000,000 under $10,000,000  e01500_nnz  nret_pensions       7,500       7,498       -2  -0.0%  -11.8%  Number of returns with total pensions and annuities (including nontaxable)
+166           18           $10,000,000 or more  e01500_nnz  nret_pensions       4,844       4,839       -5  -0.1%   -2.9%  Number of returns with total pensions and annuities (including nontaxable)
+
+     common_stub                      incrange  pufvar     irsvar           target              puf         diff  pdiff  ipdiff              column_description
+616            0                   All returns  e02400  socsectot  644,989,570,000  645,358,053,007  368,483,007   0.1%    1.3%  Total Social Security benefits
+328            1                  Under $5,000  e02400  socsectot   51,453,659,000   51,505,113,103   51,454,103   0.1%   -0.6%  Total Social Security benefits
+663            2          $5,000 under $10,000  e02400  socsectot   37,114,006,000   37,100,177,893  -13,828,107  -0.0%    2.0%  Total Social Security benefits
+573            3         $10,000 under $15,000  e02400  socsectot   41,753,457,000   41,785,172,643   31,715,643   0.1%    0.5%  Total Social Security benefits
+339            4         $15,000 under $20,000  e02400  socsectot   35,555,521,000   35,519,965,189  -35,555,811  -0.1%    0.8%  Total Social Security benefits
+650            5         $20,000 under $25,000  e02400  socsectot   33,489,639,000   33,475,680,921  -13,958,079  -0.0%    0.6%  Total Social Security benefits
+762            6         $25,000 under $30,000  e02400  socsectot   27,215,744,000   27,217,352,655    1,608,655   0.0%    0.2%  Total Social Security benefits
+351            7         $30,000 under $40,000  e02400  socsectot   46,193,861,000   46,240,055,222   46,194,222   0.1%    0.5%  Total Social Security benefits
+296            8         $40,000 under $50,000  e02400  socsectot   38,155,680,000   38,193,836,030   38,156,030   0.1%   -0.2%  Total Social Security benefits
+168            9         $50,000 under $75,000  e02400  socsectot   93,596,920,000   93,690,517,847   93,597,847   0.1%    0.7%  Total Social Security benefits
+728           10        $75,000 under $100,000  e02400  socsectot   77,224,418,000   77,236,269,803   11,851,803   0.0%    0.6%  Total Social Security benefits
+174           11       $100,000 under $200,000  e02400  socsectot  117,674,183,000  117,791,858,347  117,675,347   0.1%    2.2%  Total Social Security benefits
+520           12       $200,000 under $500,000  e02400  socsectot   36,219,795,000   36,254,041,713   34,246,713   0.1%    7.2%  Total Social Security benefits
+509           13     $500,000 under $1,000,000  e02400  socsectot    6,075,048,000    6,080,998,512    5,950,512   0.1%    3.4%  Total Social Security benefits
+228           14   $1,000,000 under $1,500,000  e02400  socsectot    1,390,704,000    1,389,313,282   -1,390,718  -0.1%   17.1%  Total Social Security benefits
+569           15   $1,500,000 under $2,000,000  e02400  socsectot      588,018,000      588,466,708      448,708   0.1%   -0.1%  Total Social Security benefits
+709           16   $2,000,000 under $5,000,000  e02400  socsectot      902,381,000      902,591,110      210,110   0.0%   -6.1%  Total Social Security benefits
+769           17  $5,000,000 under $10,000,000  e02400  socsectot      230,913,000      230,904,091       -8,909  -0.0%  -14.2%  Total Social Security benefits
+579           18           $10,000,000 or more  e02400  socsectot      155,623,000      155,737,937      114,937   0.1%   16.1%  Total Social Security benefits
+
+     common_stub                      incrange      pufvar          irsvar      target         puf     diff  pdiff  ipdiff                                     column_description
+648            0                   All returns  e02400_nnz  nret_socsectot  28,967,603  28,955,165  -12,438  -0.0%    0.7%  Number of returns with total Social Security benefits
+583            1                  Under $5,000  e02400_nnz  nret_socsectot   2,764,827   2,766,831    2,004   0.1%   -0.6%  Number of returns with total Social Security benefits
+753            2          $5,000 under $10,000  e02400_nnz  nret_socsectot   2,000,972   2,000,817     -155  -0.0%    5.1%  Number of returns with total Social Security benefits
+390            3         $10,000 under $15,000  e02400_nnz  nret_socsectot   2,201,549   2,203,751    2,202   0.1%    0.3%  Number of returns with total Social Security benefits
+710            4         $15,000 under $20,000  e02400_nnz  nret_socsectot   1,836,800   1,837,211      411   0.0%    0.5%  Number of returns with total Social Security benefits
+330            5         $20,000 under $25,000  e02400_nnz  nret_socsectot   1,637,535   1,635,897   -1,638  -0.1%   -0.1%  Number of returns with total Social Security benefits
+506            6         $25,000 under $30,000  e02400_nnz  nret_socsectot   1,297,421   1,296,142   -1,279  -0.1%    0.1%  Number of returns with total Social Security benefits
+702            7         $30,000 under $40,000  e02400_nnz  nret_socsectot   2,202,026   2,201,482     -544  -0.0%    0.3%  Number of returns with total Social Security benefits
+724            8         $40,000 under $50,000  e02400_nnz  nret_socsectot   1,838,614   1,838,302     -312  -0.0%   -0.3%  Number of returns with total Social Security benefits
+191            9         $50,000 under $75,000  e02400_nnz  nret_socsectot   4,323,996   4,319,672   -4,324  -0.1%    0.1%  Number of returns with total Social Security benefits
+199           10        $75,000 under $100,000  e02400_nnz  nret_socsectot   3,214,006   3,210,792   -3,214  -0.1%   -0.1%  Number of returns with total Social Security benefits
+315           11       $100,000 under $200,000  e02400_nnz  nret_socsectot   4,234,271   4,230,037   -4,234  -0.1%    1.0%  Number of returns with total Social Security benefits
+205           12       $200,000 under $500,000  e02400_nnz  nret_socsectot   1,146,717   1,145,570   -1,147  -0.1%    4.8%  Number of returns with total Social Security benefits
+319           13     $500,000 under $1,000,000  e02400_nnz  nret_socsectot     177,394     177,217     -177  -0.1%    2.7%  Number of returns with total Social Security benefits
+745           14   $1,000,000 under $1,500,000  e02400_nnz  nret_socsectot      39,871      39,867       -4  -0.0%   15.3%  Number of returns with total Social Security benefits
+240           15   $1,500,000 under $2,000,000  e02400_nnz  nret_socsectot      16,567      16,550      -17  -0.1%   -0.2%  Number of returns with total Social Security benefits
+701           16   $2,000,000 under $5,000,000  e02400_nnz  nret_socsectot      24,884      24,878       -6  -0.0%   -5.9%  Number of returns with total Social Security benefits
+772           17  $5,000,000 under $10,000,000  e02400_nnz  nret_socsectot       6,197       6,197       -0  -0.0%  -12.2%  Number of returns with total Social Security benefits
+212           18           $10,000,000 or more  e02400_nnz  nret_socsectot       3,957       3,953       -4  -0.1%   14.1%  Number of returns with total Social Security benefits
+
+     common_stub                      incrange  pufvar         irsvar           target              puf         diff  pdiff  ipdiff                column_description
+647            0                   All returns  c02500  socsectaxable  309,539,629,000  309,672,995,465  133,366,465   0.0%    1.8%  Taxable Social Security benefits
+636            1                  Under $5,000  c02500  socsectaxable      110,488,000      110,433,884      -54,116  -0.0%  -14.8%  Taxable Social Security benefits
+24             2          $5,000 under $10,000  c02500  socsectaxable      243,551,000      223,082,147  -20,468,853  -8.4%   63.4%  Taxable Social Security benefits
+491            3         $10,000 under $15,000  c02500  socsectaxable      323,074,000      323,397,045      323,045   0.1%    2.7%  Taxable Social Security benefits
+300            4         $15,000 under $20,000  c02500  socsectaxable    1,049,423,000    1,050,472,433    1,049,433   0.1%    3.3%  Taxable Social Security benefits
+272            5         $20,000 under $25,000  c02500  socsectaxable    3,116,870,000    3,119,986,900    3,116,900   0.1%    1.8%  Taxable Social Security benefits
+531            6         $25,000 under $30,000  c02500  socsectaxable    4,545,548,000    4,549,639,690    4,091,690   0.1%    0.2%  Taxable Social Security benefits
+554            7         $30,000 under $40,000  c02500  socsectaxable   13,407,599,000   13,396,652,743  -10,946,257  -0.1%    0.4%  Taxable Social Security benefits
+264            8         $40,000 under $50,000  c02500  socsectaxable   18,230,010,000   18,211,779,816  -18,230,184  -0.1%   -0.5%  Taxable Social Security benefits
+673            9         $50,000 under $75,000  c02500  socsectaxable   65,701,381,000   65,679,139,355  -22,241,645  -0.0%    0.4%  Taxable Social Security benefits
+200           10        $75,000 under $100,000  c02500  socsectaxable   64,116,496,000   64,180,613,126   64,117,126   0.1%    0.6%  Taxable Social Security benefits
+517           11       $100,000 under $200,000  c02500  socsectaxable   99,970,116,000  100,066,052,975   95,936,975   0.1%    2.2%  Taxable Social Security benefits
+156           12       $200,000 under $500,000  c02500  socsectaxable   30,785,150,000   30,815,935,456   30,785,456   0.1%    7.2%  Taxable Social Security benefits
+218           13     $500,000 under $1,000,000  c02500  socsectaxable    5,163,685,000    5,168,848,736    5,163,736   0.1%    3.4%  Taxable Social Security benefits
+611           14   $1,000,000 under $1,500,000  c02500  socsectaxable    1,181,596,000    1,180,916,290     -679,710  -0.1%   17.1%  Taxable Social Security benefits
+242           15   $1,500,000 under $2,000,000  c02500  socsectaxable      499,697,000      500,196,702      499,702   0.1%   -0.0%  Taxable Social Security benefits
+284           16   $2,000,000 under $5,000,000  c02500  socsectaxable      766,436,000      767,202,443      766,443   0.1%   -6.1%  Taxable Social Security benefits
+780           17  $5,000,000 under $10,000,000  c02500  socsectaxable      196,265,000      196,268,478        3,478   0.0%  -14.2%  Taxable Social Security benefits
+140           18           $10,000,000 or more  c02500  socsectaxable      132,245,000      132,377,246      132,246   0.1%   16.1%  Taxable Social Security benefits
+
+     common_stub                      incrange      pufvar              irsvar      target         puf    diff  pdiff  ipdiff                                       column_description
+744            0                   All returns  c02500_nnz  nret_socsectaxable  20,929,431  20,927,141  -2,290  -0.0%    0.8%  Number of returns with taxable Social Security benefits
+431            1                  Under $5,000  c02500_nnz  nret_socsectaxable      25,697      25,671     -26  -0.1%  -12.8%  Number of returns with taxable Social Security benefits
+21             2          $5,000 under $10,000  c02500_nnz  nret_socsectaxable      44,872      49,481   4,609  10.3%   97.6%  Number of returns with taxable Social Security benefits
+484            3         $10,000 under $15,000  c02500_nnz  nret_socsectaxable     185,390     185,575     185   0.1%    1.0%  Number of returns with taxable Social Security benefits
+488            4         $15,000 under $20,000  c02500_nnz  nret_socsectaxable     860,783     861,644     861   0.1%    1.2%  Number of returns with taxable Social Security benefits
+664            5         $20,000 under $25,000  c02500_nnz  nret_socsectaxable   1,345,904   1,346,403     499   0.0%    0.1%  Number of returns with taxable Social Security benefits
+385            6         $25,000 under $30,000  c02500_nnz  nret_socsectaxable   1,243,664   1,244,908   1,244   0.1%    0.3%  Number of returns with taxable Social Security benefits
+721            7         $30,000 under $40,000  c02500_nnz  nret_socsectaxable   2,200,016   2,200,424     408   0.0%    0.3%  Number of returns with taxable Social Security benefits
+659            8         $40,000 under $50,000  c02500_nnz  nret_socsectaxable   1,837,609   1,838,302     693   0.0%   -0.3%  Number of returns with taxable Social Security benefits
+572            9         $50,000 under $75,000  c02500_nnz  nret_socsectaxable   4,322,960   4,319,672  -3,288  -0.1%    0.1%  Number of returns with taxable Social Security benefits
+587           10        $75,000 under $100,000  c02500_nnz  nret_socsectaxable   3,213,007   3,210,792  -2,215  -0.1%   -0.0%  Number of returns with taxable Social Security benefits
+505           11       $100,000 under $200,000  c02500_nnz  nret_socsectaxable   4,234,224   4,230,037  -4,187  -0.1%    1.0%  Number of returns with taxable Social Security benefits
+545           12       $200,000 under $500,000  c02500_nnz  nret_socsectaxable   1,146,531   1,145,570    -961  -0.1%    4.9%  Number of returns with taxable Social Security benefits
+518           13     $500,000 under $1,000,000  c02500_nnz  nret_socsectaxable     177,386     177,217    -169  -0.1%    2.7%  Number of returns with taxable Social Security benefits
+383           14   $1,000,000 under $1,500,000  c02500_nnz  nret_socsectaxable      39,827      39,867      40   0.1%   15.4%  Number of returns with taxable Social Security benefits
+628           15   $1,500,000 under $2,000,000  c02500_nnz  nret_socsectaxable      16,559      16,550      -9  -0.1%   -0.2%  Number of returns with taxable Social Security benefits
+277           16   $2,000,000 under $5,000,000  c02500_nnz  nret_socsectaxable      24,853      24,878      25   0.1%   -5.7%  Number of returns with taxable Social Security benefits
+738           17  $5,000,000 under $10,000,000  c02500_nnz  nret_socsectaxable       6,196       6,197       1   0.0%  -12.2%  Number of returns with taxable Social Security benefits
+706           18           $10,000,000 or more  c02500_nnz  nret_socsectaxable       3,954       3,953      -1  -0.0%   14.2%  Number of returns with taxable Social Security benefits
+
+     common_stub                      incrange     pufvar           irsvar           target              puf          diff  pdiff  ipdiff                       column_description
+778            0                   All returns  e26270pos  partnerscorpinc  833,430,151,000  833,413,847,063   -16,303,937  -0.0%    0.1%  Partnership or S corporation net income
+458            1                  Under $5,000  e26270pos  partnerscorpinc    6,965,822,000    6,958,856,221    -6,965,779  -0.1%   -0.9%  Partnership or S corporation net income
+793            2          $5,000 under $10,000  e26270pos  partnerscorpinc      686,865,000      686,868,028         3,028   0.0%   -2.0%  Partnership or S corporation net income
+465            3         $10,000 under $15,000  e26270pos  partnerscorpinc    1,042,515,000    1,041,472,499    -1,042,501  -0.1%   -0.2%  Partnership or S corporation net income
+464            4         $15,000 under $20,000  e26270pos  partnerscorpinc    1,064,545,000    1,063,480,469    -1,064,531  -0.1%   -0.4%  Partnership or S corporation net income
+341            5         $20,000 under $25,000  e26270pos  partnerscorpinc    1,716,869,000    1,718,585,883     1,716,883   0.1%    2.8%  Partnership or S corporation net income
+631            6         $25,000 under $30,000  e26270pos  partnerscorpinc    1,576,551,000    1,577,353,247       802,247   0.1%   -0.4%  Partnership or S corporation net income
+445            7         $30,000 under $40,000  e26270pos  partnerscorpinc    4,795,472,000    4,800,267,475     4,795,475   0.1%    2.9%  Partnership or S corporation net income
+475            8         $40,000 under $50,000  e26270pos  partnerscorpinc    4,885,683,000    4,890,568,568     4,885,568   0.1%   -0.0%  Partnership or S corporation net income
+429            9         $50,000 under $75,000  e26270pos  partnerscorpinc   14,200,026,000   14,214,226,079    14,200,079   0.1%   -0.3%  Partnership or S corporation net income
+467           10        $75,000 under $100,000  e26270pos  partnerscorpinc   18,152,097,000   18,133,945,177   -18,151,823  -0.1%    0.2%  Partnership or S corporation net income
+281           11       $100,000 under $200,000  e26270pos  partnerscorpinc   71,515,726,000   71,587,242,397    71,516,397   0.1%    5.3%  Partnership or S corporation net income
+203           12       $200,000 under $500,000  e26270pos  partnerscorpinc  150,290,571,000  150,440,863,048   150,292,048   0.1%    0.4%  Partnership or S corporation net income
+299           13     $500,000 under $1,000,000  e26270pos  partnerscorpinc  132,021,848,000  132,153,871,057   132,023,057   0.1%    0.1%  Partnership or S corporation net income
+361           14   $1,000,000 under $1,500,000  e26270pos  partnerscorpinc   71,201,820,000   71,130,617,647   -71,202,353  -0.1%    4.3%  Partnership or S corporation net income
+698           15   $1,500,000 under $2,000,000  e26270pos  partnerscorpinc   43,763,972,000   43,752,697,486   -11,274,514  -0.0%   -4.1%  Partnership or S corporation net income
+188           16   $2,000,000 under $5,000,000  e26270pos  partnerscorpinc  111,793,721,000  111,681,926,177  -111,794,823  -0.1%   -9.4%  Partnership or S corporation net income
+609           17  $5,000,000 under $10,000,000  e26270pos  partnerscorpinc   56,536,444,000   56,502,621,538   -33,822,462  -0.1%  -13.8%  Partnership or S corporation net income
+280           18           $10,000,000 or more  e26270pos  partnerscorpinc  141,219,605,000  141,078,384,068  -141,220,932  -0.1%    9.7%  Partnership or S corporation net income
+
+     common_stub                      incrange         pufvar                irsvar     target        puf   diff  pdiff ipdiff                                              column_description
+652            0                   All returns  e26270pos_nnz  nret_partnerscorpinc  6,240,408  6,242,910  2,502   0.0%   0.7%  Number of returns with partnership or S corporation net income
+619            1                  Under $5,000  e26270pos_nnz  nret_partnerscorpinc    162,632    162,722     90   0.1%   0.6%  Number of returns with partnership or S corporation net income
+783            2          $5,000 under $10,000  e26270pos_nnz  nret_partnerscorpinc     92,439     92,438     -1  -0.0%  -3.6%  Number of returns with partnership or S corporation net income
+466            3         $10,000 under $15,000  e26270pos_nnz  nret_partnerscorpinc    115,968    116,084    116   0.1%   0.5%  Number of returns with partnership or S corporation net income
+736            4         $15,000 under $20,000  e26270pos_nnz  nret_partnerscorpinc    101,344    101,330    -14  -0.0%  -0.2%  Number of returns with partnership or S corporation net income
+449            5         $20,000 under $25,000  e26270pos_nnz  nret_partnerscorpinc    138,864    138,725   -139  -0.1%   1.2%  Number of returns with partnership or S corporation net income
+452            6         $25,000 under $30,000  e26270pos_nnz  nret_partnerscorpinc    122,819    122,696   -123  -0.1%  -0.4%  Number of returns with partnership or S corporation net income
+443            7         $30,000 under $40,000  e26270pos_nnz  nret_partnerscorpinc    279,552    279,832    280   0.1%   2.2%  Number of returns with partnership or S corporation net income
+501            8         $40,000 under $50,000  e26270pos_nnz  nret_partnerscorpinc    261,439    261,179   -260  -0.1%  -0.3%  Number of returns with partnership or S corporation net income
+368            9         $50,000 under $75,000  e26270pos_nnz  nret_partnerscorpinc    623,153    622,530   -623  -0.1%  -0.4%  Number of returns with partnership or S corporation net income
+430           10        $75,000 under $100,000  e26270pos_nnz  nret_partnerscorpinc    642,516    643,159    643   0.1%   0.4%  Number of returns with partnership or S corporation net income
+463           11       $100,000 under $200,000  e26270pos_nnz  nret_partnerscorpinc  1,646,657  1,648,304  1,647   0.1%   2.2%  Number of returns with partnership or S corporation net income
+286           12       $200,000 under $500,000  e26270pos_nnz  nret_partnerscorpinc  1,328,248  1,329,576  1,328   0.1%   0.6%  Number of returns with partnership or S corporation net income
+186           13     $500,000 under $1,000,000  e26270pos_nnz  nret_partnerscorpinc    443,879    443,435   -444  -0.1%  -0.7%  Number of returns with partnership or S corporation net income
+293           14   $1,000,000 under $1,500,000  e26270pos_nnz  nret_partnerscorpinc    121,853    121,731   -122  -0.1%   7.0%  Number of returns with partnership or S corporation net income
+176           15   $1,500,000 under $2,000,000  e26270pos_nnz  nret_partnerscorpinc     51,640     51,692     52   0.1%  -2.5%  Number of returns with partnership or S corporation net income
+206           16   $2,000,000 under $5,000,000  e26270pos_nnz  nret_partnerscorpinc     76,700     76,777     77   0.1%  -7.7%  Number of returns with partnership or S corporation net income
+632           17  $5,000,000 under $10,000,000  e26270pos_nnz  nret_partnerscorpinc     18,695     18,704      9   0.0%  -9.9%  Number of returns with partnership or S corporation net income
+237           18           $10,000,000 or more  e26270pos_nnz  nret_partnerscorpinc     12,010     11,998    -12  -0.1%  -6.1%  Number of returns with partnership or S corporation net income
+
+     common_stub                      incrange     pufvar            irsvar            target               puf         diff  pdiff  ipdiff                     column_description
+642            0                   All returns  e26270neg  partnerscorploss  -153,150,406,000  -153,079,450,740   70,955,260  -0.0%   -1.3%  Partnership or S corporation net loss
+414            1                  Under $5,000  e26270neg  partnerscorploss   -63,385,900,000   -63,322,513,787   63,386,213  -0.1%   -1.0%  Partnership or S corporation net loss
+784            2          $5,000 under $10,000  e26270neg  partnerscorploss      -667,230,000      -667,237,614       -7,614   0.0%   -3.2%  Partnership or S corporation net loss
+490            3         $10,000 under $15,000  e26270neg  partnerscorploss      -737,049,000      -736,312,011      736,989  -0.1%   -2.3%  Partnership or S corporation net loss
+480            4         $15,000 under $20,000  e26270neg  partnerscorploss      -532,507,000      -531,974,513      532,487  -0.1%   -1.1%  Partnership or S corporation net loss
+472            5         $20,000 under $25,000  e26270neg  partnerscorploss      -710,376,000      -709,665,636      710,364  -0.1%   -1.4%  Partnership or S corporation net loss
+476            6         $25,000 under $30,000  e26270neg  partnerscorploss      -805,577,000      -806,382,557     -805,557   0.1%    2.4%  Partnership or S corporation net loss
+675            7         $30,000 under $40,000  e26270neg  partnerscorploss    -1,720,413,000    -1,720,974,705     -561,705   0.0%   -0.1%  Partnership or S corporation net loss
+435            8         $40,000 under $50,000  e26270neg  partnerscorploss    -2,200,704,000    -2,202,904,710   -2,200,710   0.1%    0.7%  Partnership or S corporation net loss
+370            9         $50,000 under $75,000  e26270neg  partnerscorploss    -4,611,892,000    -4,616,503,925   -4,611,925   0.1%    4.6%  Partnership or S corporation net loss
+493           10        $75,000 under $100,000  e26270neg  partnerscorploss    -3,622,695,000    -3,626,317,257   -3,622,257   0.1%    0.1%  Partnership or S corporation net loss
+495           11       $100,000 under $200,000  e26270neg  partnerscorploss   -10,487,846,000   -10,477,361,863   10,484,137  -0.1%    1.0%  Partnership or S corporation net loss
+462           12       $200,000 under $500,000  e26270neg  partnerscorploss   -11,619,566,000   -11,607,946,580   11,619,420  -0.1%    0.1%  Partnership or S corporation net loss
+297           13     $500,000 under $1,000,000  e26270neg  partnerscorploss    -6,945,597,000    -6,938,651,339    6,945,661  -0.1%   -1.7%  Partnership or S corporation net loss
+259           14   $1,000,000 under $1,500,000  e26270neg  partnerscorploss    -3,604,348,000    -3,600,743,618    3,604,382  -0.1%    1.0%  Partnership or S corporation net loss
+256           15   $1,500,000 under $2,000,000  e26270neg  partnerscorploss    -2,593,751,000    -2,591,157,224    2,593,776  -0.1%   -4.9%  Partnership or S corporation net loss
+261           16   $2,000,000 under $5,000,000  e26270neg  partnerscorploss    -7,767,942,000    -7,760,173,984    7,768,016  -0.1%    1.1%  Partnership or S corporation net loss
+789           17  $5,000,000 under $10,000,000  e26270neg  partnerscorploss    -5,485,485,000    -5,485,448,650       36,350  -0.0%  -14.1%  Partnership or S corporation net loss
+292           18           $10,000,000 or more  e26270neg  partnerscorploss   -25,651,529,000   -25,677,180,766  -25,651,766   0.1%   -2.8%  Partnership or S corporation net loss
+
+     common_stub                      incrange         pufvar                 irsvar     target        puf  diff  pdiff  ipdiff                                            column_description
+740            0                   All returns  e26270neg_nnz  nret_partnerscorploss  2,872,745  2,873,102   357   0.0%   -0.2%  Number of returns with partnership or S corporation net loss
+469            1                  Under $5,000  e26270neg_nnz  nret_partnerscorploss    373,747    373,373  -374  -0.1%   -1.6%  Number of returns with partnership or S corporation net loss
+777            2          $5,000 under $10,000  e26270neg_nnz  nret_partnerscorploss     69,107     69,106    -1  -0.0%  -12.7%  Number of returns with partnership or S corporation net loss
+498            3         $10,000 under $15,000  e26270neg_nnz  nret_partnerscorploss     59,219     59,160   -59  -0.1%   -1.3%  Number of returns with partnership or S corporation net loss
+432            4         $15,000 under $20,000  e26270neg_nnz  nret_partnerscorploss     54,968     54,913   -55  -0.1%   -1.2%  Number of returns with partnership or S corporation net loss
+413            5         $20,000 under $25,000  e26270neg_nnz  nret_partnerscorploss     54,237     54,183   -54  -0.1%   -1.3%  Number of returns with partnership or S corporation net loss
+448            6         $25,000 under $30,000  e26270neg_nnz  nret_partnerscorploss     65,233     65,298    65   0.1%    2.0%  Number of returns with partnership or S corporation net loss
+474            7         $30,000 under $40,000  e26270neg_nnz  nret_partnerscorploss    115,428    115,313  -115  -0.1%   -0.2%  Number of returns with partnership or S corporation net loss
+535            8         $40,000 under $50,000  e26270neg_nnz  nret_partnerscorploss    137,185    137,064  -121  -0.1%   -0.2%  Number of returns with partnership or S corporation net loss
+450            9         $50,000 under $75,000  e26270neg_nnz  nret_partnerscorploss    324,532    324,857   325   0.1%    1.3%  Number of returns with partnership or S corporation net loss
+457           10        $75,000 under $100,000  e26270neg_nnz  nret_partnerscorploss    311,410    311,099  -311  -0.1%   -0.3%  Number of returns with partnership or S corporation net loss
+437           11       $100,000 under $200,000  e26270neg_nnz  nret_partnerscorploss    701,622    702,324   702   0.1%    0.9%  Number of returns with partnership or S corporation net loss
+346           12       $200,000 under $500,000  e26270neg_nnz  nret_partnerscorploss    406,948    407,355   407   0.1%    0.5%  Number of returns with partnership or S corporation net loss
+335           13     $500,000 under $1,000,000  e26270neg_nnz  nret_partnerscorploss    111,970    111,858  -112  -0.1%   -0.1%  Number of returns with partnership or S corporation net loss
+313           14   $1,000,000 under $1,500,000  e26270neg_nnz  nret_partnerscorploss     31,954     31,986    32   0.1%    4.5%  Number of returns with partnership or S corporation net loss
+270           15   $1,500,000 under $2,000,000  e26270neg_nnz  nret_partnerscorploss     15,383     15,398    15   0.1%   -2.0%  Number of returns with partnership or S corporation net loss
+562           16   $2,000,000 under $5,000,000  e26270neg_nnz  nret_partnerscorploss     25,811     25,831    20   0.1%   -4.9%  Number of returns with partnership or S corporation net loss
+786           17  $5,000,000 under $10,000,000  e26270neg_nnz  nret_partnerscorploss      7,902      7,902     0   0.0%  -10.1%  Number of returns with partnership or S corporation net loss
+238           18           $10,000,000 or more  e26270neg_nnz  nret_partnerscorploss      6,089      6,083    -6  -0.1%    4.6%  Number of returns with partnership or S corporation net loss
+
+     common_stub                      incrange  pufvar             irsvar           target             puf            diff   pdiff  ipdiff              column_description
+25             0                   All returns  c17000  id_medical_capped  102,533,387,000  95,444,464,767  -7,088,922,233   -6.9%   -6.8%  Total medical expenses, capped
+4              1                  Under $5,000  c17000  id_medical_capped    2,083,179,000     384,582,521  -1,698,596,479  -81.5%  -83.0%  Total medical expenses, capped
+2              2          $5,000 under $10,000  c17000  id_medical_capped    2,740,757,000     241,828,548  -2,498,928,452  -91.2%  -89.3%  Total medical expenses, capped
+11             3         $10,000 under $15,000  c17000  id_medical_capped    4,125,665,000   2,169,625,824  -1,956,039,176  -47.4%  -47.8%  Total medical expenses, capped
+13             4         $15,000 under $20,000  c17000  id_medical_capped    3,751,696,000   2,779,056,827    -972,639,173  -25.9%  -25.6%  Total medical expenses, capped
+410            5         $20,000 under $25,000  c17000  id_medical_capped    5,229,600,000   5,234,829,627       5,229,627    0.1%    0.1%  Total medical expenses, capped
+496            6         $25,000 under $30,000  c17000  id_medical_capped    4,945,427,000   4,950,369,229       4,942,229    0.1%    0.4%  Total medical expenses, capped
+681            7         $30,000 under $40,000  c17000  id_medical_capped    8,597,500,000   8,600,173,890       2,673,890    0.0%    0.5%  Total medical expenses, capped
+666            8         $40,000 under $50,000  c17000  id_medical_capped    7,853,577,000   7,856,469,446       2,892,446    0.0%   -0.5%  Total medical expenses, capped
+404            9         $50,000 under $75,000  c17000  id_medical_capped   20,123,676,000  20,103,552,213     -20,123,787   -0.1%    0.1%  Total medical expenses, capped
+401           10        $75,000 under $100,000  c17000  id_medical_capped   15,143,374,000  15,158,517,459      15,143,459    0.1%    0.1%  Total medical expenses, capped
+376           11       $100,000 under $200,000  c17000  id_medical_capped   20,972,018,000  20,992,990,159      20,972,159    0.1%    0.1%  Total medical expenses, capped
+348           12       $200,000 under $500,000  c17000  id_medical_capped    6,097,123,000   6,103,220,171       6,097,171    0.1%    0.1%  Total medical expenses, capped
+329           13     $500,000 under $1,000,000  c17000  id_medical_capped      557,017,000     557,574,022         557,022    0.1%    0.1%  Total medical expenses, capped
+324           14   $1,000,000 under $1,500,000  c17000  id_medical_capped      180,241,000     180,421,243         180,243    0.1%    6.3%  Total medical expenses, capped
+331           15   $1,500,000 under $2,000,000  c17000  id_medical_capped       66,152,000      66,218,153          66,153    0.1%   -6.9%  Total medical expenses, capped
+422           16   $2,000,000 under $5,000,000  c17000  id_medical_capped       51,442,000      51,493,442          51,442    0.1%   -3.4%  Total medical expenses, capped
+23            17  $5,000,000 under $10,000,000  c17000  id_medical_capped       14,940,000      13,541,993      -1,398,007   -9.4%  -37.4%  Total medical expenses, capped
+796           18           $10,000,000 or more  c17000  id_medical_capped                0               0               0    nan%    nan%  Total medical expenses, capped
+
+     common_stub                      incrange      pufvar                  irsvar      target        puf      diff   pdiff  ipdiff                                     column_description
+28             0                   All returns  c17000_nnz  nret_id_medical_capped  10,171,257  9,634,072  -537,185   -5.3%   -5.1%  Number of returns with total medical expenses, capped
+8              1                  Under $5,000  c17000_nnz  nret_id_medical_capped     212,297     77,865  -134,432  -63.3%  -66.3%  Number of returns with total medical expenses, capped
+5              2          $5,000 under $10,000  c17000_nnz  nret_id_medical_capped     306,402     69,141  -237,261  -77.4%  -73.1%  Number of returns with total medical expenses, capped
+14             3         $10,000 under $15,000  c17000_nnz  nret_id_medical_capped     447,636    332,969  -114,667  -25.6%  -26.5%  Number of returns with total medical expenses, capped
+22             4         $15,000 under $20,000  c17000_nnz  nret_id_medical_capped     448,125    404,487   -43,638   -9.7%   -8.5%  Number of returns with total medical expenses, capped
+344            5         $20,000 under $25,000  c17000_nnz  nret_id_medical_capped     516,835    516,318      -517   -0.1%   -0.8%  Number of returns with total medical expenses, capped
+487            6         $25,000 under $30,000  c17000_nnz  nret_id_medical_capped     537,846    538,384       538    0.1%    0.4%  Number of returns with total medical expenses, capped
+453            7         $30,000 under $40,000  c17000_nnz  nret_id_medical_capped   1,014,838  1,013,823    -1,015   -0.1%    0.2%  Number of returns with total medical expenses, capped
+444            8         $40,000 under $50,000  c17000_nnz  nret_id_medical_capped     930,912    929,981      -931   -0.1%   -0.6%  Number of returns with total medical expenses, capped
+557            9         $50,000 under $75,000  c17000_nnz  nret_id_medical_capped   2,172,724  2,170,962    -1,762   -0.1%    0.1%  Number of returns with total medical expenses, capped
+394           10        $75,000 under $100,000  c17000_nnz  nret_id_medical_capped   1,490,416  1,488,926    -1,490   -0.1%    0.1%  Number of returns with total medical expenses, capped
+441           11       $100,000 under $200,000  c17000_nnz  nret_id_medical_capped   1,821,297  1,819,476    -1,821   -0.1%    0.1%  Number of returns with total medical expenses, capped
+568           12       $200,000 under $500,000  c17000_nnz  nret_id_medical_capped     258,702    258,504      -198   -0.1%    0.1%  Number of returns with total medical expenses, capped
+489           13     $500,000 under $1,000,000  c17000_nnz  nret_id_medical_capped      10,654     10,665        11    0.1%    0.1%  Number of returns with total medical expenses, capped
+308           14   $1,000,000 under $1,500,000  c17000_nnz  nret_id_medical_capped       1,791      1,789        -2   -0.1%    2.7%  Number of returns with total medical expenses, capped
+364           15   $1,500,000 under $2,000,000  c17000_nnz  nret_id_medical_capped         434        434        -0   -0.1%   -2.1%  Number of returns with total medical expenses, capped
+408           16   $2,000,000 under $5,000,000  c17000_nnz  nret_id_medical_capped         317        317        -0   -0.1%   -7.4%  Number of returns with total medical expenses, capped
+19            17  $5,000,000 under $10,000,000  c17000_nnz  nret_id_medical_capped          30         33         3   11.4%  -20.2%  Number of returns with total medical expenses, capped
+797           18           $10,000,000 or more  c17000_nnz  nret_id_medical_capped           0          0         0    nan%    nan%  Number of returns with total medical expenses, capped
+
+     common_stub                      incrange  pufvar      irsvar           target              puf          diff  pdiff  ipdiff    column_description
+729            0                   All returns  c18300  id_taxpaid  624,820,806,000  624,914,961,760    94,155,760   0.0%    0.1%  Taxes paid deduction
+333            1                  Under $5,000  c18300  id_taxpaid    1,187,308,000    1,186,120,682    -1,187,318  -0.1%  -24.7%  Taxes paid deduction
+743            2          $5,000 under $10,000  c18300  id_taxpaid    1,380,137,000    1,379,984,826      -152,174  -0.0%   21.3%  Taxes paid deduction
+355            3         $10,000 under $15,000  c18300  id_taxpaid    2,237,396,000    2,235,158,587    -2,237,413  -0.1%   -2.3%  Taxes paid deduction
+321            4         $15,000 under $20,000  c18300  id_taxpaid    2,600,280,000    2,602,880,303     2,600,303   0.1%    3.2%  Taxes paid deduction
+223            5         $20,000 under $25,000  c18300  id_taxpaid    3,165,743,000    3,162,577,226    -3,165,774  -0.1%   -1.2%  Taxes paid deduction
+393            6         $25,000 under $30,000  c18300  id_taxpaid    3,795,312,000    3,791,516,665    -3,795,335  -0.1%   -0.1%  Taxes paid deduction
+340            7         $30,000 under $40,000  c18300  id_taxpaid    9,995,943,000   10,005,939,024     9,996,024   0.1%    0.7%  Taxes paid deduction
+756            8         $40,000 under $50,000  c18300  id_taxpaid   13,372,101,000   13,371,130,103      -970,897  -0.0%   -0.5%  Taxes paid deduction
+219            9         $50,000 under $75,000  c18300  id_taxpaid   43,745,198,000   43,788,943,626    43,745,626   0.1%    0.1%  Taxes paid deduction
+249           10        $75,000 under $100,000  c18300  id_taxpaid   53,779,029,000   53,832,808,544    53,779,544   0.1%    0.1%  Taxes paid deduction
+250           11       $100,000 under $200,000  c18300  id_taxpaid  173,508,491,000  173,334,980,846  -173,510,154  -0.1%    0.1%  Taxes paid deduction
+163           12       $200,000 under $500,000  c18300  id_taxpaid  135,599,463,000  135,735,063,809   135,600,809   0.1%    0.1%  Taxes paid deduction
+144           13     $500,000 under $1,000,000  c18300  id_taxpaid   52,780,559,000   52,833,340,085    52,781,085   0.1%    0.1%  Taxes paid deduction
+132           14   $1,000,000 under $1,500,000  c18300  id_taxpaid   21,061,358,000   21,040,296,432   -21,061,568  -0.1%   -4.3%  Taxes paid deduction
+128           15   $1,500,000 under $2,000,000  c18300  id_taxpaid   12,159,703,000   12,147,543,176   -12,159,824  -0.1%   -9.4%  Taxes paid deduction
+197           16   $2,000,000 under $5,000,000  c18300  id_taxpaid   30,750,520,000   30,719,769,177   -30,750,823  -0.1%  -12.9%  Taxes paid deduction
+741           17  $5,000,000 under $10,000,000  c18300  id_taxpaid   16,976,859,000   16,974,775,700    -2,083,300  -0.0%   -7.7%  Taxes paid deduction
+97            18           $10,000,000 or more  c18300  id_taxpaid   46,725,407,000   46,772,132,950    46,725,950   0.1%   15.6%  Taxes paid deduction
+
+     common_stub                      incrange      pufvar           irsvar      target         puf    diff  pdiff  ipdiff                           column_description
+617            0                   All returns  c18300_nnz  nret_id_taxpaid  46,431,232  46,457,673  26,441   0.1%   -0.1%  Number of returns with taxes paid deduction
+402            1                  Under $5,000  c18300_nnz  nret_id_taxpaid     252,607     252,860     253   0.1%  -23.6%  Number of returns with taxes paid deduction
+773            2          $5,000 under $10,000  c18300_nnz  nret_id_taxpaid     392,535     392,546      11   0.0%   15.1%  Number of returns with taxes paid deduction
+486            3         $10,000 under $15,000  c18300_nnz  nret_id_taxpaid     628,196     628,824     628   0.1%   -0.9%  Number of returns with taxes paid deduction
+334            4         $15,000 under $20,000  c18300_nnz  nret_id_taxpaid     730,378     729,648    -730  -0.1%    0.8%  Number of returns with taxes paid deduction
+563            5         $20,000 under $25,000  c18300_nnz  nret_id_taxpaid     893,381     894,083     702   0.1%   -0.2%  Number of returns with taxes paid deduction
+405            6         $25,000 under $30,000  c18300_nnz  nret_id_taxpaid   1,075,256   1,076,331   1,075   0.1%    0.3%  Number of returns with taxes paid deduction
+696            7         $30,000 under $40,000  c18300_nnz  nret_id_taxpaid   2,429,959   2,430,604     645   0.0%    0.3%  Number of returns with taxes paid deduction
+263            8         $40,000 under $50,000  c18300_nnz  nret_id_taxpaid   2,945,808   2,942,862  -2,946  -0.1%   -0.5%  Number of returns with taxes paid deduction
+658            9         $50,000 under $75,000  c18300_nnz  nret_id_taxpaid   7,676,815   7,679,728   2,913   0.0%   -0.1%  Number of returns with taxes paid deduction
+641           10        $75,000 under $100,000  c18300_nnz  nret_id_taxpaid   7,122,807   7,126,129   3,322   0.0%   -0.1%  Number of returns with taxes paid deduction
+522           11       $100,000 under $200,000  c18300_nnz  nret_id_taxpaid  15,093,063  15,107,292  14,229   0.1%   -0.1%  Number of returns with taxes paid deduction
+530           12       $200,000 under $500,000  c18300_nnz  nret_id_taxpaid   5,799,775   5,805,032   5,257   0.1%   -0.1%  Number of returns with taxes paid deduction
+570           13     $500,000 under $1,000,000  c18300_nnz  nret_id_taxpaid     938,552     939,268     716   0.1%   -0.1%  Number of returns with taxes paid deduction
+109           14   $1,000,000 under $1,500,000  c18300_nnz  nret_id_taxpaid     202,165     202,367     202   0.1%    6.5%  Number of returns with taxes paid deduction
+113           15   $1,500,000 under $2,000,000  c18300_nnz  nret_id_taxpaid      81,921      82,003      82   0.1%   -2.2%  Number of returns with taxes paid deduction
+154           16   $2,000,000 under $5,000,000  c18300_nnz  nret_id_taxpaid     118,517     118,636     119   0.1%   -7.0%  Number of returns with taxes paid deduction
+626           17  $5,000,000 under $10,000,000  c18300_nnz  nret_id_taxpaid      29,894      29,878     -16  -0.1%  -10.1%  Number of returns with taxes paid deduction
+233           18           $10,000,000 or more  c18300_nnz  nret_id_taxpaid      19,603      19,583     -20  -0.1%   -2.8%  Number of returns with taxes paid deduction
+
+     common_stub                      incrange  pufvar      irsvar           target              puf          diff  pdiff  ipdiff       column_description
+578            0                   All returns  c19200  id_intpaid  313,944,112,000  313,709,884,585  -234,227,415  -0.1%   -1.0%  Interest paid deduction
+412            1                  Under $5,000  c19200  id_intpaid      905,316,000      906,221,321       905,321   0.1%   -5.4%  Interest paid deduction
+765            2          $5,000 under $10,000  c19200  id_intpaid    1,367,400,000    1,367,324,664       -75,336  -0.0%    8.5%  Interest paid deduction
+451            3         $10,000 under $15,000  c19200  id_intpaid    2,112,627,000    2,114,739,622     2,112,622   0.1%   -1.1%  Interest paid deduction
+338            4         $15,000 under $20,000  c19200  id_intpaid    2,678,998,000    2,681,677,020     2,679,020   0.1%    3.9%  Interest paid deduction
+302            5         $20,000 under $25,000  c19200  id_intpaid    2,935,335,000    2,938,270,362     2,935,362   0.1%    1.0%  Interest paid deduction
+511            6         $25,000 under $30,000  c19200  id_intpaid    3,508,274,000    3,504,846,503    -3,427,497  -0.1%   -0.2%  Interest paid deduction
+325            7         $30,000 under $40,000  c19200  id_intpaid    8,954,927,000    8,945,971,995    -8,955,005  -0.1%   -0.3%  Interest paid deduction
+374            8         $40,000 under $50,000  c19200  id_intpaid   12,318,979,000   12,306,659,936   -12,319,064  -0.1%   -0.6%  Interest paid deduction
+246            9         $50,000 under $75,000  c19200  id_intpaid   36,871,581,000   36,834,709,065   -36,871,935  -0.1%   -0.6%  Interest paid deduction
+433           10        $75,000 under $100,000  c19200  id_intpaid   42,084,075,000   42,041,990,807   -42,084,193  -0.1%   -0.6%  Interest paid deduction
+213           11       $100,000 under $200,000  c19200  id_intpaid  108,901,809,000  108,792,906,125  -108,902,875  -0.1%   -1.0%  Interest paid deduction
+147           12       $200,000 under $500,000  c19200  id_intpaid   58,901,837,000   58,842,934,576   -58,902,424  -0.1%   -2.4%  Interest paid deduction
+160           13     $500,000 under $1,000,000  c19200  id_intpaid   14,521,291,000   14,535,812,435    14,521,435   0.1%   -1.4%  Interest paid deduction
+224           14   $1,000,000 under $1,500,000  c19200  id_intpaid    3,995,393,000    3,999,388,432     3,995,432   0.1%    2.6%  Interest paid deduction
+767           15   $1,500,000 under $2,000,000  c19200  id_intpaid    1,959,456,000    1,959,540,008        84,008   0.0%   -4.1%  Interest paid deduction
+230           16   $2,000,000 under $5,000,000  c19200  id_intpaid    3,928,231,000    3,932,159,269     3,928,269   0.1%   -7.4%  Interest paid deduction
+788           17  $5,000,000 under $10,000,000  c19200  id_intpaid    1,862,252,000    1,862,266,052        14,052   0.0%  -20.3%  Interest paid deduction
+106           18           $10,000,000 or more  c19200  id_intpaid    6,136,330,000    6,142,466,392     6,136,392   0.1%    9.0%  Interest paid deduction
+
+     common_stub                      incrange      pufvar           irsvar      target         puf     diff  pdiff  ipdiff                              column_description
+594            0                   All returns  c19200_nnz  nret_id_intpaid  34,327,403  34,304,643  -22,760  -0.1%   -0.6%  Number of returns with interest paid deduction
+409            1                  Under $5,000  c19200_nnz  nret_id_intpaid     135,863     135,999      136   0.1%   -3.6%  Number of returns with interest paid deduction
+775            2          $5,000 under $10,000  c19200_nnz  nret_id_intpaid     213,034     213,028       -6  -0.0%   16.9%  Number of returns with interest paid deduction
+477            3         $10,000 under $15,000  c19200_nnz  nret_id_intpaid     348,951     349,300      349   0.1%   -1.1%  Number of returns with interest paid deduction
+357            4         $15,000 under $20,000  c19200_nnz  nret_id_intpaid     377,194     376,817     -377  -0.1%    1.4%  Number of returns with interest paid deduction
+406            5         $20,000 under $25,000  c19200_nnz  nret_id_intpaid     433,960     433,526     -434  -0.1%    0.1%  Number of returns with interest paid deduction
+360            6         $25,000 under $30,000  c19200_nnz  nret_id_intpaid     545,155     544,610     -545  -0.1%   -0.3%  Number of returns with interest paid deduction
+559            7         $30,000 under $40,000  c19200_nnz  nret_id_intpaid   1,420,101   1,418,965   -1,136  -0.1%    0.0%  Number of returns with interest paid deduction
+274            8         $40,000 under $50,000  c19200_nnz  nret_id_intpaid   1,919,264   1,917,345   -1,919  -0.1%   -0.6%  Number of returns with interest paid deduction
+195            9         $50,000 under $75,000  c19200_nnz  nret_id_intpaid   5,461,028   5,455,567   -5,461  -0.1%   -0.6%  Number of returns with interest paid deduction
+196           10        $75,000 under $100,000  c19200_nnz  nret_id_intpaid   5,491,312   5,485,821   -5,491  -0.1%   -0.7%  Number of returns with interest paid deduction
+695           11       $100,000 under $200,000  c19200_nnz  nret_id_intpaid  12,252,685  12,249,300   -3,385  -0.0%   -0.5%  Number of returns with interest paid deduction
+169           12       $200,000 under $500,000  c19200_nnz  nret_id_intpaid   4,631,570   4,626,938   -4,632  -0.1%   -1.5%  Number of returns with interest paid deduction
+722           13     $500,000 under $1,000,000  c19200_nnz  nret_id_intpaid     744,611     744,474     -137  -0.0%   -0.5%  Number of returns with interest paid deduction
+150           14   $1,000,000 under $1,500,000  c19200_nnz  nret_id_intpaid     156,617     156,774      157   0.1%    5.4%  Number of returns with interest paid deduction
+180           15   $1,500,000 under $2,000,000  c19200_nnz  nret_id_intpaid      63,769      63,833       64   0.1%   -2.9%  Number of returns with interest paid deduction
+621           16   $2,000,000 under $5,000,000  c19200_nnz  nret_id_intpaid      92,410      92,460       50   0.1%   -7.2%  Number of returns with interest paid deduction
+692           17  $5,000,000 under $10,000,000  c19200_nnz  nret_id_intpaid      23,726      23,719       -7  -0.0%  -10.4%  Number of returns with interest paid deduction
+104           18           $10,000,000 or more  c19200_nnz  nret_id_intpaid      16,151      16,167       16   0.1%   -0.0%  Number of returns with interest paid deduction
+
+     common_stub                      incrange  pufvar            irsvar           target              puf          diff   pdiff  ipdiff       column_description
+86             0                   All returns  c19700  id_contributions  256,064,685,000  255,685,636,729  -379,048,271   -0.1%    6.1%  Contributions deduction
+1              1                  Under $5,000  c19700  id_contributions      105,239,000      229,599,964   124,360,964  118.2%   84.6%  Contributions deduction
+7              2          $5,000 under $10,000  c19700  id_contributions      425,639,000      135,027,346  -290,611,654  -68.3%  -63.9%  Contributions deduction
+27             3         $10,000 under $15,000  c19700  id_contributions      774,188,000      816,055,500    41,867,500    5.4%    4.3%  Contributions deduction
+15             4         $15,000 under $20,000  c19700  id_contributions    1,143,844,000      872,284,533  -271,559,467  -23.7%  -23.6%  Contributions deduction
+644            5         $20,000 under $25,000  c19700  id_contributions    1,553,437,000    1,554,138,312       701,312    0.0%   -0.5%  Contributions deduction
+420            6         $25,000 under $30,000  c19700  id_contributions    1,999,540,000    2,001,539,549     1,999,549    0.1%    0.7%  Contributions deduction
+497            7         $30,000 under $40,000  c19700  id_contributions    5,153,077,000    5,147,931,087    -5,145,913   -0.1%    0.1%  Contributions deduction
+468            8         $40,000 under $50,000  c19700  id_contributions    6,388,891,000    6,395,279,792     6,388,792    0.1%   -0.3%  Contributions deduction
+358            9         $50,000 under $75,000  c19700  id_contributions   19,356,092,000   19,375,448,241    19,356,241    0.1%    0.2%  Contributions deduction
+718           10        $75,000 under $100,000  c19700  id_contributions   21,105,908,000   21,101,634,505    -4,273,495   -0.0%   -0.1%  Contributions deduction
+436           11       $100,000 under $200,000  c19700  id_contributions   57,104,129,000   57,047,024,750   -57,104,250   -0.1%    0.0%  Contributions deduction
+155           12       $200,000 under $500,000  c19700  id_contributions   40,064,781,000   40,024,715,821   -40,065,179   -0.1%   -1.2%  Contributions deduction
+138           13     $500,000 under $1,000,000  c19700  id_contributions   17,677,496,000   17,695,173,672    17,677,672    0.1%    0.6%  Contributions deduction
+127           14   $1,000,000 under $1,500,000  c19700  id_contributions    8,138,284,000    8,146,422,365     8,138,365    0.1%   12.0%  Contributions deduction
+336           15   $1,500,000 under $2,000,000  c19700  id_contributions    5,155,644,000    5,160,799,687     5,155,687    0.1%    4.4%  Contributions deduction
+145           16   $2,000,000 under $5,000,000  c19700  id_contributions   13,810,659,000   13,824,469,797    13,810,797    0.1%   -4.7%  Contributions deduction
+671           17  $5,000,000 under $10,000,000  c19700  id_contributions    9,046,529,000    9,049,725,000     3,196,000    0.0%    0.4%  Contributions deduction
+100           18           $10,000,000 or more  c19700  id_contributions   47,061,305,000   47,108,366,809    47,061,809    0.1%   33.8%  Contributions deduction
+
+     common_stub                      incrange      pufvar                 irsvar      target         puf     diff  pdiff  ipdiff                              column_description
+80             0                   All returns  c19700_nnz  nret_id_contributions  37,979,015  38,084,519  105,504   0.3%    0.0%  Number of returns with contributions deduction
+10             1                  Under $5,000  c19700_nnz  nret_id_contributions     156,684     244,695   88,011  56.2%   18.4%  Number of returns with contributions deduction
+16             2          $5,000 under $10,000  c19700_nnz  nret_id_contributions     266,852     309,209   42,357  15.9%   27.5%  Number of returns with contributions deduction
+47             3         $10,000 under $15,000  c19700_nnz  nret_id_contributions     427,700     423,022   -4,678  -1.1%   -2.2%  Number of returns with contributions deduction
+26             4         $15,000 under $20,000  c19700_nnz  nret_id_contributions     501,964     470,770  -31,194  -6.2%   -5.7%  Number of returns with contributions deduction
+288            5         $20,000 under $25,000  c19700_nnz  nret_id_contributions     611,092     611,703      611   0.1%   -0.3%  Number of returns with contributions deduction
+379            6         $25,000 under $30,000  c19700_nnz  nret_id_contributions     773,047     773,820      773   0.1%    0.4%  Number of returns with contributions deduction
+640            7         $30,000 under $40,000  c19700_nnz  nret_id_contributions   1,798,000   1,797,154     -846  -0.0%    0.3%  Number of returns with contributions deduction
+581            8         $40,000 under $50,000  c19700_nnz  nret_id_contributions   2,177,413   2,179,000    1,587   0.1%   -0.4%  Number of returns with contributions deduction
+717            9         $50,000 under $75,000  c19700_nnz  nret_id_contributions   6,000,705   6,001,946    1,241   0.0%   -0.1%  Number of returns with contributions deduction
+282           10        $75,000 under $100,000  c19700_nnz  nret_id_contributions   5,729,229   5,734,958    5,729   0.1%    0.0%  Number of returns with contributions deduction
+715           11       $100,000 under $200,000  c19700_nnz  nret_id_contributions  12,971,310  12,968,563   -2,747  -0.0%   -0.2%  Number of returns with contributions deduction
+153           12       $200,000 under $500,000  c19700_nnz  nret_id_contributions   5,250,599   5,255,850    5,251   0.1%   -0.3%  Number of returns with contributions deduction
+181           13     $500,000 under $1,000,000  c19700_nnz  nret_id_contributions     881,904     881,022     -882  -0.1%   -0.6%  Number of returns with contributions deduction
+211           14   $1,000,000 under $1,500,000  c19700_nnz  nret_id_contributions     191,989     192,181      192   0.1%    6.3%  Number of returns with contributions deduction
+129           15   $1,500,000 under $2,000,000  c19700_nnz  nret_id_contributions      78,439      78,517       78   0.1%   -2.0%  Number of returns with contributions deduction
+649           16   $2,000,000 under $5,000,000  c19700_nnz  nret_id_contributions     113,925     113,973       48   0.0%   -7.0%  Number of returns with contributions deduction
+651           17  $5,000,000 under $10,000,000  c19700_nnz  nret_id_contributions      29,024      29,012      -12  -0.0%  -10.1%  Number of returns with contributions deduction
+236           18           $10,000,000 or more  c19700_nnz  nret_id_contributions      19,142      19,123      -19  -0.1%   -2.8%  Number of returns with contributions deduction
+
+     common_stub                      incrange  pufvar irsvar             target                puf            diff   pdiff  ipdiff column_description
+82             0                   All returns  c04800     ti  8,008,418,180,000  8,028,198,436,098  19,780,256,098    0.2%    0.0%     Taxable income
+6              1                  Under $5,000  c04800     ti        370,804,000        104,069,996    -266,734,004  -71.9%  -71.2%     Taxable income
+35             2          $5,000 under $10,000  c04800     ti      3,663,625,000      3,549,341,530    -114,283,470   -3.1%   -3.8%     Taxable income
+39             3         $10,000 under $15,000  c04800     ti     17,569,255,000     17,893,330,422     324,075,422    1.8%    1.8%     Taxable income
+30             4         $15,000 under $20,000  c04800     ti     42,302,838,000     40,656,898,577  -1,645,939,423   -3.9%   -3.9%     Taxable income
+37             5         $20,000 under $25,000  c04800     ti     71,912,367,000     70,311,169,096  -1,601,197,904   -2.2%   -2.2%     Taxable income
+623            6         $25,000 under $30,000  c04800     ti     99,462,775,000     99,515,837,530      53,062,530    0.1%    0.1%     Taxable income
+589            7         $30,000 under $40,000  c04800     ti    266,441,069,000    266,260,220,906    -180,848,094   -0.1%    0.0%     Taxable income
+62             8         $40,000 under $50,000  c04800     ti    311,873,931,000    313,887,349,265   2,013,418,265    0.6%    0.6%     Taxable income
+71             9         $50,000 under $75,000  c04800     ti    838,281,627,000    842,076,562,207   3,794,935,207    0.5%    0.5%     Taxable income
+83            10        $75,000 under $100,000  c04800     ti    820,354,914,000    822,089,412,608   1,734,498,608    0.2%    0.2%     Taxable income
+646           11       $100,000 under $200,000  c04800     ti  2,040,315,252,000  2,039,419,356,479    -895,895,521   -0.0%   -0.0%     Taxable income
+85            12       $200,000 under $500,000  c04800     ti  1,451,487,369,000  1,453,779,432,043   2,292,063,043    0.2%    0.3%     Taxable income
+64            13     $500,000 under $1,000,000  c04800     ti    595,998,605,000    599,698,237,249   3,699,632,249    0.6%    0.7%     Taxable income
+59            14   $1,000,000 under $1,500,000  c04800     ti    237,076,403,000    238,784,159,616   1,707,756,616    0.7%    7.8%     Taxable income
+58            15   $1,500,000 under $2,000,000  c04800     ti    137,631,139,000    138,645,333,550   1,014,194,550    0.7%   -1.6%     Taxable income
+50            16   $2,000,000 under $5,000,000  c04800     ti    340,927,910,000    344,458,993,166   3,531,083,166    1.0%   -6.1%     Taxable income
+56            17  $5,000,000 under $10,000,000  c04800     ti    190,730,220,000    192,262,290,150   1,532,070,150    0.8%   -9.1%     Taxable income
+67            18           $10,000,000 or more  c04800     ti    542,018,079,000    544,806,441,705   2,788,362,705    0.5%    2.5%     Taxable income
+
+     common_stub                      incrange      pufvar   irsvar       target          puf     diff  pdiff ipdiff                     column_description
+68             0                   All returns  c04800_nnz  nret_ti  119,045,254  119,623,421  578,167   0.5%   0.6%  Number of returns with taxable income
+18             1                  Under $5,000  c04800_nnz  nret_ti      328,424      366,764   38,340  11.7%  62.3%  Number of returns with taxable income
+29             2          $5,000 under $10,000  c04800_nnz  nret_ti    1,971,076    2,053,769   82,693   4.2%   5.1%  Number of returns with taxable income
+36             3         $10,000 under $15,000  c04800_nnz  nret_ti    5,911,175    6,074,416  163,241   2.8%   2.7%  Number of returns with taxable income
+42             4         $15,000 under $20,000  c04800_nnz  nret_ti    6,683,526    6,790,116  106,590   1.6%   1.6%  Number of returns with taxable income
+65             5         $20,000 under $25,000  c04800_nnz  nret_ti    7,826,994    7,874,667   47,673   0.6%   0.6%  Number of returns with taxable income
+72             6         $25,000 under $30,000  c04800_nnz  nret_ti    8,044,112    8,072,935   28,823   0.4%   0.4%  Number of returns with taxable income
+81             7         $30,000 under $40,000  c04800_nnz  nret_ti   14,654,879   14,693,127   38,248   0.3%   0.3%  Number of returns with taxable income
+77             8         $40,000 under $50,000  c04800_nnz  nret_ti   11,745,319   11,780,918   35,599   0.3%   0.2%  Number of returns with taxable income
+655            9         $50,000 under $75,000  c04800_nnz  nret_ti   20,804,807   20,812,887    8,080   0.0%   0.0%  Number of returns with taxable income
+691           10        $75,000 under $100,000  c04800_nnz  nret_ti   13,458,805   13,454,983   -3,822  -0.0%  -0.0%  Number of returns with taxable income
+92            11       $100,000 under $200,000  c04800_nnz  nret_ti   19,908,357   19,932,244   23,887   0.1%   0.1%  Number of returns with taxable income
+87            12       $200,000 under $500,000  c04800_nnz  nret_ti    6,205,028    6,214,016    8,988   0.1%   0.1%  Number of returns with taxable income
+633           13     $500,000 under $1,000,000  c04800_nnz  nret_ti    1,008,882    1,009,377      495   0.0%   0.0%  Number of returns with taxable income
+657           14   $1,000,000 under $1,500,000  c04800_nnz  nret_ti      222,181      222,095      -86  -0.0%   6.7%  Number of returns with taxable income
+708           15   $1,500,000 under $2,000,000  c04800_nnz  nret_ti       90,364       90,386       22   0.0%  -2.5%  Number of returns with taxable income
+73            16   $2,000,000 under $5,000,000  c04800_nnz  nret_ti      129,579      129,143     -436  -0.3%  -7.2%  Number of returns with taxable income
+84            17  $5,000,000 under $10,000,000  c04800_nnz  nret_ti       31,563       31,504      -59  -0.2%  -9.9%  Number of returns with taxable income
+66            18           $10,000,000 or more  c04800_nnz  nret_ti       20,183       20,074     -109  -0.5%  -2.4%  Number of returns with taxable income
+
+     common_stub                      incrange  pufvar irsvar             target                puf           diff  pdiff ipdiff                                              column_description
+542            0                   All returns  c05800  taxbc  1,662,837,203,000  1,664,262,824,076  1,425,621,076   0.1%  -0.1%  Income tax before credits (IRS definition, not PUF definition)
+101            1                  Under $5,000  c05800  taxbc        293,393,000        293,686,396        293,396   0.1%  67.3%  Income tax before credits (IRS definition, not PUF definition)
+768            2          $5,000 under $10,000  c05800  taxbc        413,829,000        413,845,132         16,132   0.0%  -0.8%  Income tax before credits (IRS definition, not PUF definition)
+387            3         $10,000 under $15,000  c05800  taxbc      1,799,725,000      1,801,524,736      1,799,736   0.1%   0.1%  Income tax before credits (IRS definition, not PUF definition)
+776            4         $15,000 under $20,000  c05800  taxbc      4,307,225,000      4,307,319,502         94,502   0.0%  -0.0%  Income tax before credits (IRS definition, not PUF definition)
+415            5         $20,000 under $25,000  c05800  taxbc      7,928,509,000      7,920,580,452     -7,928,548  -0.1%  -0.1%  Income tax before credits (IRS definition, not PUF definition)
+418            6         $25,000 under $30,000  c05800  taxbc     11,645,611,000     11,633,965,334    -11,645,666  -0.1%  -0.1%  Income tax before credits (IRS definition, not PUF definition)
+322            7         $30,000 under $40,000  c05800  taxbc     32,626,115,000     32,593,488,600    -32,626,400  -0.1%  -0.0%  Income tax before credits (IRS definition, not PUF definition)
+556            8         $40,000 under $50,000  c05800  taxbc     39,629,085,000     39,596,935,760    -32,149,240  -0.1%  -0.1%  Income tax before credits (IRS definition, not PUF definition)
+243            9         $50,000 under $75,000  c05800  taxbc    118,845,725,000    118,964,571,875    118,846,875   0.1%   0.1%  Income tax before credits (IRS definition, not PUF definition)
+548           10        $75,000 under $100,000  c05800  taxbc    123,264,413,000    123,366,659,683    102,246,683   0.1%   0.1%  Income tax before credits (IRS definition, not PUF definition)
+151           11       $100,000 under $200,000  c05800  taxbc    355,081,405,000    355,436,489,938    355,084,938   0.1%   0.2%  Income tax before credits (IRS definition, not PUF definition)
+526           12       $200,000 under $500,000  c05800  taxbc    341,897,500,000    342,209,533,852    312,033,852   0.1%   0.3%  Income tax before credits (IRS definition, not PUF definition)
+110           13     $500,000 under $1,000,000  c05800  taxbc    173,764,310,000    173,938,076,049    173,766,049   0.1%   0.3%  Income tax before credits (IRS definition, not PUF definition)
+108           14   $1,000,000 under $1,500,000  c05800  taxbc     74,893,478,000     74,968,372,228     74,894,228   0.1%   5.6%  Income tax before credits (IRS definition, not PUF definition)
+164           15   $1,500,000 under $2,000,000  c05800  taxbc     44,446,124,000     44,490,570,565     44,446,565   0.1%  -2.8%  Income tax before credits (IRS definition, not PUF definition)
+111           16   $2,000,000 under $5,000,000  c05800  taxbc    111,497,458,000    111,608,956,574    111,498,574   0.1%  -7.3%  Income tax before credits (IRS definition, not PUF definition)
+527           17  $5,000,000 under $10,000,000  c05800  taxbc     61,362,927,000     61,418,736,367     55,809,367   0.1%  -9.9%  Income tax before credits (IRS definition, not PUF definition)
+102           18           $10,000,000 or more  c05800  taxbc    159,140,369,000    159,299,511,032    159,142,032   0.1%   5.0%  Income tax before credits (IRS definition, not PUF definition)
+
+     common_stub                      incrange      pufvar      irsvar       target          puf    diff  pdiff ipdiff                                                                     column_description
+604            0                   All returns  c05800_nnz  nret_taxbc  118,644,112  118,718,150  74,038   0.1%   0.2%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+389            1                  Under $5,000  c05800_nnz  nret_taxbc      296,217      296,513     296   0.1%  56.9%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+697            2          $5,000 under $10,000  c05800_nnz  nret_taxbc    2,032,726    2,032,201    -525  -0.0%   0.9%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+595            3         $10,000 under $15,000  c05800_nnz  nret_taxbc    5,861,260    5,857,409  -3,851  -0.1%  -0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+547            4         $15,000 under $20,000  c05800_nnz  nret_taxbc    6,691,557    6,686,003  -5,554  -0.1%  -0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+260            5         $20,000 under $25,000  c05800_nnz  nret_taxbc    7,794,819    7,787,024  -7,795  -0.1%  -0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+541            6         $25,000 under $30,000  c05800_nnz  nret_taxbc    7,975,606    7,982,472   6,866   0.1%   0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+543            7         $30,000 under $40,000  c05800_nnz  nret_taxbc   14,572,071   14,584,539  12,468   0.1%   0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+225            8         $40,000 under $50,000  c05800_nnz  nret_taxbc   11,691,636   11,703,328  11,692   0.1%   0.0%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+516            9         $50,000 under $75,000  c05800_nnz  nret_taxbc   20,729,789   20,749,690  19,901   0.1%   0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+134           10        $75,000 under $100,000  c05800_nnz  nret_taxbc   13,409,985   13,423,395  13,410   0.1%   0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+171           11       $100,000 under $200,000  c05800_nnz  nret_taxbc   19,878,587   19,898,466  19,879   0.1%   0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+122           12       $200,000 under $500,000  c05800_nnz  nret_taxbc    6,205,882    6,212,088   6,206   0.1%   0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+114           13     $500,000 under $1,000,000  c05800_nnz  nret_taxbc    1,009,529    1,010,539   1,010   0.1%   0.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+660           14   $1,000,000 under $1,500,000  c05800_nnz  nret_taxbc      222,439      222,523      84   0.0%   6.7%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+115           15   $1,500,000 under $2,000,000  c05800_nnz  nret_taxbc       90,430       90,520      90   0.1%  -2.4%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+139           16   $2,000,000 under $5,000,000  c05800_nnz  nret_taxbc      129,781      129,651    -130  -0.1%  -7.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+533           17  $5,000,000 under $10,000,000  c05800_nnz  nret_taxbc       31,597       31,569     -28  -0.1%  -9.8%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+103           18           $10,000,000 or more  c05800_nnz  nret_taxbc       20,200       20,220      20   0.1%  -2.1%  Number of returns with income tax before credits (IRS definition, not PUF definition)
+
+    common_stub                      incrange     pufvar irsvar             target                puf            diff  pdiff  ipdiff        column_description
+55            0                   All returns  taxac_irs  taxac  1,581,523,123,000  1,594,681,637,224  13,158,514,224   0.8%    0.7%  Income tax after credits
+9             1                  Under $5,000  taxac_irs  taxac        230,188,000        366,957,161     136,769,161  59.4%  144.6%  Income tax after credits
+3             2          $5,000 under $10,000  taxac_irs  taxac        368,064,000        676,691,503     308,627,503  83.9%   61.3%  Income tax after credits
+17            3         $10,000 under $15,000  taxac_irs  taxac      1,391,657,000      1,557,445,775     165,788,775  11.9%   11.9%  Income tax after credits
+32            4         $15,000 under $20,000  taxac_irs  taxac      3,505,521,000      3,621,568,720     116,047,720   3.3%    3.3%  Income tax after credits
+89            5         $20,000 under $25,000  taxac_irs  taxac      6,314,256,000      6,305,896,582      -8,359,418  -0.1%   -0.1%  Income tax after credits
+40            6         $25,000 under $30,000  taxac_irs  taxac      9,105,303,000      8,952,655,989    -152,647,011  -1.7%   -1.7%  Income tax after credits
+38            7         $30,000 under $40,000  taxac_irs  taxac     26,166,552,000     25,655,356,072    -511,195,928  -2.0%   -1.9%  Income tax after credits
+43            8         $40,000 under $50,000  taxac_irs  taxac     33,590,286,000     33,160,062,300    -430,223,700  -1.3%   -1.3%  Income tax after credits
+70            9         $50,000 under $75,000  taxac_irs  taxac    105,654,965,000    106,138,128,993     483,163,993   0.5%    0.5%  Income tax after credits
+53           10        $75,000 under $100,000  taxac_irs  taxac    112,966,329,000    113,975,434,296   1,009,105,296   0.9%    0.9%  Income tax after credits
+48           11       $100,000 under $200,000  taxac_irs  taxac    340,958,752,000    344,606,266,391   3,647,514,391   1.1%    1.2%  Income tax after credits
+60           12       $200,000 under $500,000  taxac_irs  taxac    336,733,823,000    339,053,980,733   2,320,157,733   0.7%    0.9%  Income tax after credits
+51           13     $500,000 under $1,000,000  taxac_irs  taxac    169,190,566,000    170,800,546,024   1,609,980,024   1.0%    1.1%  Income tax after credits
+49           14   $1,000,000 under $1,500,000  taxac_irs  taxac     72,348,263,000     73,118,526,518     770,263,518   1.1%    6.6%  Income tax after credits
+46           15   $1,500,000 under $2,000,000  taxac_irs  taxac     42,912,660,000     43,430,971,001     518,311,001   1.2%   -1.8%  Income tax after credits
+45           16   $2,000,000 under $5,000,000  taxac_irs  taxac    107,262,711,000    108,577,118,039   1,314,407,039   1.2%   -6.3%  Income tax after credits
+57           17  $5,000,000 under $10,000,000  taxac_irs  taxac     59,177,780,000     59,649,512,811     471,732,811   0.8%   -9.1%  Income tax after credits
+52           18           $10,000,000 or more  taxac_irs  taxac    153,645,447,000    155,034,518,316   1,389,071,316   0.9%    5.9%  Income tax after credits
+
+     common_stub                      incrange         pufvar      irsvar       target          puf      diff   pdiff  ipdiff                               column_description
+61             0                   All returns  taxac_irs_nnz  nret_taxac  103,730,078  104,432,694   702,616    0.7%    0.8%  Number of returns with income tax after credits
+0              1                  Under $5,000  taxac_irs_nnz  nret_taxac      190,751      474,237   283,486  148.6%  235.2%  Number of returns with income tax after credits
+12             2          $5,000 under $10,000  taxac_irs_nnz  nret_taxac    1,922,850    2,447,444   524,594   27.3%   26.0%  Number of returns with income tax after credits
+20             3         $10,000 under $15,000  taxac_irs_nnz  nret_taxac    4,267,204    4,722,582   455,378   10.7%   10.6%  Number of returns with income tax after credits
+31             4         $15,000 under $20,000  taxac_irs_nnz  nret_taxac    5,223,592    5,038,693  -184,899   -3.5%   -3.5%  Number of returns with income tax after credits
+41             5         $20,000 under $25,000  taxac_irs_nnz  nret_taxac    5,499,627    5,411,603   -88,024   -1.6%   -1.6%  Number of returns with income tax after credits
+34             6         $25,000 under $30,000  taxac_irs_nnz  nret_taxac    5,519,831    5,345,475  -174,356   -3.2%   -3.1%  Number of returns with income tax after credits
+33             7         $30,000 under $40,000  taxac_irs_nnz  nret_taxac   10,904,828   10,549,806  -355,022   -3.3%   -3.2%  Number of returns with income tax after credits
+44             8         $40,000 under $50,000  taxac_irs_nnz  nret_taxac    9,953,676    9,827,415  -126,261   -1.3%   -1.4%  Number of returns with income tax after credits
+54             9         $50,000 under $75,000  taxac_irs_nnz  nret_taxac   19,556,080   19,727,919   171,839    0.9%    0.9%  Number of returns with income tax after credits
+63            10        $75,000 under $100,000  taxac_irs_nnz  nret_taxac   13,213,827   13,296,516    82,689    0.6%    0.6%  Number of returns with income tax after credits
+69            11       $100,000 under $200,000  taxac_irs_nnz  nret_taxac   19,784,344   19,874,894    90,550    0.5%    0.5%  Number of returns with income tax after credits
+78            12       $200,000 under $500,000  taxac_irs_nnz  nret_taxac    6,193,044    6,211,510    18,466    0.3%    0.3%  Number of returns with income tax after credits
+76            13     $500,000 under $1,000,000  taxac_irs_nnz  nret_taxac    1,007,251    1,010,320     3,069    0.3%    0.3%  Number of returns with income tax after credits
+79            14   $1,000,000 under $1,500,000  taxac_irs_nnz  nret_taxac      221,861      222,483       622    0.3%    7.0%  Number of returns with income tax after credits
+75            15   $1,500,000 under $2,000,000  taxac_irs_nnz  nret_taxac       90,191       90,478       287    0.3%   -2.2%  Number of returns with income tax after credits
+519           16   $2,000,000 under $5,000,000  taxac_irs_nnz  nret_taxac      129,442      129,564       122    0.1%   -7.0%  Number of returns with income tax after credits
+677           17  $5,000,000 under $10,000,000  taxac_irs_nnz  nret_taxac       31,525       31,535        10    0.0%   -9.7%  Number of returns with income tax after credits
+74            18           $10,000,000 or more  taxac_irs_nnz  nret_taxac       20,153       20,220        67    0.3%   -1.8%  Number of returns with income tax after credits
+
+
+3. Detailed report on variable mappings
+
+           pufvar                  irsvar                                                                                                                                                        table_description                                                                     column_description           src excel_column
+0        nret_all                nret_all                                                            Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income                                                                      Number of returns  17in11si.xls            B
+1           mars1             nret_single                                        Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status                                                    Number of returns of single persons  17in12ms.xls           BB
+2           mars2              nret_mfjss                                        Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status   Number of returns of married persons filing jointly and returns of surviving spouses  17in12ms.xls            O
+3           mars3                nret_mfs                                        Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status                                 Number of returns of married persons filing separately  17in12ms.xls           AB
+4           mars4                nret_hoh                                        Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status                                               Number of returns of heads of households  17in12ms.xls           AO
+5          c00100                     agi                                                            Table 1.1.  All Returns: Selected Income and Tax Items, by Size and Accumulated Size of Adjusted Gross Income                                                     Adjusted gross income less deficit  17in11si.xls            D
+6          e00200                   wages                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                                     Salaries and wages  17in14ar.xls            G
+7      e00200_nnz              nret_wages                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                              Number of returns with salaries and wages  17in14ar.xls            F
+8          e00300                  taxint                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                                       Taxable interest  17in14ar.xls            I
+9      e00300_nnz             nret_taxint                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                Number of returns with taxable interest  17in14ar.xls            H
+10         e00600                  orddiv                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                                     Ordinary dividends  17in14ar.xls            M
+11     e00600_nnz             nret_orddiv                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                              Number of returns with ordinary dividends  17in14ar.xls            L
+12         c01000                   cgnet                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                         Net capital gains (calculated)  17in14ar.xls   calculated
+13     c01000_nnz              nret_cgnet                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                  Number of returns with net capital gains (calculated)  17in14ar.xls   calculated
+14      c01000pos                 cggross                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                            Capital gains gross taxable  17in14ar.xls           AA
+15  c01000pos_nnz            nret_cggross                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                     Number of returns with capital gains gross taxable  17in14ar.xls            Z
+16      c01000neg                  cgloss                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                                   Capital loss taxable  17in14ar.xls           AC
+17  c01000neg_nnz             nret_cgloss                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                            Number of returns with capital loss taxable  17in14ar.xls           AB
+18         e01500                pensions                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                    Total pensions and annuities (including nontaxable)  17in14ar.xls           AK
+19     e01500_nnz           nret_pensions                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income             Number of returns with total pensions and annuities (including nontaxable)  17in14ar.xls           AJ
+20         e02400               socsectot                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                         Total Social Security benefits  17in14ar.xls           BS
+21     e02400_nnz          nret_socsectot                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                  Number of returns with total Social Security benefits  17in14ar.xls           BR
+22         c02500           socsectaxable                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                       Taxable Social Security benefits  17in14ar.xls           BU
+23     c02500_nnz      nret_socsectaxable                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                Number of returns with taxable Social Security benefits  17in14ar.xls           BT
+24      e26270pos         partnerscorpinc                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                Partnership or S corporation net income  17in14ar.xls           BE
+25  e26270pos_nnz    nret_partnerscorpinc                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                         Number of returns with partnership or S corporation net income  17in14ar.xls           BD
+26      e26270neg        partnerscorploss                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                                                  Partnership or S corporation net loss  17in14ar.xls           BG
+27  e26270neg_nnz   nret_partnerscorploss                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                           Number of returns with partnership or S corporation net loss  17in14ar.xls           BF
+28         c17000       id_medical_capped  Table 2.1.  Returns with Itemized Deductions: Sources of Income,  Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items, by Size of Adjusted Gross Income                                                         Total medical expenses, capped  17in21id.xls           BN
+29     c17000_nnz  nret_id_medical_capped  Table 2.1.  Returns with Itemized Deductions: Sources of Income,  Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items, by Size of Adjusted Gross Income                                  Number of returns with total medical expenses, capped  17in21id.xls           BM
+30         c18300              id_taxpaid  Table 2.1.  Returns with Itemized Deductions: Sources of Income,  Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items, by Size of Adjusted Gross Income                                                                   Taxes paid deduction  17in21id.xls           BT
+31     c18300_nnz         nret_id_taxpaid  Table 2.1.  Returns with Itemized Deductions: Sources of Income,  Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items, by Size of Adjusted Gross Income                                            Number of returns with taxes paid deduction  17in21id.xls           BS
+32         c19200              id_intpaid  Table 2.1.  Returns with Itemized Deductions: Sources of Income,  Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items, by Size of Adjusted Gross Income                                                                Interest paid deduction  17in21id.xls           CH
+33     c19200_nnz         nret_id_intpaid  Table 2.1.  Returns with Itemized Deductions: Sources of Income,  Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items, by Size of Adjusted Gross Income                                         Number of returns with interest paid deduction  17in21id.xls           CG
+34         c19700        id_contributions  Table 2.1.  Returns with Itemized Deductions: Sources of Income,  Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items, by Size of Adjusted Gross Income                                                                Contributions deduction  17in21id.xls           CV
+35     c19700_nnz   nret_id_contributions  Table 2.1.  Returns with Itemized Deductions: Sources of Income,  Adjustments, Itemized Deductions by Type, Exemptions, and Tax Items, by Size of Adjusted Gross Income                                         Number of returns with contributions deduction  17in21id.xls           CU
+36         c04800                      ti                                        Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status                                                                         Taxable income  17in12ms.xls            J
+37     c04800_nnz                 nret_ti                                        Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status                                                  Number of returns with taxable income  17in12ms.xls            I
+38         c05800                   taxbc                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income                         Income tax before credits (IRS definition, not PUF definition)  17in14ar.xls           EM
+39     c05800_nnz              nret_taxbc                                                                 Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income  Number of returns with income tax before credits (IRS definition, not PUF definition)  17in14ar.xls           EL
+40      taxac_irs                   taxac                                        Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status                                                               Income tax after credits  17in12ms.xls            L
+41  taxac_irs_nnz              nret_taxac                                        Table 1.2.  All Returns: Adjusted Gross Income, Deductions, and Tax Items, by Size of Adjusted Gross Income and by Marital Status                                        Number of returns with income tax after credits  17in12ms.xls            K

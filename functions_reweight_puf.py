@@ -1,4 +1,5 @@
 
+# %% imports
 import numpy as np
 import pandas as pd
 import sys
@@ -12,234 +13,39 @@ sys.path.append('c:/programs_python/weighting/')  # needed
 import src.microweight as mw
 
 
+# %% functions
 
-def get_possible_targets(targets_fname):
-    targets_possible = pd.read_csv(targets_fname)
+def comp_report(pufsub,
+                weights_reweight, weights_init,
+                compvars, dropvars,
+                outfile, title):
 
-    target_mappings = targets_possible.drop(labels=['common_stub', 'incrange', 'irs'], axis=1).drop_duplicates()
-    target_vars = target_mappings.pufvar.to_list()
+    # comparison report
+    # weights_reweight.columns[[0, 1]] = ['pid', 'weight']  # force this df to have proper names
+    # weights_init.columns[[0, 1]] = ['pid', 'weight']  # force this df to have proper names
+    # create local copies of weights with proper names
+    weights_reweight = pu.idx_rename(weights_reweight, col_indexes=[0, 1], new_names=['pid', 'weight'])
+    weights_init = pu.idx_rename(weights_init, col_indexes=[0, 1], new_names=['pid', 'weight'])
 
-    # get names of puf variables for which we will need to create nnz indicator
-    innz = target_mappings.pufvar.str.contains('_nnz')
-    nnz_vars = target_mappings.pufvar[innz]
-    pufvars_to_nnz = nnz_vars.str.rsplit(pat='_', n=1, expand=True)[0].to_list()
-
-    possible_wide = targets_possible.loc[:, ['common_stub', 'pufvar', 'irs']] \
-        .pivot(index='common_stub', columns='pufvar', values='irs') \
-        .reset_index()
-    possible_wide.columns.name = None
-    return possible_wide
-
-
-def get_wtdsums(pufsub, sumvars, weightdf, stubvar='common_stub'):
-    weightdf.columns = ['pid', 'weight']  # force this df to have proper names
-
-    df = pufsub.copy().drop(columns='weight', errors='ignore')
-    varnames = df.columns.tolist()
-    varnames.remove(stubvar)
-    varnames.remove('pid')
-
-    df = pd.merge(df, weightdf, how='left', on='pid')
-
-    df.update(df.loc[:, sumvars].multiply(df.weight, axis=0))
-    dfsums = df.groupby(stubvar)[sumvars].sum().reset_index()
-    grand_sums = dfsums[sumvars].sum().to_frame().transpose()
-    grand_sums[stubvar] = 0
-    dfsums = dfsums.append(grand_sums, ignore_index=True)
-    dfsums[stubvar] = dfsums[stubvar].fillna(0)
-    dfsums.sort_values(by=stubvar, axis=0, inplace=True)
-    dfsums = dfsums.set_index(stubvar, drop=False)
-    return dfsums
-
-
-def get_pctdiffs(pufsub, weightdf, targets):
-    weightdf.columns = ['pid', 'weight']  # force this df to have proper names
-
-    target_names = targets.columns.tolist()
-    target_names.remove('common_stub')
-    keepvars = ['common_stub', 'pid'] + target_names
-
-    dfsums = get_wtdsums(pufsub.loc[:, keepvars], target_names, weightdf)
-    sumslong = pd.melt(dfsums, id_vars='common_stub', var_name='pufvar', value_name='puf')
-    targetslong = pd.melt(targets, id_vars='common_stub', var_name='pufvar', value_name='target')
-    dfmerge = pd.merge(sumslong, targetslong, on=['common_stub', 'pufvar'])
-    dfmerge['diff'] = dfmerge.puf - dfmerge.target
-    dfmerge['pdiff'] = dfmerge['diff'] / dfmerge.target * 100
-    dfmerge['abspdiff'] = np.abs(dfmerge.pdiff)
-    dfmerge = dfmerge.sort_values(by='abspdiff', ascending=False)
-    return dfmerge
-
-
-def merge_weights(weight_list, dir):
-    wtpaths = [dir + s + '.csv' for s in weight_list]
-    dflist = [pd.read_csv(file) for file in wtpaths]
-    df_merged = reduce(lambda left, right: pd.merge(left, right, on=['pid'],
-                                                    how='outer'), dflist)
-    return df_merged
-
-
-def prep_puf(puf, targets):
-    puf = puf.copy()
-
-    target_names = targets.columns.tolist()
-    target_names.remove('common_stub')
-
-    # get unique list of variables and check if they are all in the puf
-    vars = [s.replace('pos', '').replace('neg', '').replace('_nnz', '') for s in target_names]
-    vars = ulist(vars)
-
-    # create lists of variables to be created, without suffixes
-    pos = [s.replace('pos', '') for s in target_names if ('pos' in s) and ('nnz' not in s)]
-    neg = [s.replace('neg', '') for s in target_names if ('neg' in s) and ('nnz' not in s)]
-    nnz = [s.replace('_nnz', '') for s in target_names if 'nnz' in s]
-
-    puf['common_stub'] = pd.cut(
-        puf['c00100'],
-        pc.COMMON_STUBS,
-        labels=range(1, 19),
-        right=False)
-    # avoid categorical variable, it causes problems!
-    puf['common_stub'] = puf.common_stub.astype('int64')
-
-    puf['ht2_stub'] = pd.cut(
-        puf['c00100'],
-        pc.HT2_AGI_STUBS,
-        labels=range(1, 11),
-        right=False)
-    # avoid categorical variable, it causes problems!
-    puf['ht2_stub'] = puf.ht2_stub.astype('int64')
-
-    puf['nret_all'] = 1
-
-    # marital status indicators
-    puf['mars1'] = puf.MARS.eq(1)
-    puf['mars2'] = puf.MARS.eq(2)
-    puf['mars3'] = puf.MARS.eq(3)
-    puf['mars4'] = puf.MARS.eq(4)
-    puf['mars5'] = puf.MARS.eq(5)
-
-    for var in pos:
-        puf[var + 'pos'] = puf[var] * puf[var].gt(0)
-
-    for var in neg:
-        puf[var + 'neg'] = puf[var] * puf[var].lt(0)
-
-    for var in nnz:
-        puf[var + '_nnz'] = puf[var].ne(0) * 1
-
-    # safely drop columns we don't want to keep
-    idvars = ['pid', 'filer', 'common_stub', 'ht2_stub']
-    numvars = ['nret_all', 'mars1', 'mars2', 'mars3', 'mars4']
-    keep_vars = idvars + numvars + target_names
-    keep_vars = ulist(keep_vars)  # keeps unique names in case there is overlap with idvars
-
-    return puf.loc[puf['filer'], keep_vars]
-
-
-def puf_reweight(pufsub, init_weights, targets, method='lsq', drops=None):
-    # init_weights MUST have columns pid, weight
-    init_weights = init_weights.copy()
-    init_weights.columns = ['pid', 'weight']
-
-    pufsub = pufsub.copy()
-    pufsub = pd.merge(pufsub.drop(columns='weight', errors='ignore'), init_weights, on='pid', how='left')
-    grouped = pufsub.groupby('common_stub')
-    new_weights = grouped.apply(stub_opt, targets, method=method, drops=drops)  # method lsq or ipopt
-    return new_weights
-
-
-# targets = ptargets.copy()
-# method = 'lsq'
-#
-# stub = 3
-# df = pufsub.query('common_stub == @stub').copy()
-#
-# rw.pdiff
-
-
-def stub_opt(df, targets, method, drops=None):
-    # function to reweight a single stub of the puf
-    print(f'\nIncome stub {df.name:3d}')
-    stub = df.name
-
-    target_names = targets.columns.tolist()
-    target_names.remove('common_stub')
-
-    drop_vars = []
-    if drops is not None:
-        drop_vars = drops[drops.common_stub==stub].pufvar.tolist()
-
-    targets_use = [pufvar for pufvar in target_names if pufvar not in drop_vars]
-    # print(targets_use)
-
-    # targets_use = target_names[0:24]
-    # targets_use = targets_use[0:27]
-    # targets_use[23]
-
-    df = df[['pid', 'weight'] + targets_use]
-    wh = np.asarray(df.weight)
-    targvals = targets.loc[[stub], targets_use]
-    xmat = np.asarray(df[targets_use], dtype=float)
-    targets_stub = np.asarray(targvals, dtype=float).flatten()
-
-    prob = mw.Microweight(wh=wh, xmat=xmat, targets=targets_stub)
-    # prob.pdiff_init
-
-    if method == 'lsq':
-        opts = {'xlb': 0.1, 'xub': 100, 'tol': 1e-7, 'method': 'bvls',
-                'scaling': False,
-                'max_iter': 50}  # bvls or trf
-        # opts = {'xlb': 0.001, 'xub': 1000, 'tol': 1e-7, 'method': 'trf', 'max_iter': 500}
-    elif method == 'ipopt':
-        # opts = {'crange': 0.001, 'quiet': False}
-        opts = {'crange': 0.001, 'xlb': 0.1, 'xub': 100, 'quiet': False}
-
-    # print(opts)
-    rw = prob.reweight(method=method, options=opts)
-    # np.quantile(rw.g, qtiles)
-    # rw.pdiff
-
-    df['reweight'] = df.weight * rw.g
-    return df[['pid', 'weight', 'reweight']]
-
-
-# prepare comp file and target_mappings
-def pufsums(pufcomp):
-    # prepare puf sums
-    idvars = ['pid', 'common_stub', 'weight', 'weight_init']
-    puflong = pufcomp.drop(columns='filer').melt(id_vars=idvars, var_name='pufvar')
-    puflong['init'] = puflong.weight_init * puflong.value
-    puflong['puf'] = puflong.weight * puflong.value
-    pufsums = puflong.groupby(['common_stub', 'pufvar'])[['puf', 'init']].sum().reset_index()
-
-    grand_sums = pufsums.groupby(['pufvar']).sum().reset_index()
-    grand_sums['common_stub'] = 0
-    pufsums = pufsums.append(grand_sums)
-    return pufsums
-
-
-# comparison report
-def comp_report(pufsub, weights_rwt, weights_init, targets, outfile, title):
-    weights_rwt.columns = ['pid', 'weight']  # force this df to have proper names
-    weights_init.columns = ['pid', 'weight']  # force this df to have proper names
-
-    target_names = targets.columns.tolist()
-    target_names.remove('common_stub')
+    compvars_names = compvars.columns.tolist()
+    compvars_names.remove('common_stub')
 
     print(f'Getting percent differences with initial weights...')
     keep = ['common_stub', 'pufvar', 'pdiff']
-    ipdiffs = get_pctdiffs(pufsub, weights_init, targets).loc[:, keep].rename(columns={'pdiff': 'ipdiff'})
+    ipdiffs = get_pctdiffs(pufsub, weights_init, compvars).loc[:, keep].rename(columns={'pdiff': 'ipdiff'})
 
     print(f'Getting percent differences with new weights...')
     # rwtsums = get_wtdsums(pufsub, target_names, weights_rwt)
-    pdiffs = get_pctdiffs(pufsub, weights_rwt, targets)
+    pdiffs = get_pctdiffs(pufsub, weights_reweight, compvars)
 
     print(f'Preparing report...')
     comp = pd.merge(pdiffs, ipdiffs, on=['common_stub', 'pufvar'])
     comp = pd.merge(comp, pc.irspuf_target_map, how='left', on='pufvar')
     comp = pd.merge(comp, pc.irsstubs, how='left', on='common_stub')
 
-    ordered_vars = ['common_stub', 'incrange', 'pufvar', 'target', 'puf', 'diff', 'pdiff', 'ipdiff', 'column_description']  # drop abspdiff
+    ordered_vars = ['common_stub', 'incrange', 'pufvar', 'irsvar',
+                    'target', 'puf', 'diff',
+                    'pdiff', 'ipdiff', 'column_description']  # drop abspdiff
     comp = comp[ordered_vars]
 
     # sort by pufvar dictionary order (pd.Categorical)
@@ -290,6 +96,222 @@ def comp_report(pufsub, weights_rwt, weights_init, targets, outfile, title):
     tfile.close()
 
     return #  comp return nothing or return comp?
+
+
+def get_pctdiffs(pufsub, weightdf, targets):
+    # create a local copy of weight df with properly named columns
+    weightdf = pu.idx_rename(weightdf, col_indexes=[0, 1], new_names=['pid', 'weight'])
+
+    target_names = targets.columns.tolist()
+    target_names.remove('common_stub')
+    keepvars = ['common_stub', 'pid'] + target_names
+
+    dfsums = get_wtdsums(pufsub.loc[:, keepvars], target_names, weightdf.iloc[:, [0, 1]])
+    sumslong = pd.melt(dfsums, id_vars='common_stub', var_name='pufvar', value_name='puf')
+    targetslong = pd.melt(targets, id_vars='common_stub', var_name='pufvar', value_name='target')
+    dfmerge = pd.merge(sumslong, targetslong, on=['common_stub', 'pufvar'])
+    dfmerge['diff'] = dfmerge.puf - dfmerge.target
+    dfmerge['pdiff'] = dfmerge['diff'] / dfmerge.target * 100
+    dfmerge['abspdiff'] = np.abs(dfmerge.pdiff)
+    dfmerge = dfmerge.sort_values(by='abspdiff', ascending=False)
+    return dfmerge
+
+
+
+def get_possible_targets(targets_fname):
+    targets_possible = pd.read_csv(targets_fname)
+
+    target_mappings = targets_possible.drop(labels=['common_stub', 'incrange', 'irs'], axis=1).drop_duplicates()
+    target_vars = target_mappings.pufvar.to_list()
+
+    # get names of puf variables for which we will need to create nnz indicator
+    innz = target_mappings.pufvar.str.contains('_nnz')
+    nnz_vars = target_mappings.pufvar[innz]
+    pufvars_to_nnz = nnz_vars.str.rsplit(pat='_', n=1, expand=True)[0].to_list()
+
+    possible_wide = targets_possible.loc[:, ['common_stub', 'pufvar', 'irs']] \
+        .pivot(index='common_stub', columns='pufvar', values='irs') \
+        .reset_index()
+    possible_wide.columns.name = None
+    return possible_wide
+
+
+def get_wtdsums(pufsub, sumvars, weightdf, stubvar='common_stub'):
+    # create local weights df with proper names
+    weightdf = pu.idx_rename(weightdf, col_indexes=[0, 1], new_names=['pid', 'weight'])
+
+    df = pufsub.copy().drop(columns='weight', errors='ignore')
+    varnames = df.columns.tolist()
+    varnames.remove(stubvar)
+    varnames.remove('pid')
+
+    df = pd.merge(df, weightdf.iloc[:, [0, 1]], how='left', on='pid')
+
+    df.update(df.loc[:, sumvars].multiply(df.weight, axis=0))
+    dfsums = df.groupby(stubvar)[sumvars].sum().reset_index()
+    grand_sums = dfsums[sumvars].sum().to_frame().transpose()
+    grand_sums[stubvar] = 0
+    dfsums = dfsums.append(grand_sums, ignore_index=True)
+    dfsums[stubvar] = dfsums[stubvar].fillna(0)
+    dfsums.sort_values(by=stubvar, axis=0, inplace=True)
+    dfsums = dfsums.set_index(stubvar, drop=False)
+    return dfsums
+
+
+def merge_weights(weight_list, dir):
+    wtpaths = [dir + s + '.csv' for s in weight_list]
+    dflist = [pd.read_csv(file) for file in wtpaths]
+    df_merged = reduce(lambda left, right: pd.merge(left, right, on=['pid'],
+                                                    how='outer'), dflist)
+    return df_merged
+
+
+def prep_puf(puf, targets):
+    puf = puf.copy()
+
+    target_names = targets.columns.tolist()
+    target_names.remove('common_stub')
+
+    # get unique list of variables and check if they are all in the puf
+    vars = [s.replace('pos', '').replace('neg', '').replace('_nnz', '') for s in target_names]
+    vars = ulist(vars)
+
+    # create lists of variables to be created, without suffixes
+    pos = [s.replace('pos', '') for s in target_names if ('pos' in s) and ('nnz' not in s)]
+    neg = [s.replace('neg', '') for s in target_names if ('neg' in s) and ('nnz' not in s)]
+    nnz = [s.replace('_nnz', '') for s in target_names if 'nnz' in s]
+
+    puf['common_stub'] = pd.cut(
+        puf['c00100'],
+        pc.COMMON_STUBS,
+        labels=range(1, 19),
+        right=False)
+    # avoid categorical variable, it causes problems!
+    puf['common_stub'] = puf.common_stub.astype('int64')
+
+    puf['ht2_stub'] = pd.cut(
+        puf['c00100'],
+        pc.HT2_AGI_STUBS,
+        labels=range(1, 11),
+        right=False)
+    # avoid categorical variable, it causes problems!
+    puf['ht2_stub'] = puf.ht2_stub.astype('int64')
+
+    puf['nret_all'] = 1
+
+    # marital status indicators
+    puf['mars1'] = puf.MARS.eq(1)
+    puf['mars2'] = puf.MARS.eq(2)
+    puf['mars3'] = puf.MARS.eq(3)
+    puf['mars4'] = puf.MARS.eq(4)
+    puf['mars5'] = puf.MARS.eq(5)
+
+    # create any additional needed puf vars
+    puf['taxac_irs'] = np.maximum(0, puf.c09200 - puf.niit - puf.refund)
+
+    for var in pos:
+        puf[var + 'pos'] = puf[var] * puf[var].gt(0)
+
+    for var in neg:
+        puf[var + 'neg'] = puf[var] * puf[var].lt(0)
+
+    for var in nnz:
+        puf[var + '_nnz'] = puf[var].ne(0) * 1
+
+    # safely drop columns we don't want to keep
+    idvars = ['pid', 'filer', 'common_stub', 'ht2_stub']
+    numvars = ['nret_all', 'mars1', 'mars2', 'mars3', 'mars4']
+    keep_vars = idvars + numvars + target_names
+    keep_vars = ulist(keep_vars)  # keeps unique names in case there is overlap with idvars
+
+    return puf.loc[puf['filer'], keep_vars]
+
+
+def puf_reweight(pufsub, init_weights, targets, method='lsq', drops=None):
+    # create local copy of init_weights with columns pid, weight
+    init_weights = pu.idx_rename(init_weights, col_indexes=[0, 1], new_names=['pid', 'weight'])
+
+    pufsub = pufsub.copy()
+    pufsub = pd.merge(pufsub.drop(columns='weight', errors='ignore'),
+                      init_weights, on='pid', how='left')
+
+    grouped = pufsub.groupby('common_stub')
+
+    new_weights = grouped.apply(stub_opt, targets, method=method, drops=drops)  # method lsq or ipopt
+    return new_weights
+
+
+# prepare comp file and target_mappings
+def pufsums(pufcomp):
+    # prepare puf sums
+    idvars = ['pid', 'common_stub', 'weight', 'weight_init']
+    puflong = pufcomp.drop(columns='filer').melt(id_vars=idvars, var_name='pufvar')
+    puflong['init'] = puflong.weight_init * puflong.value
+    puflong['puf'] = puflong.weight * puflong.value
+    pufsums = puflong.groupby(['common_stub', 'pufvar'])[['puf', 'init']].sum().reset_index()
+
+    grand_sums = pufsums.groupby(['pufvar']).sum().reset_index()
+    grand_sums['common_stub'] = 0
+    pufsums = pufsums.append(grand_sums)
+    return pufsums
+
+
+
+# targets = ptargets.copy()
+# method = 'lsq'
+#
+# stub = 3
+# df = pufsub.query('common_stub == @stub').copy()
+#
+# rw.pdiff
+
+
+def stub_opt(df, targets, method, drops=None):
+    # function to reweight a single stub of the puf
+    print(f'\nIncome stub {df.name:3d}')
+    stub = df.name
+
+    target_names = targets.columns.tolist()
+    target_names.remove('common_stub')
+
+    drop_vars = []
+    if drops is not None:
+        drop_vars = drops[drops.common_stub==stub].pufvar.tolist()
+
+    targets_use = [pufvar for pufvar in target_names if pufvar not in drop_vars]
+    # print(targets_use)
+
+    # targets_use = target_names[0:24]
+    # targets_use = targets_use[0:27]
+    # targets_use[23]
+
+    df = df[['pid', 'weight'] + targets_use]
+    wh = np.asarray(df.weight)
+    targvals = targets.loc[[stub], targets_use]
+    xmat = np.asarray(df[targets_use], dtype=float)
+    targets_stub = np.asarray(targvals, dtype=float).flatten()
+
+    prob = mw.Microweight(wh=wh, xmat=xmat, targets=targets_stub)
+    # prob.pdiff_init
+
+    if method == 'lsq':
+        opts = {'xlb': 0.1, 'xub': 100,
+                'tol': 1e-7, 'method': 'bvls',
+                'scaling': False,
+                'max_iter': 50}  # bvls or trf
+        # opts = {'xlb': 0.001, 'xub': 1000, 'tol': 1e-7, 'method': 'trf', 'max_iter': 500}
+    elif method == 'ipopt':
+        # opts = {'crange': 0.001, 'quiet': False}
+        opts = {'crange': 0.001, 'xlb': 0.1, 'xub': 100, 'quiet': False}
+
+    # print(opts)
+    rw = prob.reweight(method=method, options=opts)
+    # np.quantile(rw.g, qtiles)
+    # rw.pdiff
+
+    df['reweight'] = df.weight * rw.g
+    return df[['pid', 'weight', 'reweight']]
+
 
 
 def ulist(thelist):

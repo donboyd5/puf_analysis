@@ -26,6 +26,8 @@ ht2_path = DATADIR + 'ht2_long.csv'
 
 ht2 = pd.read_csv(ht2_path)  # 87,450
 check = ht2[ht2.ht2var == 'n18500']
+# temp = ht2[['ht2var', 'ht2description', 'pufvar']].drop_duplicates()
+pu.uvals(ht2.ht2var)
 
 # put national value on every record
 ht2_us = ht2[ht2["state"] == "US"] \
@@ -43,4 +45,5 @@ tmp = ht2_shares[ht2_shares.ht2_stub != 0].groupby(['ht2var', 'ht2_stub'])['shar
 # note that some items are zero (e.g., vita_eic for high income)
 
 ht2_shares.to_csv(DATADIR + 'ht2_shares.csv', index=None)
+# pu.uvals(ht2_shares.ht2var)
 
