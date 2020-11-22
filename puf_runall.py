@@ -13,6 +13,7 @@ from datetime import date
 import functions_advance_puf as adv
 import functions_reweight_puf as rwp
 import functions_geoweight_puf as gwp
+import functions_ht2_analysis as fht
 
 import puf_constants as pc
 import puf_utilities as pu
@@ -472,15 +473,18 @@ pufsums_ht2long = pd.melt(pufsums_ht2, id_vars='ht2_stub', var_name='pufvar', va
 
 # collapse ht2 shares to the states we want
 ht2_collapsed = gwp.collapse_ht2(HT2_SHARES, compstates)
+pu.uvals(ht2_collapsed.pufvar)
 
 # create targets by state and ht2_stub from pufsums and collapsed shares
 ht2_collapsed
+
 ht2targets = pd.merge(ht2_collapsed, pufsums_ht2long, on=['pufvar', 'ht2_stub'])
 ht2targets.info()
 ht2targets['target'] = ht2targets.pufsum * ht2targets.share
 ht2targets['diff'] = ht2targets.target - ht2targets.ht2
 ht2targets['pdiff'] = ht2targets['diff'] / ht2targets.ht2 * 100
 ht2targets['abspdiff'] = np.abs(ht2targets['pdiff'])
+ht2targets.to_csv(IGNOREDIR + 'ht2targets_temp.csv', index=None)  # temporary
 
 # explore the result
 check = ht2targets.sort_values(by='abspdiff', axis=0, ascending=False)
@@ -506,8 +510,11 @@ ht2_possible = [var for var in ptarget_names if var in ht2_vars]
 pufsub.columns
 pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
 
-targvars = ['nret_all', 'mars1', 'mars2', 'c00100', 'e00200', 'e00200_nnz',
-            'e00300', 'e00300_nnz', 'e00600', 'e00600_nnz',
+targvars = ['nret_all', 'mars1', 'mars2',
+            'c00100',
+            'e00200', 'e00200_nnz',
+            'e00300', 'e00300_nnz',
+            'e00600', 'e00600_nnz',
             'c01000',
             # deductions
             'c17000','c17000_nnz',
@@ -546,11 +553,12 @@ grouped = pufsub.groupby('ht2_stub')
 
 # choose one of the following combinations of geomethod and options
 geomethod = 'qmatrix'  # does not work well
-options = {'qshares': qshares }  # qshares or None
+options = {'qmax_iter': 50,
+           'qshares': qshares }  # qshares or None
 
 # ipopt took 31 mins
 geomethod = 'qmatrix-ipopt'
-options = {'qmax_iter': 30,
+options = {'qmax_iter': 50,
            'quiet': True,
            'qshares': qshares,  # qshares or None
            'xlb': 0.1,
@@ -559,13 +567,13 @@ options = {'qmax_iter': 30,
            }
 
 geomethod = 'qmatrix-lsq'
-options = {'qmax_iter': 10,
-           'qshares': None,
+options = {'qmax_iter': 50,
+           'qshares': qshares,
            'verbose': 0,
            'xlb': 0.2,
-           'scaling': False,
+           'scaling': True,
            'method': 'bvls',  # bvls (default) or trf - bvls usually faster, better
-           'lsmr_tol': 'auto'  # 'auto'  # 'auto' or None
+           'lsmr_tol': 'auto' # auto'  # 'auto'  # 'auto' or None
            }
 
 a = timer()
@@ -593,18 +601,35 @@ final_geo_weights.to_csv(final_geo_name, index=None)
 
 
 # %% look
-wipopt = pd.read_csv(PUFDIR + 'weights_geo_restricted.csv')
-wrake = pd.read_csv(PUFDIR + 'weights_geo_restricted_raking.csv')
+wipopt = pd.read_csv(PUFDIR + 'allweights_geo_restricted_qmatrix-ipopt.csv')
+# wrake = pd.read_csv(PUFDIR + 'weights_geo_restricted_raking.csv')
 wipopt.sum()
-wrake.sum()
+# wrake.sum()
 
-wipopt.sum()- wrake.sum()
-ht2wide.query('ht2_stub==0')[['stgroup', 'nret_all']]
+# wipopt.sum()- wrake.sum()
+# ht2wide.query('ht2_stub==0')[['stgroup', 'nret_all']]
 
 # raking seems closer
 
+# %% function
+
+
 
 # %% create report on results with the state weights
+date_id = date.today().strftime("%Y-%m-%d")
+
+ht2_compare = pd.read_csv(IGNOREDIR + 'ht2targets_temp.csv')  # temporary
+pu.uvals(ht2_compare.pufvar)
+sweights = pd.read_csv(PUFDIR + 'allweights_geo_restricted_qmatrix-ipopt.csv')
+
+asl = fht.get_allstates_wsums(pufsub, sweights)
+pu.uvals(asl.pufvar)
+comp = fht.get_compfile(asl, ht2_compare)
+pu.uvals(comp.pufvar)
+
+outfile = RESULTDIR + 'comparison_state_values_vs_state_puf-based targets_' + date_id +'.txt'
+title = 'Comparison of state results to puf-based state targets'
+fht.comp_report(comp, outfile, title)
 
 
 
@@ -613,7 +638,7 @@ ht2wide.query('ht2_stub==0')[['stgroup', 'nret_all']]
 weight_filenames = [
     'weights_default',  # weights from tax-calculator
     'weights_regrown',  # currently the same as weights_default
-    'weights_rwt1_ipopt',  # weights_regrown reweighted to national totals, with ipopt -- probably final
+    'weights_rwteight1_ipopt',  # weights_regrown reweighted to national totals, with ipopt -- probably final
     'weights_geo_unrestricted_qmatrix-ipopt',  # sum of state weights, developed using weights_rwt1_ipopt as starting point
     'weights_georwt1_qmatrix-ipopt_ipopt',  # the above sum of state weights reweighted to national totals, with ipopt
     # the weights immediately above are the weights apportioned to states

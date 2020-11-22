@@ -33,7 +33,7 @@ pu.uvals(ht2.ht2var)
 ht2_us = ht2[ht2["state"] == "US"] \
     [['ht2var', 'ht2_stub', 'ht2']].rename(columns={'ht2': 'ht2_us'})  # 1,650
 
-# share are not perfectly 1 with national values, so let's use sum instead
+# shares are not perfectly 1 with national values, so let's use sum instead
 ht2_sums = ht2[ht2["state"] != "US"][['ht2var', 'ht2_stub', 'ht2']]
 ht2_sums = ht2_sums.groupby(['ht2var', 'ht2_stub'])['ht2'].sum()  # pandas treats na as zero
 ht2_sums = ht2_sums.reset_index().rename(columns={'ht2': 'ht2_sum'})

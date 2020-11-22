@@ -138,7 +138,7 @@ vars_dict = {'n1': 'nret_all'}
 vars_bare = ('mars1', 'mars2', 'mars4')
 
 vars_ennz = ('00200', '00300', '00600', '01500', '02400')
-vars_cnnz = ('00100', '01000', '02500', '17000', '18300', '19200', '19700')
+vars_cnnz = ('00100', '01000', '02500', '04800', '05800', '17000', '18300', '19200', '19700')
 
 # posneg vars
 # c01000pos
@@ -175,10 +175,6 @@ ht2puf_map.update(dict_cnnz)
 ht2puf_map
 
 json.dump(ht2puf_map, open(DATADIR + 'ht2puf_fullmap.json', 'w'))
-
-
-# %% compare these mappings before finalizing
-
 
 
 # %% map and save

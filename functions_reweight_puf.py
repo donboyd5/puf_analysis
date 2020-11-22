@@ -158,6 +158,28 @@ def get_wtdsums(pufsub, sumvars, weightdf, stubvar='common_stub'):
     return dfsums
 
 
+def get_wtdsums_geo(pufsub, sumvars, weightdf, stubvar='common_stub'):
+    # create local weights df with proper names
+    weightdf = pu.idx_rename(weightdf, col_indexes=[0, 1], new_names=['pid', 'weight'])
+
+    df = pufsub.copy().drop(columns='weight', errors='ignore')
+    varnames = df.columns.tolist()
+    varnames.remove(stubvar)
+    varnames.remove('pid')
+
+    df = pd.merge(df, weightdf.iloc[:, [0, 1]], how='left', on='pid')
+
+    df.update(df.loc[:, sumvars].multiply(df.weight, axis=0))
+    dfsums = df.groupby(stubvar)[sumvars].sum().reset_index()
+    grand_sums = dfsums[sumvars].sum().to_frame().transpose()
+    grand_sums[stubvar] = 0
+    dfsums = dfsums.append(grand_sums, ignore_index=True)
+    dfsums[stubvar] = dfsums[stubvar].fillna(0)
+    dfsums.sort_values(by=stubvar, axis=0, inplace=True)
+    dfsums = dfsums.set_index(stubvar, drop=False)
+    return dfsums
+
+
 def merge_weights(weight_list, dir):
     wtpaths = [dir + s + '.csv' for s in weight_list]
     dflist = [pd.read_csv(file) for file in wtpaths]
