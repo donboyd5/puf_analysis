@@ -162,6 +162,24 @@ def filers(puf, year=2017):
 
         wage_threshold = 1000
 
+    elif year == 2018:
+        s_inc_lt65 = 12000
+        s_inc_ge65 = 13600
+
+        mfj_inc_bothlt65 = 24000
+        mfj_inc_onege65 = 25300
+        mfj_inc_bothge65 = 26600
+
+        mfs_inc = 5
+
+        hoh_inc_lt65 = 18000
+        hoh_inc_ge65 = 19600
+
+        qw_inc_lt65 = 24000
+        qw_inc_ge65 = 25300
+
+        wage_threshold = 1000
+
     # above the line income is agi plus above line adjustments getting to agi
     above_line_income = puf.c00100 + puf.c02900
 

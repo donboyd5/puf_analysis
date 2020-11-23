@@ -1,10 +1,9 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 """
   Create two advanced files:
       one advanced in the normal way with all 3 stages
       one advanced with only stages 1 and 2, and with my alternative growfactors
 
-  # #!/usr/bin/env python
   See Peter's code here:
       https://github.com/Peter-Metz/state_taxdata/blob/master/state_taxdata/prepdata.py
 
@@ -15,6 +14,7 @@
       C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011\2020-08-20
 
 @author: donbo
+
 """
 
 # %% imports
@@ -31,6 +31,7 @@ from datetime import date
 import puf_constants as pc
 
 import puf_extrapolate_custom as xc
+import puf_utilities as pu
 
 # setup
 # recs = tc.Records() # get the puf, not the cps version
@@ -93,6 +94,9 @@ puf2017_default.to_parquet(PUFOUTDIR + 'puf2017_default' + '.parquet', engine='p
 check = pd.read_parquet(PUFOUTDIR + 'puf2017_default' + '.parquet', engine='pyarrow')
 check.head(10)[['s006', 'c00100', 'e00300']]
 
+pu.uvals(check.columns)
+
+
 
 # %% advance to 2017 - CUSTOM growfactors
 # extrapolate the underlying data with custom growfactors, BEFORE creating Records object
@@ -119,4 +123,37 @@ puf2017_regrown.to_parquet(PUFOUTDIR + 'puf2017_regrown' + '.parquet', engine='p
 check_regrown = pd.read_parquet(PUFOUTDIR + 'puf2017_regrown' + '.parquet', engine='pyarrow')
 check_regrown.head(10)[['s006', 'c00100', 'e00300']]
 check.head(10)[['s006', 'c00100', 'e00300']]
+
+
+# %% advance 2017 file to 2018: default growfactors, no weights or ratios, then calculate 2018 law
+puf2017_regrown = pd.read_parquet(PUFOUTDIR + 'puf2017_regrown' + '.parquet', engine='pyarrow')
+
+# Note: advance does NOT extrapolate weights. It just picks the weights from the growfactors file
+# puf2017_regrown.loc[puf2017_regrown.pid==0, 's006'] = 100
+
+recs = tc.Records(data=puf2017_regrown,
+                  start_year=2017,
+                  adjust_ratios=None)
+
+pol = tc.Policy()
+calc = tc.Calculator(policy=pol, records=recs)
+calc.advance_to_year(2018)
+calc.calc_all()
+puf2018 = calc.dataframe(variable_list=[], all_vars=True)
+puf2018['pid'] = np.arange(len(puf2018))
+
+puf2018.to_parquet(PUFOUTDIR + 'puf2018' + '.parquet', engine='pyarrow')
+
+puf2018 = pd.read_parquet(PUFOUTDIR + 'puf2018' + '.parquet', engine='pyarrow')
+
+puf2017_regrown.head(10)[['pid', 's006', 'c00100', 'e00200', 'e00300']]
+puf2018.head(10)[['pid', 's006', 'c00100', 'e00200', 'e00300']]
+
+puf2017_regrown.tail(10)[['pid', 's006', 'c00100', 'e00200', 'e00300']]
+puf2018.tail(10)[['pid', 's006', 'c00100', 'e00200', 'e00300']]
+
+# check.tail(10)[['pid', 's006', 'c00100', 'e00200', 'e00300']]
+
+
+
 

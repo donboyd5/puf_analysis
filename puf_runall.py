@@ -73,6 +73,35 @@ adv.advance_puf_custom(puf, 2017,
                        savepath=PUF_REGROWN)
 
 
+# %% ONETIME advance regrown 2017 file to 2018: default growfactors, no weights or ratios, then calculate 2018 law
+# note that this will NOT have weights that we want. We will correct that AFTER we have weights for 2017 that we want
+
+puf2017_regrown = pd.read_parquet(PUFDIR + 'puf2017_regrown' + '.parquet', engine='pyarrow')
+
+# Note: advance does NOT extrapolate weights. It just picks the weights from the growfactors file
+# puf2017_regrown.loc[puf2017_regrown.pid==0, 's006'] = 100
+
+recs = tc.Records(data=puf2017_regrown,
+                  start_year=2017,
+                  adjust_ratios=None)
+
+pol = tc.Policy()
+calc = tc.Calculator(policy=pol, records=recs)
+calc.advance_to_year(2018)
+calc.calc_all()
+puf2018 = calc.dataframe(variable_list=[], all_vars=True)
+puf2018['pid'] = np.arange(len(puf2018))
+puf2018['filer'] = pu.filers(puf2018, year=2018)  # overwrite the 2017 filers info
+
+puf2018.to_parquet(PUFDIR + 'puf2018' + '.parquet', engine='pyarrow')
+
+puf2017_regrown.filer.sum()  # 233640
+puf2018.filer.sum()  # 233238
+
+# puf2017_regrown.c00100.sum()
+# puf2018.c00100.sum()
+
+
 # %% define possible targets - we may not use all of them
 ptargets = rwp.get_possible_targets(targets_fname=POSSIBLE_TARGETS)
 ptargets
@@ -547,6 +576,7 @@ qshares[stvars].sum(axis=1).sum()
 wfname_national = PUFDIR + 'weights_georwt1_ipopt.csv'
 wfname_national
 final_national_weights = pd.read_csv(wfname_national)
+# final_national_weights.head(20)
 
 grouped = pufsub.groupby('ht2_stub')
 # targvars, ht2wide, dropsdf_wide, independent=False
@@ -598,21 +628,6 @@ final_geo_weights.sum()
 final_geo_name = PUFDIR + 'allweights_geo_restricted_' + geomethod + '.csv'
 final_geo_name
 final_geo_weights.to_csv(final_geo_name, index=None)
-
-
-# %% look
-wipopt = pd.read_csv(PUFDIR + 'allweights_geo_restricted_qmatrix-ipopt.csv')
-# wrake = pd.read_csv(PUFDIR + 'weights_geo_restricted_raking.csv')
-wipopt.sum()
-# wrake.sum()
-
-# wipopt.sum()- wrake.sum()
-# ht2wide.query('ht2_stub==0')[['stgroup', 'nret_all']]
-
-# raking seems closer
-
-# %% function
-
 
 
 # %% create report on results with the state weights
@@ -670,28 +685,56 @@ def f(fnames, dir):
 national_weights = f(weight_filenames, PUFDIR)
 national_weights.to_csv(PUFDIR + 'national_weights_stacked.csv', index=None)
 
-weight_df = rwp.merge_weights(weight_filenames, PUFDIR)  # they all must be in the same directory
+# weight_df = rwp.merge_weights(weight_filenames, PUFDIR)  # they all must be in the same directory
 
-weight_df.to_csv(PUFDIR + 'all_weights.csv', index=None)
-weight_df.sum()
-
-
-# %% DONOTRUN: state weights using the initial reweights
-# wfname1 = PUFDIR + 'weights_rwt1_ipopt.csv'
-# weights1 = pd.read_csv(wfname1)
-
-# # for testing
-# # temp = pufsub.query('ht2_stub in [1, 2]').copy()
-# # grouped = temp.groupby('ht2_stub')
-
-# # for real
-# grouped = pufsub.groupby('ht2_stub')
-
-# # uo = {'Q': Q_init, 'drops': drops, 'independent': True, 'max_iter': 10}
-# a = timer()
-# geo_weights = grouped.apply(gwp.get_geo_weights, weights1, targvars2, ht2wide, dropsdf_wide, independent=False)
-# b = timer()
-# b - a
+# weight_df.to_csv(PUFDIR + 'all_weights.csv', index=None)
+# weight_df.sum()
 
 
-# geo_weights[list(compstates) + ['other']].sum(axis=1)
+# %% get weights for 2018 and save puf2018_weighted
+ # Create a base 2018 puf as follows:
+ #     - start with the previously created puf for 2018, which is simply the
+ #       puf2017_regrown extrapolated to 2018 with default growfactors, with
+ #       taxdata weights for 2018, and WITHOUT adjust_ratios applied
+ #     - get the best set of national weights we have for 2017 grow them
+ #       based on how the sum of default weights grows
+ #     - use these weights where we have them; where not, use default weights
+
+default_weights = pd.read_csv(DIR_FOR_OFFICIAL_PUF + 'puf_weights.csv')
+dw2017 = default_weights.sum().WT2017
+dw2018 = default_weights.sum().WT2018
+wtgrowfactor = dw2018 / dw2017
+
+# get best national weights
+# 'weights_georwt1_qmatrix-ipopt_ipopt'
+
+sweights_2017 = pd.read_csv(PUFDIR + 'allweights_geo_restricted_qmatrix-ipopt.csv')
+
+puf2018 = pd.read_parquet(PUFDIR + 'puf2018' + '.parquet', engine='pyarrow')
+
+puf2018_weighted = puf2018.copy().rename(columns={'s006': 's006_default'})
+puf2018_weighted = pd.merge(puf2018_weighted,
+                            sweights_2017.loc[:, ['pid', 'weight']],
+                            how='left',
+                            on='pid')
+puf2018_weighted['weight2018_2017filers'] = puf2018_weighted.weight * wtgrowfactor
+puf2018_weighted['s006'] = puf2018_weighted.weight2018_2017filers
+puf2018_weighted.s006.fillna(puf2018_weighted.s006_default, inplace=True)
+puf2018_weighted[['pid', 's006_default', 'weight', 'weight2018_2017filers', 's006']].head(20)
+
+puf2018_weighted.drop(columns=['weight', 'weight2018_2017filers'], inplace=True)
+pu.uvals(puf2018_weighted.columns)
+
+puf2018_weighted.to_parquet(PUFDIR + 'puf2018_weighted' + '.parquet', engine='pyarrow')
+
+
+# finally, create state weights for 2018 using the shares we have for 2017
+# we know this isn't really right, but shouldn't be too bad (for now) for a single year
+# this should be as simple as multiplying all weights by wtgrowfactor
+wtvars = [s for s in sweights_2017.columns if s not in ['pid', 'ht2_stub']]
+sweights_2018 = sweights_2017.copy()
+sweights_2018[wtvars] = sweights_2018[wtvars] * wtgrowfactor
+
+sweights_2018.to_csv(PUFDIR + 'allweights2018_geo2017_grown.csv', index=None)
+
+
