@@ -77,6 +77,8 @@ pufirs_fullmap = json.load(open(DATADIR + 'pufirs_fullmap.json'))
 
 ht2puf_fullmap = json.load(open(DATADIR + 'ht2puf_fullmap.json'))
 
+pufvars = pd.read_csv(DATADIR + 'pufvars.csv')
+
 # %% target varnames (puf names and HT2 names and my names)
 targvars_all = ['nret_all', 'nret_mars1', 'nret_mars2', 'c00100', 'e00300', 'e00600']
 

@@ -63,6 +63,9 @@ compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
 
 # %% ONETIME: create and save default and regrown 2017 pufs, and add filer indicator
 puf = pd.read_csv(LATEST_OFFICIAL_PUF)
+puf.columns
+pufvars = puf.columns.tolist()
+pd.DataFrame (pufvars, columns=['pufvar']).to_csv(DATADIR + 'pufvars.csv', index=None)
 
 adv.advance_puf(puf, 2017, PUF_DEFAULT)
 
@@ -90,6 +93,7 @@ calc = tc.Calculator(policy=pol, records=recs)
 calc.advance_to_year(2018)
 calc.calc_all()
 puf2018 = calc.dataframe(variable_list=[], all_vars=True)
+puf2018.c00100.describe()
 puf2018['pid'] = np.arange(len(puf2018))
 puf2018['filer'] = pu.filers(puf2018, year=2018)  # overwrite the 2017 filers info
 
