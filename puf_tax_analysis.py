@@ -15,8 +15,12 @@ Created on Mon Nov 23 06:57:20 2020
     Records objects passed to each of the two Calculator constructors.
 
 Useful:
-    https://pslmodels.github.io/Tax-Calculator/recipes/recipe00.html
+https://pslmodels.github.io/Tax-Calculator/recipes/recipe00.html
 
+https://github.com/PSLmodels/Tax-Calculator/blob/master/taxcalc/reforms/REFORMS.md#how-to-specify-a-tax-reform-in-a-json-policy-reform-file
+
+
+https://github.com/PSLmodels/Tax-Calculator/blob/master/docs/guide/policy_params.md
 
 """
 
@@ -47,12 +51,22 @@ TCOUTDIR = IGNOREDIR + 'taxcalc_output/'
 
 # %% constants
 LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'
-law_2017 = REFORMSDIR + '2017_law.json'
+
+# reforms
+law2017 = REFORMSDIR + '2017_law.json'
+law2017_SALTcapped = REFORMSDIR + 'law2017_SALTcapped.json'  # relative to 2017 law!
+
+law2018 = REFORMSDIR + 'TCJA.json'
+law2018_SALTuncapped = REFORMSDIR + 'law2018_SALTuncapped.json'  # must be run relative to 2018+ law
 
 
 # %% get reforms
 # https://github.com/PSLmodels/Tax-Calculator/blob/master/taxcalc/reforms/2017_law.json
-params_2017 = tc.Calculator.read_json_param_objects(law_2017, None)
+params2017 = tc.Calculator.read_json_param_objects(law2017, None)
+params2017_SALTcapped = tc.Calculator.read_json_param_objects(law2017_SALTcapped, None)
+
+params2018 = tc.Calculator.read_json_param_objects(law2018, None)
+params2018_SALTuncapped = tc.Calculator.read_json_param_objects(law2018_SALTuncapped, None)
 
 
 # %% get data
@@ -74,61 +88,75 @@ weights_us = puf2018[['pid', 's006']].rename(columns={'s006': 'WT2018'})
 weights_us['WT2018'] = weights_us.WT2018 * 100
 
 
-# %% estimate reform impacts using puf.csv
-recs_puf = tc.Records(data=puf)
-pol_puf = tc.Policy()
-calc_puf = tc.Calculator(policy=pol_puf, records=recs_puf)
-calc_puf.advance_to_year(2018)
-calc_puf.calc_all()
-itax_puf = calc_puf.weighted_total('iitax')
-
-pol_puf.implement_reform(params_2017['policy'])
-calc_puf_2017 = tc.Calculator(policy=pol_puf, records=recs_puf)
-calc_puf_2017.advance_to_year(2018)
-calc_puf_2017.calc_all()
-itax_puf_2017 = calc_puf_2017.weighted_total('iitax')
-
-(itax_puf - itax_puf_2017) / 1e9
-itax_puf / itax_puf_2017 * 100 - 100
-
-
-# %% estimate same reform impacts using regrown reweighted puf
-(puf2018.iitax * puf2018.s006).sum()
-
-# run 2017 law and 2018 law on the file
-# sum iitax using s006 weights on file 1509996924390.8943
-(puf2018.iitax * puf2018.s006).sum()  #  1509996924390.8943
-(puf2018.iitax * weights_us.WT2018 / 100).sum()  # 1509996924390.8943
-# calc1.weighted_total('iitax') # 1509781471549.1584
-(puf2018.iitax * weights_us.WT2018.astype('int32') / 100).sum()  # 1509781471549.1584
-# those weights are same as weights in weights_us
 
 recs = tc.Records(data=puf2018,
                   start_year=2018,
                   weights=weights_us,
                   adjust_ratios=None)
 
+ # note that we don't need to advance because start year is 2018
+
+
+# %% 2018 law, 2018 data
 pol = tc.Policy()
-calc_baseline = tc.Calculator(policy=pol, records=recs)  # current-law
-# don't need to advance because start year is 2018
-calc_baseline.calc_all()
-
-pol.implement_reform(params_2017['policy'])
-calc_2017 = tc.Calculator(policy=pol, records=recs)
-calc_2017.calc_all()
-
-itax_baseline = calc_baseline.weighted_total('iitax')
-itax_2017 = calc_2017.weighted_total('iitax')
-
-itax_puf
-itax_puf_2017
+calc2018 = tc.Calculator(policy=pol, records=recs)  # current-law
+calc2018.calc_all()  #
+tax2018 = calc2018.weighted_total('iitax')
+tax2018
 
 
-itax_baseline / itax_2017 * 100 - 100
-(itax_baseline - itax_2017) / 1e9
+# %% 2017 law, 2018 data
+# now implement reforms
+pol = tc.Policy()
+pol.implement_reform(params2017['policy'])
+calc2017 = tc.Calculator(policy=pol, records=recs)
+calc2017.calc_all()
+tax2017 = calc2017.weighted_total('iitax')
+tax2017
 
 
-calc_baseline.weighted_total('iitax')
+# %% 2018 law with SALT uncapped, 2018 data
+pol = tc.Policy()
+pol.implement_reform(params2018_SALTuncapped['policy'])
+calc2018xSALT = tc.Calculator(policy=pol, records=recs)
+calc2018xSALT.calc_all()
+tax2018xSALT = calc2018xSALT.weighted_total('iitax')
+tax2018xSALT
+
+
+# %% 2017 law with SALT added, 2018 data
+pol = tc.Policy()
+pol.implement_reform(params2017['policy'])
+pol.implement_reform(params2017_SALTcapped['policy'])
+calc2017_SALTcapped = tc.Calculator(policy=pol, records=recs)
+calc2017_SALTcapped.calc_all()
+tax2017SALTcapped = calc2017_SALTcapped.weighted_total('iitax')
+tax2017SALTcapped
+
+
+# %% comparisons below here
+(tax2018 - tax2017) / 1e9
+(tax2018 - tax2018xSALT) / 1e9
+(tax2017SALTcapped - tax2017) / 1e9
+
+
+
+calc2018.weighted_total('iitax')
+calc2017.weighted_total('iitax')
+
+tcut = calc2018.weighted_total('iitax') - calc2017.weighted_total('iitax')
+tcut / 1e9
+tcut / calc2017.weighted_total('iitax') * 100
+
+# caution: policies build on each other; if we want to go back to default, reset the policy
+pol = tc.Policy()
+pol.implement_reform(params2018_SALTuncapped['policy'])
+calc2018xSALT = tc.Calculator(policy=pol, records=recs)
+calc2018xSALT.calc_all()
+calc2018xSALT.weighted_total('iitax')
+
+(calc2018xSALT.weighted_total('iitax') - calc2018.weighted_total('iitax')) / 1e9
+
 
 # %% save results
 
@@ -164,4 +192,35 @@ dfbl.to_csv(TCOUTDIR + 'tcout2018_2018law.csv', index=None)
 df2017 = pd.read_parquet(TCOUTDIR + 'tcout2018_2017law.parquet', engine='pyarrow')
 df2017.to_csv(TCOUTDIR + 'tcout2018_2017law.csv', index=None)
 
+
+# %% analyze
+
+(puf2018.iitax * puf2018.s006).sum()
+
+# run 2017 law and 2018 law on the file
+# sum iitax using s006 weights on file 1509996924390.8943
+(puf2018.iitax * puf2018.s006).sum()  #  1509996924390.8943
+(puf2018.iitax * weights_us.WT2018 / 100).sum()  # 1509996924390.8943
+# calc1.weighted_total('iitax') # 1509781471549.1584
+(puf2018.iitax * weights_us.WT2018.astype('int32') / 100).sum()  # 1509781471549.1584
+# those weights are same as weights in weights_us
+
+
+
+# %% estimate reform impacts using puf.csv
+recs_puf = tc.Records(data=puf)
+pol_puf = tc.Policy()
+calc_puf = tc.Calculator(policy=pol_puf, records=recs_puf)
+calc_puf.advance_to_year(2018)
+calc_puf.calc_all()
+itax_puf = calc_puf.weighted_total('iitax')
+
+pol_puf.implement_reform(params_2017['policy'])
+calc_puf_2017 = tc.Calculator(policy=pol_puf, records=recs_puf)
+calc_puf_2017.advance_to_year(2018)
+calc_puf_2017.calc_all()
+itax_puf_2017 = calc_puf_2017.weighted_total('iitax')
+
+(itax_puf - itax_puf_2017) / 1e9
+itax_puf / itax_puf_2017 * 100 - 100
 
