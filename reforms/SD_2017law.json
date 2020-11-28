@@ -1,0 +1,23 @@
+// Title: 2018 law but with 2017-law standard deduction
+// Reform_File_Author: Don Boyd
+// Reform_Baseline: 2018 law (e.g., TCJA.json)
+// Reform_Description:
+// - Standard deduction increase removed from 2018 law
+// Reform_Parameter_Map:
+// - 1: II_*
+// - 2: PT_*
+// - 3: STD (can safely ignore WARNINGs about 2026+ values)
+// - 4: II_em
+// - 5: ODC_c, _CTC_c, _CTC_ps, _ACTC_c, _ACTC_Income_thd
+// - 6: AMT_em*
+// - 7: ALD_*
+// - 8: ID_* (can safely ignore WARNINGs about values for several parameters)
+// - 9: parameter_indexing_CPI_offset
+
+// For details on parameters see:
+//   https://github.com/PSLmodels/Tax-Calculator/blob/master/docs/guide/policy_params.md
+//   https://pslmodels.github.io/Tax-Calculator/guide/policy_params.html
+
+{    
+    "STD": {"2017": [6350, 12700, 6350, 9350, 12700]}
+}

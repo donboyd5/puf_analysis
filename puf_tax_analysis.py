@@ -19,8 +19,23 @@ https://pslmodels.github.io/Tax-Calculator/recipes/recipe00.html
 
 https://github.com/PSLmodels/Tax-Calculator/blob/master/taxcalc/reforms/REFORMS.md#how-to-specify-a-tax-reform-in-a-json-policy-reform-file
 
-
 https://github.com/PSLmodels/Tax-Calculator/blob/master/docs/guide/policy_params.md
+
+switch:
+    @donboyd5 It has certainly helped to clarify my thinking!
+    By the way, do you know that you can check out this branch locally?
+    git fetch upstream pull/2497/head:pr-2497
+
+    https://github.com/PSLmodels/Tax-Calculator/pull/2497
+
+When modifying tax calculator source:
+	from Tax-Calculator directory
+
+	after revision of source or checkout of new version:
+	if there is an old one in place:
+		pip uninstall taxcalc
+	then:
+		python setup.py install
 
 """
 
@@ -41,7 +56,9 @@ from importlib import reload
 # %%  locations
 DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
 DATADIR = r'C:\programs_python\puf_analysis\data/'
-REFORMSDIR = r'C:\programs_python\puf_analysis\reforms/'
+
+REFDIR = r'C:\programs_python\puf_analysis\reforms/'
+
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 PUFDIR = IGNOREDIR + 'puf_versions/'
 RESULTDIR = r'C:\programs_python\puf_analysis\results/'
@@ -52,31 +69,15 @@ TCOUTDIR = IGNOREDIR + 'taxcalc_output/'
 # %% constants
 LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'
 
-# reforms
-law2017 = REFORMSDIR + '2017_law.json'
-law2017_SALTcapped = REFORMSDIR + 'law2017_SALTcapped.json'  # relative to 2017 law!
 
-law2018 = REFORMSDIR + 'TCJA.json'
-law2018_SALTuncapped = REFORMSDIR + 'law2018_SALTuncapped.json'  # must be run relative to 2018+ law
-
-
-# %% get reforms
-# https://github.com/PSLmodels/Tax-Calculator/blob/master/taxcalc/reforms/2017_law.json
-params2017 = tc.Calculator.read_json_param_objects(law2017, None)
-params2017_SALTcapped = tc.Calculator.read_json_param_objects(law2017_SALTcapped, None)
-
-params2018 = tc.Calculator.read_json_param_objects(law2018, None)
-params2018_SALTuncapped = tc.Calculator.read_json_param_objects(law2018_SALTuncapped, None)
-
-
-# %% get data
-puf = pd.read_csv(LATEST_OFFICIAL_PUF)
-
+# %% get data and create recs
+# puf = pd.read_csv(LATEST_OFFICIAL_PUF)
 puf2018 = pd.read_parquet(PUFDIR + 'puf2018_weighted' + '.parquet', engine='pyarrow')
 puf2018.c00100.describe()
 
-sweights_2018 = pd.read_csv(PUFDIR + 'allweights2018_geo2017_grown.csv')
+pidfiler = puf2018[['pid', 'filer']]
 
+sweights_2018 = pd.read_csv(PUFDIR + 'allweights2018_geo2017_grown.csv')
 # check the weights
 # puf2018.loc[puf2018.pid==11, ['pid', 's006']]
 puf2018[['pid', 's006']].head(20)
@@ -87,82 +88,75 @@ weights_us = sweights_2018.loc[:, ['pid', 'weight']].rename(columns={'weight': '
 weights_us = puf2018[['pid', 's006']].rename(columns={'s006': 'WT2018'})
 weights_us['WT2018'] = weights_us.WT2018 * 100
 
-
-
 recs = tc.Records(data=puf2018,
                   start_year=2018,
                   weights=weights_us,
                   adjust_ratios=None)
-
  # note that we don't need to advance because start year is 2018
 
 
-# %% 2018 law, 2018 data
-pol = tc.Policy()
-calc2018 = tc.Calculator(policy=pol, records=recs)  # current-law
-calc2018.calc_all()  #
-tax2018 = calc2018.weighted_total('iitax')
-tax2018
+# %% reforms -- file names or dicts
+law2017 = tc.Policy.read_json_reform(REFDIR + '2017_law.json')
+
+# reforms needed to walk from 2017 to 2018 law
+# Note: # tc.Policy().read_json_reform(qbid_limit) -- creates a dict out of
+# a json file, converting false or "false" to False -- so I can create dicts directly
+salt2018 = {"ID_AllTaxes_c": {"2018": [10000.0, 10000.0, 5000.0, 10000.0, 10000.0]}}
+
+sd2018 = {"STD": {"2018": [12000, 24000, 12000, 18000, 24000]}}
+
+rates2018 = {"II_rt1": {"2018": 0.10},
+             "II_rt2": {"2018": 0.12},
+             "II_rt3": {"2018": 0.22},
+             "II_rt4": {"2018": 0.24},
+             "II_rt5": {"2018": 0.32},
+             "II_rt6": {"2018": 0.35},
+             "II_rt7": {"2018": 0.37},
+             "II_brk1": {"2018": [9525, 19050, 9525, 13600, 19050]},
+             "II_brk2": {"2018": [38700, 77400, 38700, 51800, 77400]},
+             "II_brk3": {"2018": [82500, 165000, 82500, 82500, 165000]},
+             "II_brk4": {"2018": [157500, 315000, 157500, 157500, 315000]},
+             "II_brk5": {"2018": [200000, 400000, 200000, 200000, 400000]},
+             "II_brk6": {"2018": [500000, 600000, 300000, 500000, 600000]}}
+
+# wondering if I should treat other pass-through provisions together with this
+qbid2018 = {"PT_qbid_rt": {"2018": 0.2},
+            "PT_qbid_taxinc_thd": {"2018": [157500, 315000, 157500, 157500, 315000]},
+            "PT_qbid_taxinc_gap": {"2018": [50000, 100000, 50000, 50000, 100000]},
+            "PT_qbid_w2_wages_rt": {"2018": 0.5},
+            "PT_qbid_alt_w2_wages_rt": {"2018": 0.25},
+            "PT_qbid_alt_property_rt": {"2018": 0.025}}
+qbid_limitfalse = {"PT_qbid_limit_switch": {"2018": False}}
+qbid2018_limitfalse = {**qbid2018, **qbid_limitfalse}
+
+amt2018 ={"AMT_em": {"2018": [70300, 109400, 54700, 70300, 109400]},
+          "AMT_em_ps": {"2018": [500000, 1000000, 500000, 500000, 1000000]},
+          "AMT_em_pe": {"2018": 718800}}
+
+law2018 = tc.Policy.read_json_reform(REFDIR + 'TCJA.json')
 
 
-# %% 2017 law, 2018 data
-# now implement reforms
-pol = tc.Policy()
-pol.implement_reform(params2017['policy'])
-calc2017 = tc.Calculator(policy=pol, records=recs)
-calc2017.calc_all()
-tax2017 = calc2017.weighted_total('iitax')
-tax2017
+# %% functions to add reform, save tc output
+def add_reform(reform_name):
+    global order  # we will modify this
+    pol.implement_reform(eval(reform_name))
+    calc = tc.Calculator(policy=pol, records=recs)
+    calc.calc_all()
+    print(calc.weighted_total('iitax') / 1e9)
 
+    # note that prep_tcout needs pidfiler and puf_constants in global env
+    df = prep_tcout(calc, reform_name, order)
+    output_name = TCOUTDIR + str(order) + '_' + reform_name + '.parquet'
+    df.to_parquet(output_name, engine='pyarrow')
 
-# %% 2018 law with SALT uncapped, 2018 data
-pol = tc.Policy()
-pol.implement_reform(params2018_SALTuncapped['policy'])
-calc2018xSALT = tc.Calculator(policy=pol, records=recs)
-calc2018xSALT.calc_all()
-tax2018xSALT = calc2018xSALT.weighted_total('iitax')
-tax2018xSALT
+    order = order + 1
+    return None
 
-
-# %% 2017 law with SALT added, 2018 data
-pol = tc.Policy()
-pol.implement_reform(params2017['policy'])
-pol.implement_reform(params2017_SALTcapped['policy'])
-calc2017_SALTcapped = tc.Calculator(policy=pol, records=recs)
-calc2017_SALTcapped.calc_all()
-tax2017SALTcapped = calc2017_SALTcapped.weighted_total('iitax')
-tax2017SALTcapped
-
-
-# %% comparisons below here
-(tax2018 - tax2017) / 1e9
-(tax2018 - tax2018xSALT) / 1e9
-(tax2017SALTcapped - tax2017) / 1e9
-
-
-
-calc2018.weighted_total('iitax')
-calc2017.weighted_total('iitax')
-
-tcut = calc2018.weighted_total('iitax') - calc2017.weighted_total('iitax')
-tcut / 1e9
-tcut / calc2017.weighted_total('iitax') * 100
-
-# caution: policies build on each other; if we want to go back to default, reset the policy
-pol = tc.Policy()
-pol.implement_reform(params2018_SALTuncapped['policy'])
-calc2018xSALT = tc.Calculator(policy=pol, records=recs)
-calc2018xSALT.calc_all()
-calc2018xSALT.weighted_total('iitax')
-
-(calc2018xSALT.weighted_total('iitax') - calc2018.weighted_total('iitax')) / 1e9
-
-
-# %% save results
-
-def f(tcout):
+def prep_tcout(tcout, reform_name, order):
+    # note: pidfiler must exist in the global environment
     df = tcout.dataframe(variable_list=[], all_vars=True)
-    df['pid'] = puf2018.pid
+    df['pid'] = pidfiler.pid
+    df['filer'] = pidfiler.filer
 
     df['ht2_stub'] = pd.cut(
         df['c00100'],
@@ -172,55 +166,22 @@ def f(tcout):
     # avoid categorical variable, it causes problems!
     df['ht2_stub'] = df.ht2_stub.astype('int64')
 
-
     df = pd.merge(df,
                   pc.ht2stubs.rename(columns={'ht2stub': 'ht2_stub'}),
                   how='left', on='ht2_stub')
-
-    df['filer'] = puf2018.filer
     return df
 
-df = f(calc_baseline)
-df.to_parquet(TCOUTDIR + 'tcout2018_2018law.parquet', engine='pyarrow')
 
-df = f(calc_2017)
-df.to_parquet(TCOUTDIR + 'tcout2018_2017law.parquet', engine='pyarrow')
+# %% stack reforms
 
-dfbl = pd.read_parquet(TCOUTDIR + 'tcout2018_2018law.parquet', engine='pyarrow')
-dfbl.to_csv(TCOUTDIR + 'tcout2018_2018law.csv', index=None)
-
-df2017 = pd.read_parquet(TCOUTDIR + 'tcout2018_2017law.parquet', engine='pyarrow')
-df2017.to_csv(TCOUTDIR + 'tcout2018_2017law.csv', index=None)
-
-
-# %% analyze
-
-(puf2018.iitax * puf2018.s006).sum()
-
-# run 2017 law and 2018 law on the file
-# sum iitax using s006 weights on file 1509996924390.8943
-(puf2018.iitax * puf2018.s006).sum()  #  1509996924390.8943
-(puf2018.iitax * weights_us.WT2018 / 100).sum()  # 1509996924390.8943
-# calc1.weighted_total('iitax') # 1509781471549.1584
-(puf2018.iitax * weights_us.WT2018.astype('int32') / 100).sum()  # 1509781471549.1584
-# those weights are same as weights in weights_us
-
-
-
-# %% estimate reform impacts using puf.csv
-recs_puf = tc.Records(data=puf)
-pol_puf = tc.Policy()
-calc_puf = tc.Calculator(policy=pol_puf, records=recs_puf)
-calc_puf.advance_to_year(2018)
-calc_puf.calc_all()
-itax_puf = calc_puf.weighted_total('iitax')
-
-pol_puf.implement_reform(params_2017['policy'])
-calc_puf_2017 = tc.Calculator(policy=pol_puf, records=recs_puf)
-calc_puf_2017.advance_to_year(2018)
-calc_puf_2017.calc_all()
-itax_puf_2017 = calc_puf_2017.weighted_total('iitax')
-
-(itax_puf - itax_puf_2017) / 1e9
-itax_puf / itax_puf_2017 * 100 - 100
+order = 0
+pol = tc.Policy()
+add_reform('law2017')
+add_reform('salt2018')
+add_reform('sd2018')
+add_reform('rates2018')
+add_reform('qbid2018_limitfalse')
+add_reform('amt2018')
+add_reform('law2018')
+order
 
