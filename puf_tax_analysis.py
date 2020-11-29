@@ -66,6 +66,7 @@ RESULTDIR = r'C:\programs_python\puf_analysis\results/'
 TCOUTDIR = IGNOREDIR + 'taxcalc_output/'
 
 
+
 # %% constants
 LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'
 
@@ -105,6 +106,8 @@ salt2018 = {"ID_AllTaxes_c": {"2018": [10000.0, 10000.0, 5000.0, 10000.0, 10000.
 
 sd2018 = {"STD": {"2018": [12000, 24000, 12000, 18000, 24000]}}
 
+persx2018 = {"II_em": {"2018": 0}}
+
 rates2018 = {"II_rt1": {"2018": 0.10},
              "II_rt2": {"2018": 0.12},
              "II_rt3": {"2018": 0.22},
@@ -120,6 +123,20 @@ rates2018 = {"II_rt1": {"2018": 0.10},
              "II_brk6": {"2018": [500000, 600000, 300000, 500000, 600000]}}
 
 # wondering if I should treat other pass-through provisions together with this
+ptrates2018 = {"PT_rt1": {"2018": 0.10},
+               "PT_rt2": {"2018": 0.12},
+               "PT_rt3": {"2018": 0.22},
+               "PT_rt4": {"2018": 0.24},
+               "PT_rt5": {"2018": 0.32},
+               "PT_rt6": {"2018": 0.35},
+               "PT_rt7": {"2018": 0.37},
+               "PT_brk1": {"2018": [9525, 19050, 9525, 13600, 19050]},
+               "PT_brk2": {"2018": [38700, 77400, 38700, 51800, 77400]},
+               "PT_brk3": {"2018": [82500, 165000, 82500, 82500, 165000]},
+               "PT_brk4": {"2018": [157500, 315000, 157500, 157500, 315000]},
+               "PT_brk5": {"2018": [200000, 400000, 200000, 200000, 400000]},
+               "PT_brk6": {"2018": [500000, 600000, 300000, 500000, 600000]}}
+
 qbid2018 = {"PT_qbid_rt": {"2018": 0.2},
             "PT_qbid_taxinc_thd": {"2018": [157500, 315000, 157500, 157500, 315000]},
             "PT_qbid_taxinc_gap": {"2018": [50000, 100000, 50000, 50000, 100000]},
@@ -128,6 +145,8 @@ qbid2018 = {"PT_qbid_rt": {"2018": 0.2},
             "PT_qbid_alt_property_rt": {"2018": 0.025}}
 qbid_limitfalse = {"PT_qbid_limit_switch": {"2018": False}}
 qbid2018_limitfalse = {**qbid2018, **qbid_limitfalse}
+
+passthrough_qbidxlimit2018 = {**ptrates2018, **qbid2018_limitfalse}
 
 amt2018 ={"AMT_em": {"2018": [70300, 109400, 54700, 70300, 109400]},
           "AMT_em_ps": {"2018": [500000, 1000000, 500000, 500000, 1000000]},
@@ -139,18 +158,24 @@ law2018 = tc.Policy.read_json_reform(REFDIR + 'TCJA.json')
 # %% functions to add reform, save tc output
 def add_reform(reform_name):
     global order  # we will modify this
+    global wsum_prior
+
     pol.implement_reform(eval(reform_name))
     calc = tc.Calculator(policy=pol, records=recs)
     calc.calc_all()
-    print(calc.weighted_total('iitax') / 1e9)
+    wsum = calc.weighted_total('iitax') / 1e9
+    wsum_change = wsum - wsum_prior
+    print(f'{reform_name:<30} {wsum:>9,.0f}  {wsum_change:>9,.1f}  iitax total and change in $ billions')
 
     # note that prep_tcout needs pidfiler and puf_constants in global env
     df = prep_tcout(calc, reform_name, order)
-    output_name = TCOUTDIR + str(order) + '_' + reform_name + '.parquet'
+    output_name = STACKDIR + str(order) + '_' + reform_name + '.parquet'
     df.to_parquet(output_name, engine='pyarrow')
 
     order = order + 1
+    wsum_prior = wsum
     return None
+
 
 def prep_tcout(tcout, reform_name, order):
     # note: pidfiler must exist in the global environment
@@ -174,14 +199,65 @@ def prep_tcout(tcout, reform_name, order):
 
 # %% stack reforms
 
+# CAUTION: note that PT_qbid_limit_switch (set to False) will remain in effect
+# from the time it is put into effect until the time it is turned off.
+# Because it is NOT included in TCJA.json, which is the same as law2018,
+# it will not be turned off by that reform. Thus, when we run the stacks of
+# reforms below, when we get to law2018 PT_qbid_limit_switch will remain
+# False and we will get different results for law2018 than we would if we
+# ran law2018 in isolation.
+
 order = 0
+wsum_prior = 0
 pol = tc.Policy()
+STACKDIR = TCOUTDIR + 'stack_jct/'  # define where to send the output - must be an existing dir
+
 add_reform('law2017')
-add_reform('salt2018')
-add_reform('sd2018')
 add_reform('rates2018')
-add_reform('qbid2018_limitfalse')
+add_reform('sd2018')
+add_reform('persx2018')
+add_reform('passthrough_qbidxlimit2018')
+add_reform('salt2018')
 add_reform('amt2018')
 add_reform('law2018')
 order
+
+
+order = 0
+wsum_prior = 0
+pol = tc.Policy()
+STACKDIR = TCOUTDIR + 'stack_saltfirst/'  # define where to send the output - must be an existing dir
+
+add_reform('law2017')
+add_reform('salt2018')
+add_reform('sd2018')
+add_reform('persx2018')
+add_reform('passthrough_qbidxlimit2018')
+add_reform('amt2018')
+add_reform('rates2018')
+add_reform('law2018')
+order
+
+
+# jct order
+# add_reform('law2017')
+# add_reform('rates2018')
+# add_reform('sd2018')
+# add_reform('persx2018')
+# add_reform('passthrough_qbidxlimit2018')
+# add_reform('salt2018')
+# add_reform('amt2018')
+# add_reform('law2018')
+
+# salt first, rates last order
+# add_reform('law2017')
+# add_reform('salt2018')
+# add_reform('sd2018')
+# add_reform('persx2018')
+# add_reform('passthrough_qbidxlimit2018')
+# add_reform('amt2018')
+# add_reform('rates2018')
+# add_reform('law2018')
+
+
 
