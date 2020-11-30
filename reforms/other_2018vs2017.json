@@ -1,0 +1,48 @@
+// Title: Tax Cuts and Jobs Act, final version
+// Reform_File_Author: Cody Kallen (with updates by Martin Holmer)
+// Reform_Reference: 2018 IRS forms and this URL:
+//        http://docs.house.gov/billsthisweek/20171218/CRPT-115HRPT-466.pdf
+// Reform_Baseline: 2017_law.json
+// Reform_Description:
+// - New personal income tax schedule (regular/non-AMT/non-pass-through) (1)
+// - New pass-through income tax schedule (2)
+// - New standard deductions (3)
+// - Repeal personal exemption (4)
+// - Modification to child tax credit, nonrefundable dependent credits (5)
+// - Modification of Alternative Minimum Tax exemption parameters (6)
+// - Changes to certain above the line deductions (7)
+// - Changes to itemized deductions (8)
+// - Switch to chained CPI from CPI-U for tax parameter adjustment (9)
+// Reform_Parameter_Map:
+// - 1: II_*
+// - 2: PT_*
+// - 3: STD (can safely ignore WARNINGs about 2026+ values)
+// - 4: II_em
+// - 5: ODC_c, _CTC_c, _CTC_ps, _ACTC_c, _ACTC_Income_thd
+// - 6: AMT_em*
+// - 7: ALD_*
+// - 8: ID_* (can safely ignore WARNINGs about values for several parameters)
+// - 9: parameter_indexing_CPI_offset
+// Note: II_brk*, PT_brk*, STD, II_em are rounded to nearest integer value
+{
+    "ODC_c": {"2018": 500},
+    "CTC_c": {"2018": 2000},
+    "CTC_ps": {"2018": [200000, 400000, 200000, 200000, 400000]},
+    "ACTC_c": {"2018": 1400},
+    "ACTC_Income_thd": {"2018": 2500},
+    "ALD_DomesticProduction_hc": {"2018": 1},
+    "ALD_AlimonyPaid_hc": {"2019": 1,
+                           "2026": 0},
+    "ALD_AlimonyReceived_hc": {"2019": 0,
+                               "2026": 1},
+    "ALD_BusinessLosses_c": {"2018": [250000, 500000, 250000, 250000, 500000]},
+    "ID_ps": {"2018": [9e99, 9e99, 9e99, 9e99, 9e99]},
+    "ID_prt": {"2018": 0.00},
+    "ID_crt": {"2018": 1.0},
+    "ID_Charity_crt_all": {"2018": 0.6},
+    "ID_Casualty_hc": {"2018": 1},
+    "ID_Miscellaneous_hc": {"2018": 1},
+    "ID_Medical_frt": {"2017": 0.075,
+                       "2019": 0.075},
+    "parameter_indexing_CPI_offset": {"2017": -0.0025}
+}

@@ -58,6 +58,24 @@ law_xqbid = REFORMSDIR + 'noQBIDlimit.json'
 puf = pd.read_csv(LATEST_OFFICIAL_PUF)
 recs_puf = tc.Records(data=puf)
 
+clp = tc.Policy()
+# clp.implement_reform(ref.read_json_reform(law_xqbid))
+calc_clp = tc.Calculator(records=recs_puf, policy=clp)
+calc_clp.advance_to_year(2018)
+calc_clp.calc_all()
+calc_clp.weighted_total('iitax') / 1e9
+
+ref=tc.Policy()
+ref.implement_reform(ref.read_json_reform(law_xqbid))
+calc_ref = tc.Calculator(records=recs_puf, policy=ref)
+calc_ref.advance_to_year(2018)
+calc_ref.calc_all()
+calc_ref.weighted_total('iitax') / 1e9
+
+calc_clp.weighted_total('iitax') / 1e9
+calc_ref.weighted_total('iitax') / 1e9
+(calc_clp.weighted_total('iitax') - calc_ref.weighted_total('iitax')) / 1e9
+
 
 # %% create current law and reform
 clp = tc.Policy()

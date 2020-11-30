@@ -66,34 +66,8 @@ RESULTDIR = r'C:\programs_python\puf_analysis\results/'
 TCOUTDIR = IGNOREDIR + 'taxcalc_output/'
 
 
-
 # %% constants
-LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'
-
-
-# %% get data and create recs
-# puf = pd.read_csv(LATEST_OFFICIAL_PUF)
-puf2018 = pd.read_parquet(PUFDIR + 'puf2018_weighted' + '.parquet', engine='pyarrow')
-puf2018.c00100.describe()
-
-pidfiler = puf2018[['pid', 'filer']]
-
-sweights_2018 = pd.read_csv(PUFDIR + 'allweights2018_geo2017_grown.csv')
-# check the weights
-# puf2018.loc[puf2018.pid==11, ['pid', 's006']]
-puf2018[['pid', 's006']].head(20)
-sweights_2018.head(5)
-
-# create a national weights dataframe suitable for tax-calculator
-weights_us = sweights_2018.loc[:, ['pid', 'weight']].rename(columns={'weight': 'WT2018'})
-weights_us = puf2018[['pid', 's006']].rename(columns={'s006': 'WT2018'})
-weights_us['WT2018'] = weights_us.WT2018 * 100
-
-recs = tc.Records(data=puf2018,
-                  start_year=2018,
-                  weights=weights_us,
-                  adjust_ratios=None)
- # note that we don't need to advance because start year is 2018
+LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'  # August 20, 2020 puf.csv
 
 
 # %% reforms -- file names or dicts
@@ -156,7 +130,11 @@ amt2018 ={"AMT_em": {"2018": [70300, 109400, 54700, 70300, 109400]},
 
 law2018 = tc.Policy.read_json_reform(REFDIR + 'TCJA.json')
 
-law2018xQlimit = {**law2018, **qbid_limitfalse}
+law2018xQlimit = {**law2018, **qbid_limitfalse}  # TCJA but with qbid limit set to false
+
+# caution: this next reform is based on carefully deleting provisions already estimated
+# above. needs to be checked/reviewed
+other_2018vs2017 = tc.Policy.read_json_reform(REFDIR + 'other_2018vs2017.json')
 
 
 # %% functions to add reform, save tc output
@@ -219,6 +197,89 @@ def solo_reform(reform_name, base_name, calc_base):
     return None
 
 
+# %% check: run 2017 law and 2018 law (x qbid limit) on default puf.csv
+puf = pd.read_csv(LATEST_OFFICIAL_PUF)
+recs_puf = tc.Records(data=puf)
+
+# law2018xQlimit
+
+clp = tc.Policy()
+clp.implement_reform(eval('law2017'))
+calc_clp = tc.Calculator(records=recs_puf, policy=clp)
+calc_clp.advance_to_year(2018)
+calc_clp.calc_all()
+calc_clp.weighted_total('iitax') / 1e9  # 1719.791464209197
+
+ref=tc.Policy()
+ref.implement_reform(eval('law2018xQlimit'))
+calc_ref = tc.Calculator(records=recs_puf, policy=ref)
+calc_ref.advance_to_year(2018)
+calc_ref.calc_all()
+calc_ref.weighted_total('iitax') / 1e9  # 1521.8399218240877
+# note: IRS number is ~1,538.749 table 1.1 Total income tax
+
+
+calc_clp.weighted_total('iitax') / 1e9
+calc_ref.weighted_total('iitax') / 1e9
+(calc_clp.weighted_total('iitax') - calc_ref.weighted_total('iitax')) / 1e9  # 197.95154238510938
+
+
+df = calc_clp.dataframe(variable_list=[], all_vars=True)
+(df.iitax * df.s006).sum() / 1e9
+(df.c00100 * df.s006).sum() / 1e9 #  11966
+
+
+# %% get puf regrown reweighted data and create recs
+puf2018 = pd.read_parquet(PUFDIR + 'puf2018_weighted' + '.parquet', engine='pyarrow')
+puf2018.c00100.describe()
+
+pidfiler = puf2018[['pid', 'filer']]
+
+sweights_2018 = pd.read_csv(PUFDIR + 'allweights2018_geo2017_grown.csv')
+# check the weights
+# puf2018.loc[puf2018.pid==11, ['pid', 's006']]
+puf2018[['pid', 's006']].head(20)
+sweights_2018.head(5)
+
+# create a national weights dataframe suitable for tax-calculator
+weights_us = sweights_2018.loc[:, ['pid', 'weight']].rename(columns={'weight': 'WT2018'})
+weights_us = puf2018[['pid', 's006']].rename(columns={'s006': 'WT2018'})
+weights_us['WT2018'] = weights_us.WT2018 * 100
+
+recs = tc.Records(data=puf2018,
+                  start_year=2018,
+                  weights=weights_us,
+                  adjust_ratios=None)
+ # note that we don't need to advance because start year is 2018
+
+
+# %% quick checks on the puf
+# 2018 IRS Table 1.2 filers:
+    # number filers 153,774,296
+    # agi  11643.439106 billion
+pu.uvals(puf2018.columns)
+# all returns
+puf2018.s006.sum()  # 180,177,697
+(puf2018.s006 * puf2018.c00100).sum() / 1e9  # 11895.191672684836
+# equivalent all-records puf.csv value is  11966 $71b greater
+
+# filers, 2017 definition
+puf2018.query('filer == True').s006.sum()  # 154,586,946.9856476
+(puf2018.query('filer == True').s006 * puf2018.query('filer == True').c00100).sum() / 1e9
+# $11,807.2 billion agi -- too much -- but this is 2017 definition
+
+temp = pd.merge(puf2018.loc[:, ['pid', 's006', 's006_default', 'c00100']],
+                sweights_2018.loc[:, ['pid', 'weight']],
+                on='pid', how='inner')
+temp.s006.sum()  # 155345878
+temp.weight.sum()
+temp.s006_default.sum() # 147903590
+(temp.weight * temp.c00100).sum() / 1e9  # 11,820
+
+sweights_2018.weight.sum()
+
+
+
 # %% reforms in isolation
 # build the baseline
 pol_base = tc.Policy()
@@ -235,8 +296,10 @@ solo_reform('persx2018', 'law2017', calc_base)
 solo_reform('qbid2018_limitfalse', 'law2017', calc_base)
 solo_reform('salt2018', 'law2017', calc_base)
 solo_reform('amt2018', 'law2017', calc_base)
-solo_reform('law2018', 'law2017', calc_base)
+solo_reform('other_2018vs2017', 'law2017', calc_base)
 solo_reform('law2018xQlimit', 'law2017', calc_base)
+
+solo_reform('law2018', 'law2017', calc_base)
 
 
 # %% stack reforms
