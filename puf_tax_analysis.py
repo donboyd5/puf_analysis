@@ -137,6 +137,8 @@ ptrates2018 = {"PT_rt1": {"2018": 0.10},
                "PT_brk5": {"2018": [200000, 400000, 200000, 200000, 400000]},
                "PT_brk6": {"2018": [500000, 600000, 300000, 500000, 600000]}}
 
+allrates2018 = {**rates2018, **ptrates2018}
+
 qbid2018 = {"PT_qbid_rt": {"2018": 0.2},
             "PT_qbid_taxinc_thd": {"2018": [157500, 315000, 157500, 157500, 315000]},
             "PT_qbid_taxinc_gap": {"2018": [50000, 100000, 50000, 50000, 100000]},
@@ -153,6 +155,8 @@ amt2018 ={"AMT_em": {"2018": [70300, 109400, 54700, 70300, 109400]},
           "AMT_em_pe": {"2018": 718800}}
 
 law2018 = tc.Policy.read_json_reform(REFDIR + 'TCJA.json')
+
+law2018xQlimit = {**law2018, **qbid_limitfalse}
 
 
 # %% functions to add reform, save tc output
@@ -177,7 +181,7 @@ def add_reform(reform_name):
     return None
 
 
-def prep_tcout(tcout, reform_name, order):
+def prep_tcout(tcout, reform_name=None, order=None):
     # note: pidfiler must exist in the global environment
     df = tcout.dataframe(variable_list=[], all_vars=True)
     df['pid'] = pidfiler.pid
@@ -197,6 +201,44 @@ def prep_tcout(tcout, reform_name, order):
     return df
 
 
+def solo_reform(reform_name, base_name, calc_base):
+    pol = tc.Policy()
+    pol.implement_reform(eval(base_name))
+    pol.implement_reform(eval(reform_name))
+    calc = tc.Calculator(policy=pol, records=recs)
+    calc.calc_all()
+    wsum = calc.weighted_total('iitax') / 1e9
+    wsum_base = calc_base.weighted_total('iitax') / 1e9
+    wsum_change = wsum - wsum_base
+    print(f'{reform_name:<30} vs. {base_name} {wsum:>9,.0f}  {wsum_base:>9,.0f}  {wsum_change:>9,.1f}  iitax total and change in $ billions')
+
+    # note that prep_tcout needs pidfiler and puf_constants in global env
+    df = prep_tcout(calc)
+    output_name = STACKDIR + reform_name + '_vs_' + base_name + '.parquet'
+    df.to_parquet(output_name, engine='pyarrow')
+    return None
+
+
+# %% reforms in isolation
+# build the baseline
+pol_base = tc.Policy()
+pol_base.implement_reform(eval('law2017'))
+calc_base = tc.Calculator(policy=pol_base, records=recs)
+calc_base.calc_all()
+
+# solo_reform(reform_name, base_name, calc_base)
+STACKDIR = TCOUTDIR + 'unstacked/'  # define where to send the output - must be an existing dir
+solo_reform('law2017', 'law2017', calc_base)
+solo_reform('allrates2018', 'law2017', calc_base)
+solo_reform('sd2018', 'law2017', calc_base)
+solo_reform('persx2018', 'law2017', calc_base)
+solo_reform('qbid2018_limitfalse', 'law2017', calc_base)
+solo_reform('salt2018', 'law2017', calc_base)
+solo_reform('amt2018', 'law2017', calc_base)
+solo_reform('law2018', 'law2017', calc_base)
+solo_reform('law2018xQlimit', 'law2017', calc_base)
+
+
 # %% stack reforms
 
 # CAUTION: note that PT_qbid_limit_switch (set to False) will remain in effect
@@ -207,22 +249,24 @@ def prep_tcout(tcout, reform_name, order):
 # False and we will get different results for law2018 than we would if we
 # ran law2018 in isolation.
 
+# %% jct stacking order of reforms
 order = 0
 wsum_prior = 0
 pol = tc.Policy()
 STACKDIR = TCOUTDIR + 'stack_jct/'  # define where to send the output - must be an existing dir
 
 add_reform('law2017')
-add_reform('rates2018')
+add_reform('allrates2018')
 add_reform('sd2018')
 add_reform('persx2018')
-add_reform('passthrough_qbidxlimit2018')
+add_reform('qbid2018_limitfalse')
 add_reform('salt2018')
 add_reform('amt2018')
 add_reform('law2018')
 order
 
 
+# %% salt first stacking order of reforms
 order = 0
 wsum_prior = 0
 pol = tc.Policy()
@@ -232,13 +276,14 @@ add_reform('law2017')
 add_reform('salt2018')
 add_reform('sd2018')
 add_reform('persx2018')
-add_reform('passthrough_qbidxlimit2018')
+add_reform('qbid2018_limitfalse')
 add_reform('amt2018')
-add_reform('rates2018')
+add_reform('allrates2018')
 add_reform('law2018')
 order
 
 
+# OLD orders before combining rates
 # jct order
 # add_reform('law2017')
 # add_reform('rates2018')
