@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['puf_default_testrun.py']
+recent_files = ['puf_runall.py', 'puf_tax_analysis.py', 'puf_constants.py', 'puf_default_testrun.py']
 

@@ -3,14 +3,41 @@
 # Files -> Settings -> Build, Execution, Deployment -> Python Debugger
 # switch on the "Gevent Compatible" flag
 
+# installing latest Tax-Calculator or different versions (but not modifying source)
+# see this video https://www.youtube.com/watch?v=c6IgzwFRf5I
+# then
+# conda install requests
+# conda install -c conda-forge paramtools
+# pip install git+https://github.com/PSLmodels/Tax-Calculator
+# or
+# pip install -e git+https://github.com/PSLmodels/Tax-Calculator#egg=taxcalc
+
+# pip freeze (useful to see packages and versions installed; conda also has command)
+
+
+# instructions from my conversation with Matt 11/28/2020 about installing
+# Tax-Calculator from sournce on my own machine
+#
+# after revision of source or checkout of new version
+# from command prompt window, in Tax-Calculator directory
+# if there is an old one in place:
+# pip uninstall taxcalc
+# then:
+# python setup.py install
+
+
 # %% imports
 import sys
-import taxcalc as tc
+# either of the following is close but it can't find paramtols in calculator.py:
+# sys.path.append('C:/programs_python/Tax-Calculator/build/lib/')  # needed
+# sys.path.insert(0, 'C:/programs_python/Tax-Calculator/build/lib/') # this is close
+
+import taxcalc as tc  # updated taxcalc!!!
 import pandas as pd
 import numpy as np
 from datetime import date
 
-import functions_advance_puf as adv
+import functions_advance_puf as adv  # updated taxcalc!!!
 import functions_reweight_puf as rwp
 import functions_geoweight_puf as gwp
 import functions_ht2_analysis as fht
@@ -135,7 +162,7 @@ pu.uvals(pufsub.columns)
 
 # %% get weights for regrown file
 # all weight files will have pid, weight, shortname as columns
-weights_regrown = pd.read_csv(PUFDIR + 'weights_regrown.csv')
+weights_regrown = pd.read_csv(PUFDIR + 'weights_regrown.csv')  # these are same as default as of now 12/12/2020
 weights_regrown  # MUST have columns pid, weight -- no other columns or names
 # weights_regrown.iloc[:, [0, 1]]
 
@@ -152,18 +179,25 @@ pu.uvals(pdiff_init.pufvar)
 
 
 # %% ipopt: define any variable-stub combinations to drop via a drops dataframe
+# for definitions see: https://pslmodels.github.io/Tax-Calculator/guide/index.html
 
 # variables we don't want to target (e.g., taxable income or tax after credits)
-untargeted = ['c01000', 'c01000_nnz',  # we are targeting the pos and neg versions
-              'c04800', 'c04800_nnz',
-              'c09200', 'c09200_nnz',
+              # drop net cap gains - instead we are targeting the pos and neg versions
+untargeted = ['c01000', 'c01000_nnz',
+              'c04800', 'c04800_nnz',  # regular taxable income
+              'c09200', 'c09200_nnz',  # income tax liability (including othertaxes) after non-refundable credits
               'taxac_irs', 'taxac_irs_nnz']
 
+# e02400 is Total social security (OASDI) benefits, we are targeting taxable instead
 badvars = ['c02400', 'c02400_nnz']  # would like to target but values are bad
+
+# the next vars seem just too far off in irs stubs 1-4 to target in those stubs
+# c17000 Sch A: Medical expenses deducted
+# c19700 Sch A: Charity contributions deducted
 bad_stub1_4_vars = ['c17000', 'c17000_nnz', 'c19700', 'c19700_nnz']
 
 # define query
-qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
+qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values, query() doesn't allow is.nan()
 qx0 = "(pufvar in @untargeted)"
 qx1 = "(pufvar in @badvars)"
 qx2 = "(common_stub in [1, 2, 3, 4] and pufvar in @bad_stub1_4_vars)"
@@ -172,10 +206,11 @@ qx
 
 drops_ipopt = pdiff_init.query(qx).copy()
 drops_ipopt.sort_values(by=['common_stub', 'pufvar'], inplace=True)
-drops_ipopt
+drops_ipopt  # dataframe of the IRS variable-stub combinations we will NOT target when using ipopt for targeting
 
 
 # %% lsq: define any variable-stub combinations to drop via a drops dataframe
+# create drops data frame for when we use lsq for targeting instead of ipopt
 
 goodvars = ['nret_all', 'mars1', 'mars2', 'mars4',
             'c00100',
@@ -241,7 +276,7 @@ pu.uvals(pdiff_rwt.pufvar)
 
 # %% create report on results from the reweighting
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
-# pid, the second will be the weight of interst
+# pid, the second will be the weight of interest
 
 date_id = date.today().strftime("%Y-%m-%d")
 
@@ -262,8 +297,8 @@ pu.uvals(pufsub.columns)
 pu.uvals(ptargets.columns)
 
 
-# %% geoweight: get national weights by adding up unrestricted state weights
-# get weights to use as starting point for ht2 stubs
+# %% develop state targets
+# get weights so that we can get puf sums by HT2 income range (rather than IRS range)
 wfname = PUFDIR + 'weights_reweight1_ipopt.csv'
 weights_national = pd.read_csv(wfname)
 
@@ -275,6 +310,16 @@ pu.uvals(pufsums_ht2long.pufvar)
 
 # collapse ht2 shares to the states we want
 ht2_collapsed = gwp.collapse_ht2(HT2_SHARES, compstates)
+# ht2_collapsed has the following columns:
+    # stgroup -- state abbreviation
+    # pufvar -- puf documentation variable name
+    # ht2var -- Historical Table 2 variable name (or one I created)
+    # ht2description
+    # ht2_stub -- integer 0-10 identifying HT2 AGI group, where 0 is all returns
+    # share -- this state's share (as decimal) of the HT2 US total for this variable-stub
+    # ht2 -- the HT2 reported 2017 value for this state-variable-stub combination
+    #        we will multiply the national puf variable-stub value by this share to construct state target
+
 pu.uvals(ht2_collapsed.pufvar)
 pu.uvals(ht2_collapsed.ht2var)
 
@@ -287,14 +332,35 @@ ht2targets['diff'] = ht2targets.target - ht2targets.ht2
 ht2targets['pdiff'] = ht2targets['diff'] / ht2targets.ht2 * 100
 ht2targets['abspdiff'] = np.abs(ht2targets['pdiff'])
 
-# explore the result
+# pdiff is the % difference between the puf-value-shared-to-state and the
+# corresponding reported HT2 value - it is a measure of how far off the puf is
+# from reported values and therefore a potential indicator of whether the variable
+# concepts we are matching between puf and HT2 are a good match
+
+
+# %% explore the resulting state-variable-stub targets
+
 check = ht2targets.sort_values(by='abspdiff', axis=0, ascending=False)
+check.info()
+check.describe()
 np.nanquantile(check.abspdiff, qtiles)
+
+# how are various variables by income range?
+# what's true of one state is true of all
+var = "c04800"
+st = "CA"
+check.query('pufvar == @var & stgroup==@st ').sort_values(by='ht2_stub', axis=0, ascending=True)
+# NY
+# agi looks good in all groups
+# c04800 taxable income pretty good in all but stub 2
+# nret_all bad in stubs 1, 2; otherwise good
 
 
 # %% define HT2 targets to drop
 # create a wide boolean dataframe indicating whether a target will be dropped
-qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
+# step through this code to be sure you have the targets you want
+
+qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values because query() doesn't allw
 dropsdf = ht2targets.query(qxnan)[['stgroup', 'ht2_stub', 'pufvar']]
 dropsdf['drop'] = True
 dropsdf_stubs = ht2_collapsed.query('ht2_stub > 0')[['stgroup', 'ht2_stub', 'pufvar']]
@@ -306,20 +372,27 @@ keepvars = ['stgroup', 'ht2_stub', 'pufvar', 'target']
 ht2wide = ht2targets[keepvars].pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='target').reset_index()
 
 ht2_vars = pu.uvals(ht2_collapsed.pufvar)
-ptarget_names  # possible targets, if in ht2
+ptarget_names  # possible targets, if in ht2, using pufvar names
 ht2_possible = [var for var in ptarget_names if var in ht2_vars]
 
 pufsub.columns
+# how many records in each HT2 stub? ranges from 5,339 in stub 1 to 41,102 in stub 4
 pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
 
-targvars = ['nret_all', 'mars1', 'mars2', 'c00100', 'e00200', 'e00200_nnz',
-            'e00300', 'e00300_nnz', 'e00600', 'e00600_nnz',
-            'c01000',
+# targvars are the variables we will target -- must be in ht2_possible
+targvars = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
+            'c00100',   # AGI
+            'e00200', 'e00200_nnz',  # wages
+            'e00300', 'e00300_nnz',  # taxable interest income
+            'e00600', 'e00600_nnz',  # ordinary dividends
+            'c01000',  # capital gains (tc doc says see .py file, though)
             # deductions
-            'c17000','c17000_nnz',
-            'c18300', 'c18300_nnz']
+            'c17000','c17000_nnz',  # medical expenses deducted
+            'c18300', 'c18300_nnz']  # SALT amount deducted
 ['good' for var in targvars if var in ht2_possible]
 
+
+# for testing purposes, here are some useful subsets of targvars
 targvars2 = ['nret_all']
 targvars2 = ['nret_all', 'c00100']
 targvars2 = ['nret_all', 'c00100', 'e00200']
@@ -328,7 +401,7 @@ targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
 targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
 
 
-# %% common options for geoweighting
+# %% FYI: common options for geoweighting -- define actual options in the next cell
 
 uo = {'qmax_iter': 10}
 uo = {'qmax_iter': 1, 'independent': True}
@@ -360,24 +433,39 @@ uo = {'qmax_iter': 10,
       }
 
 
-# %% get new national weights by getting weights for each state (for each record) and summing them
+# %% initial geoweighting to get new tentative national weights from sums of unrestricted state weights
+# that is, get weights for each state (for each record), without adding-up restriction, and sum them
+
+# get our best current 2017 national weights, which were developed by reweighting the regrown 2017 puf
 wfname_init = PUFDIR + 'weights_reweight1_ipopt.csv'
 weights_init = pd.read_csv(wfname_init)
 
 grouped = pufsub.groupby('ht2_stub')
 # targvars, ht2wide, dropsdf_wide, independent=False
 
+# now we are going to get weights for each state by using a reweighting method on
+# each state independently (no adding-up requirement)
+
 # choose one of the following combinations of geomethod and options
+# I have settled on qmatrix-ipopt as the best method for this, but there is info
+# below on  how to use other methods, too
+
 geomethod = 'qmatrix'  # does not work well
 options = {}
 
+# use qmatrix-ipopt because it seems most robust and is pretty fast
 geomethod = 'qmatrix-ipopt'
 options = {'quiet': True,
+           # xlb, xub: lower and upper bounds on ratio of new state weights to initial state weights
            'xlb': 0.1,
            'xub': 100,
+           # crange is desired constraint tolerance
+           # 0.0001 means try to come within 0.0001 x the target
+           # i.e., within 0.01% of the target
            'crange': .0001
            }
 
+# qmatrix-lsq does not work as robustly as qmatrix-ipopt although it can be faster
 geomethod = 'qmatrix-lsq'
 options = {'verbose': 0,
            'xlb': 0.2,
@@ -386,6 +474,17 @@ options = {'verbose': 0,
            'lsmr_tol': 'auto'  # 'auto'  # 'auto' or None
            }
 
+# now we are going to iterate through the HT2 agi ranges (grouped.apply)
+#   and within each range iterate through the states  (gwp.get_geo_weights)
+# because we are NOT imposing an adding-up restriction:
+    #  independent=True
+# this will be fairly fast
+# nat_geo_weights will have 1 record per return, with id info plus:
+    # weight: the initial national weight for the record
+    # geoweight_sum: the record's sum of the weights over the solved-for
+    # a column for each solved-for state, with the record's weight for the state
+# while geoweight_sum will not equal weight (our initial national weight), for
+# most records it will be quite close
 a = timer()
 nat_geo_weights = grouped.apply(gwp.get_geo_weights,
                                 weightdf=weights_init,
@@ -412,7 +511,15 @@ nat_geo_weights.to_csv(PUFDIR + 'allweights_geo_unrestricted_' + geomethod + '.c
 nat_geo_weights.sum()
 
 g = nat_geo_weights.geoweight_sum / nat_geo_weights.weight
-np.quantile(g, qtiles)
+np.quantile(g, qtiles)  # 98% of the records had ratio between 0.78 and 1.21
+# in other words, we might even consider stopping here!
+
+# take a finer look at the extremes
+qtiles2 = (0, 0.0025, 0.005, 0.01,0.02, 0.98, 0.99, 0.995, 0.9975, 1)
+np.quantile(g, qtiles2)
+g.sort_values().head(50)
+g.sort_values(ascending=False).head(50)
+
 
 
 # %% create report on results with the geo revised national weights
@@ -444,6 +551,14 @@ rwp.comp_report(pufsub,
 # %% reweight the geo revised national weights
 # in theory, these will be the weights we use to create the national file
 # that will be shared out to states
+
+# the idea is that this will give us a set of national weights that:
+    # (a) hits (or comes close to) national targets we care about, AND
+    # (b) are close to the sum of the state unrestricted weights
+    #     from above (geoweight_sum), and therefore
+    # (c) it should be pretty easy to create state weights that we restrict
+    #     so that they sum to these new national weights
+    # This is the TPC adjustment step in their paper
 
 geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
 wfname_init = PUFDIR + 'weights_geo_unrestricted_' + geomethod + '.csv'
@@ -495,22 +610,26 @@ rwp.comp_report(pufsub,
 
 
 # %% construct new targets for geoweighting geoweight: get revised national weights based on independent state weights
-# get weights to use as starting point for ht2 stubs
+
+# get NATIONAL weights to use as starting point for ht2 stubs -- from step above
 wfname = PUFDIR + 'weights_georwt1_ipopt.csv'
 weights = pd.read_csv(wfname)
 
-# get national pufsums with these weights, for ht2 stubs
+# get NATIONAL pufsums with these weights, by ht2 stub
 # these are the amounts we will share across states
 pufsums_ht2 = rwp.get_wtdsums(pufsub, ptarget_names, weights, stubvar='ht2_stub')
+pufsums_ht2.column
 pufsums_ht2long = pd.melt(pufsums_ht2, id_vars='ht2_stub', var_name='pufvar', value_name='pufsum')
 
-# collapse ht2 shares to the states we want
+# collapse ht2 shares to the states we want (should be the same as before)
 ht2_collapsed = gwp.collapse_ht2(HT2_SHARES, compstates)
-pu.uvals(ht2_collapsed.pufvar)
+pu.uvals(ht2_collapsed.pufvar)  # the variables available for targeting
 
 # create targets by state and ht2_stub from pufsums and collapsed shares
 ht2_collapsed
 
+# merge in the puf sums with the new (final) NATIONAL weights so that we can
+# share the NATIONAL sums to the states, to be our state targets
 ht2targets = pd.merge(ht2_collapsed, pufsums_ht2long, on=['pufvar', 'ht2_stub'])
 ht2targets.info()
 ht2targets['target'] = ht2targets.pufsum * ht2targets.share
@@ -519,12 +638,18 @@ ht2targets['pdiff'] = ht2targets['diff'] / ht2targets.ht2 * 100
 ht2targets['abspdiff'] = np.abs(ht2targets['pdiff'])
 ht2targets.to_csv(IGNOREDIR + 'ht2targets_temp.csv', index=None)  # temporary
 
-# explore the result
+# %% explore the updated state-variable-stub targets
 check = ht2targets.sort_values(by='abspdiff', axis=0, ascending=False)
 np.nanquantile(check.abspdiff, qtiles)
 
+# let's look at some targets vs their HT2 values
+# what's true of one state is true of all
+var = "c04800"
+st = "AR"
+temp = check.query('pufvar == @var & stgroup==@st ').sort_values(by='ht2_stub', axis=0, ascending=True)
 
-# create a wide boolean dataframe indicating whether a target will be dropped
+
+# %% create a wide boolean dataframe indicating whether a target will be dropped
 qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
 dropsdf = ht2targets.query(qxnan)[['stgroup', 'ht2_stub', 'pufvar']]
 dropsdf['drop'] = True
@@ -629,7 +754,7 @@ final_geo_weights.sum()
 # note that the method here is lsq
 # wfname = PUFDIR + 'weights_geo_rwt.csv'
 # nat_geo_weights[['pid', 'geo_rwt']].to_csv(wfname, index=None)
-final_geo_name = PUFDIR + 'allweights_geo_restricted_' + geomethod + '.csv'
+final_geo_name = PUFDIR + 'allweights2017_geo_restricted_' + geomethod + '.csv'
 final_geo_name
 final_geo_weights.to_csv(final_geo_name, index=None)
 
