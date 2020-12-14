@@ -134,6 +134,7 @@ pufirs_map = {
     'e02000pos': 'e02000inc',
     'e02000neg': 'e02000loss',
     # CAUTION: partnerscorpinc is included in e02000
+    'e26270': 'partnerscorp',
     'e26270pos': 'partnerscorpinc',
     'e26270neg': 'partnerscorploss',
 

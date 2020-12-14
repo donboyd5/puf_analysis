@@ -30,7 +30,8 @@ def collapse_ht2(ht2_path, compstates):
 def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide,
                     independent,
                     geomethod,
-                    options):
+                    options,
+                    intermediate_path=None):
 
     print(f'\nIncome stub {df.name:3d}')
     stub = df.name
@@ -102,6 +103,8 @@ def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide,
     df2 = pd.concat([pufstub[['pid', 'ht2_stub', 'weight']],
                       whsdf],
                     axis=1)
+    if intermediate_path is not None:
+        df2.to_csv(intermediate_path + 'stub_' + str(stub) + '.csv', index=None)
     return df2
 
 

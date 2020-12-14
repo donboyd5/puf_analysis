@@ -547,6 +547,8 @@ wide['nret_cgnet'] = wide.nret_cggross + wide.nret_cgloss  # obviously this is j
 
 wide['busprofnet'] = wide.busprofnetinc + wide.busprofnetloss
 
+wide['partnerscorp'] = wide.partnerscorpinc + wide.partnerscorploss
+
 wide['e02000inc'] = wide.rentroyinc + wide.partnerscorpinc + wide.estateinc
 wide['e02000loss'] = wide.rentroyloss + wide.partnerscorploss + wide.estateloss
 wide['e02000'] = wide.e02000inc + wide.e02000loss
@@ -562,6 +564,9 @@ long.loc[long['variable'] == 'nret_cgnet', 'column_description'] = (
 
 long.loc[long['variable'] == 'busprofnet', 'column_description'] = (
     'Net income less loss: Business or professional net income (calculated)')
+
+long.loc[long['variable'] == 'partnerscorp', 'column_description'] = (
+    'Net income less loss: Partnerships and S Corps net income (calculated)')
 
 long.loc[long['variable'] == 'e02000', 'column_description'] = (
     'Net income less loss: Rent/royalty, partner/S, estates income (calculated)')

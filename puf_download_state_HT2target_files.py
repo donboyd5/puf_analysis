@@ -27,6 +27,7 @@ from io import StringIO
 
 import json
 import puf_constants as pc
+import puf_utilities as pu
 
 
 # %% locations and file names
@@ -84,6 +85,7 @@ ht2.STATE.value_counts().sort_values()
 ht2.groupby('STATE').STATE.count()  # alpha order
 ht2.head()
 ht2.columns.to_list()
+pu.uvals(ht2.columns)
 # # convert all strings to numeric
 # stn = ht2raw.columns.to_list()
 # stn.remove('STATE')
@@ -175,7 +177,7 @@ dfl.to_csv(DATADIR + 'ht2_long_unmapped.csv', index=False)
 vars_dict = {'n1': 'nret_all', 'aiitax': 'iitax', 'niitax': 'iitax_nnz'}
 vars_bare = ('mars1', 'mars2', 'mars4')
 
-vars_ennz = ('00200', '00300', '00600', '01500', '02400')
+vars_ennz = ('00200', '00300', '00600', '00900', '01500', '02400', '26270')
 vars_cnnz = ('00100', '01000', '02500', '04800', '05800', '17000', '18300', '19200', '19700')
 
 # posneg vars

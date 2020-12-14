@@ -117,7 +117,6 @@ def get_pctdiffs(pufsub, weightdf, targets):
     return dfmerge
 
 
-
 def get_possible_targets(targets_fname):
     targets_possible = pd.read_csv(targets_fname)
 

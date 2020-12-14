@@ -31,6 +31,7 @@ e00900neg_nnz,nret_busprofnetloss,"Table 1.4.  All Returns: Sources of Income, A
 e02000,e02000,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income","Net income less loss: Rent/royalty, partner/S, estates income (calculated)",17in14ar.xls,calculated
 e02000pos,e02000inc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income","Positive rent/royalty, partner/S, estates income (calculated)",17in14ar.xls,calculated
 e02000neg,e02000loss,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income","Loss rent/royalty, partner/S, estates income (calculated)",17in14ar.xls,calculated
+e26270,partnerscorp,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Net income less loss: Partnerships and S Corps net income (calculated),17in14ar.xls,calculated
 e26270pos,partnerscorpinc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Partnership or S corporation net income,17in14ar.xls,BE
 e26270pos_nnz,nret_partnerscorpinc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with partnership or S corporation net income,17in14ar.xls,BD
 e26270neg,partnerscorploss,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Partnership or S corporation net loss,17in14ar.xls,BG

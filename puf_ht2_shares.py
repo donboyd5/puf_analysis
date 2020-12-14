@@ -17,21 +17,21 @@ import puf_utilities as pu
 
 # %% locations and file names
 DATADIR = r'C:\programs_python\puf_analysis\data/'
-RESULTDIR = r'C:\programs_python\puf_analysis\result_tables/'
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
+# TABDIR = IGNOREDIR + 'result_tables/'
 
 
 # %% check
 ht2_path = DATADIR + 'ht2_long.csv'
 
-ht2 = pd.read_csv(ht2_path)  # 87,450
+ht2 = pd.read_csv(ht2_path)  # 88,033
 check = ht2[ht2.ht2var == 'n18500']
 # temp = ht2[['ht2var', 'ht2description', 'pufvar']].drop_duplicates()
 pu.uvals(ht2.ht2var)
 
 # put national value on every record
-ht2_us = ht2[ht2["state"] == "US"] \
-    [['ht2var', 'ht2_stub', 'ht2']].rename(columns={'ht2': 'ht2_us'})  # 1,650
+ht2_us = (ht2[ht2["state"] == "US"][['ht2var', 'ht2_stub', 'ht2']].
+          rename(columns={'ht2': 'ht2_us'}))  # 1,650
 
 # shares are not perfectly 1 with national values, so let's use sum instead
 ht2_sums = ht2[ht2["state"] != "US"][['ht2var', 'ht2_stub', 'ht2']]
