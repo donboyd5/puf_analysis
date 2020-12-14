@@ -73,15 +73,7 @@ for f in files:
         file.write(r.content)
 
 
-# %% ONETIME: get variable labels
-fn = 'ht2_variable_labels.xlsx'
-vlabs = pd.read_excel(HT2DIR + fn, sheet_name = '2017')
-vlabs['variable'] = vlabs.variable.str.lower()
-vlabs
-vlabs[vlabs.duplicated()]
-
-
-# %% ONETIME: read and adjust Historical Table 2 and save the file
+# %% ONETIME: read Historical Table 2
 
 ht2 = pd.read_csv(HT2DIR + HT2_2017, thousands=',')
 ht2
@@ -97,6 +89,52 @@ ht2.columns.to_list()
 # stn.remove('STATE')
 # ht2[stn] = ht2raw[stn].apply(pd.to_numeric, errors='coerce', axis=1)
 ht2
+
+
+# %% create new variables as needed
+# iitax
+#    A10300 total tax liability, minus
+#      A85530 additional medicare tax
+#      A09400 self-employment tax
+#      refundable credits:
+    #    A59720 excess EITC
+    #    A11070 additional child credit
+    #    A10960 refundable education credit
+    #    A11560 net premium tax credit
+# is a good approximation to the Tax-Calculator concept of iitax
+
+# note, regarding business-like income and losses:
+    # HT2 does have A00900 and N00900, but
+    # does not have the counterpart to e02000 Rents/royalties, parternship/S, estate/trust
+    # but it does have A26270 Partnership/S-corp net income (less loss) amount and N26270
+
+
+ht2['Aiitax'] = (ht2.A10300 - ht2.A85530 - ht2.A09400
+                 - (ht2.A59720 + ht2.A11070 + ht2.A10960 + ht2.A11560))
+
+ht2['Niitax'] = ht2.N10300  # N must be at least this large -- we will ignore
+
+
+# %% ONETIME: get variable labels
+fn = 'ht2_variable_labels.xlsx'
+vlabs = pd.read_excel(HT2DIR + fn, sheet_name = '2017')
+vlabs['variable'] = vlabs.variable.str.lower()
+vlabs
+vlabs[vlabs.duplicated()]
+vlabs.info()
+
+
+# add vlabs for any variables just created using lowercase variable names
+vlabs_new = {'variable': ['aiitax', 'niitax'],
+             'description': ['Income taxes minus refundable credits, corresponds closely to Tax-Calculator iitax',
+                             'IGNORE: Number of iitax returns, very rough estimate'],
+             'type': ['Num', 'Num']}
+vlabs_new_df = pd.DataFrame.from_dict(vlabs_new)
+
+vlabs = pd.concat([vlabs, vlabs_new_df]).reset_index(drop=True)
+
+
+# %% ONETIME: create long dataframe and save the file
 
 dfl = pd.melt(ht2, id_vars=['STATE', 'AGI_STUB'])
 dfl.info
@@ -134,7 +172,7 @@ dfl.to_csv(DATADIR + 'ht2_long_unmapped.csv', index=False)
     # vars ennz has variables where an ht2 variable corresponds to a puf "e" variable, and we also want the nnz variables
     # vars cnnz has variables where an ht2 variable corresponds to a puf "c" variable, and we also want the nnz variables
 
-vars_dict = {'n1': 'nret_all'}
+vars_dict = {'n1': 'nret_all', 'aiitax': 'iitax', 'niitax': 'iitax_nnz'}
 vars_bare = ('mars1', 'mars2', 'mars4')
 
 vars_ennz = ('00200', '00300', '00600', '01500', '02400')

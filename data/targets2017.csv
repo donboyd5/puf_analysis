@@ -2419,86 +2419,86 @@ src,irsstub,incrange,variable,value,excel_column,table_description,column_descri
 17in14ar.xls,17,"$2,000,000 under $5,000,000",AY,9351,AY,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
 17in14ar.xls,18,"$5,000,000 under $10,000,000",AY,6391,AY,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
 17in14ar.xls,19,"$10,000,000 or more",AY,5080,AY,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,0,"All returns, total",AZ,6636734,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,1,No adjusted gross income,AZ,154001,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,2,"$1 under $5,000",AZ,162045,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,3,"$5,000 under $10,000",AZ,212382,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,4,"$10,000 under $15,000",AZ,267149,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,5,"$15,000 under $20,000",AZ,226170,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,6,"$20,000 under $25,000",AZ,207411,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,7,"$25,000 under $30,000",AZ,197828,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,8,"$30,000 under $40,000",AZ,357569,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,9,"$40,000 under $50,000",AZ,334197,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,10,"$50,000 under $75,000",AZ,874400,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,11,"$75,000 under $100,000",AZ,822371,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,12,"$100,000 under $200,000",AZ,1635631,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,13,"$200,000 under $500,000",AZ,828982,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,14,"$500,000 under $1,000,000",AZ,208277,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,15,"$1,000,000 under $1,500,000",AZ,56452,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,16,"$1,500,000 under $2,000,000",AZ,26077,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,17,"$2,000,000 under $5,000,000",AZ,43616,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,18,"$5,000,000 under $10,000,000",AZ,12640,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,19,"$10,000,000 or more",AZ,9537,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,0,"All returns, total",BA,104770745,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,1,No adjusted gross income,BA,2983809,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,2,"$1 under $5,000",BA,527355,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,3,"$5,000 under $10,000",BA,979685,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,4,"$10,000 under $15,000",BA,1446142,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,5,"$15,000 under $20,000",BA,1691023,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,6,"$20,000 under $25,000",BA,1287194,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,7,"$25,000 under $30,000",BA,1367647,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,8,"$30,000 under $40,000",BA,2567458,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,9,"$40,000 under $50,000",BA,2862359,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,10,"$50,000 under $75,000",BA,7673446,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,11,"$75,000 under $100,000",BA,7718817,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,12,"$100,000 under $200,000",BA,22531818,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,13,"$200,000 under $500,000",BA,21309906,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,14,"$500,000 under $1,000,000",BA,10736593,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,15,"$1,000,000 under $1,500,000",BA,4407802,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,16,"$1,500,000 under $2,000,000",BA,2566264,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,17,"$2,000,000 under $5,000,000",BA,5581252,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,18,"$5,000,000 under $10,000,000",BA,2373360,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,19,"$10,000,000 or more",BA,4158816,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,0,"All returns, total",BB,4201919,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,1,No adjusted gross income,BB,251602,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,2,"$1 under $5,000",BB,61737,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,3,"$5,000 under $10,000",BB,93297,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,4,"$10,000 under $15,000",BB,110233,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,5,"$15,000 under $20,000",BB,96578,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,6,"$20,000 under $25,000",BB,123693,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,7,"$25,000 under $30,000",BB,115426,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,8,"$30,000 under $40,000",BB,295731,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,9,"$40,000 under $50,000",BB,275972,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,10,"$50,000 under $75,000",BB,677880,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,11,"$75,000 under $100,000",BB,678873,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,12,"$100,000 under $200,000",BB,1028434,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,13,"$200,000 under $500,000",BB,269380,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,14,"$500,000 under $1,000,000",BB,70988,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,15,"$1,000,000 under $1,500,000",BB,20740,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,16,"$1,500,000 under $2,000,000",BB,9454,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,17,"$2,000,000 under $5,000,000",BB,14946,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,18,"$5,000,000 under $10,000,000",BB,3921,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,19,"$10,000,000 or more",BB,3034,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,0,"All returns, total",BC,49241288,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,1,No adjusted gross income,BC,7071002,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,2,"$1 under $5,000",BC,499148,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,3,"$5,000 under $10,000",BC,787760,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,4,"$10,000 under $15,000",BC,804907,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,5,"$15,000 under $20,000",BC,686871,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,6,"$20,000 under $25,000",BC,741067,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,7,"$25,000 under $30,000",BC,1016672,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,8,"$30,000 under $40,000",BC,2522427,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,9,"$40,000 under $50,000",BC,2227365,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,10,"$50,000 under $75,000",BC,5744095,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,11,"$75,000 under $100,000",BC,6352705,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,12,"$100,000 under $200,000",BC,9190603,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,13,"$200,000 under $500,000",BC,6367329,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,14,"$500,000 under $1,000,000",BC,2141535,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,15,"$1,000,000 under $1,500,000",BC,875698,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,16,"$1,500,000 under $2,000,000",BC,413182,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,17,"$2,000,000 under $5,000,000",BC,879484,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,18,"$5,000,000 under $10,000,000",BC,365787,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,19,"$10,000,000 or more",BC,553653,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
+17in14ar.xls,0,"All returns, total",nret_rentroyinc,6636734,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,1,No adjusted gross income,nret_rentroyinc,154001,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,2,"$1 under $5,000",nret_rentroyinc,162045,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,3,"$5,000 under $10,000",nret_rentroyinc,212382,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,4,"$10,000 under $15,000",nret_rentroyinc,267149,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,5,"$15,000 under $20,000",nret_rentroyinc,226170,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,6,"$20,000 under $25,000",nret_rentroyinc,207411,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,7,"$25,000 under $30,000",nret_rentroyinc,197828,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,8,"$30,000 under $40,000",nret_rentroyinc,357569,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,9,"$40,000 under $50,000",nret_rentroyinc,334197,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,10,"$50,000 under $75,000",nret_rentroyinc,874400,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,11,"$75,000 under $100,000",nret_rentroyinc,822371,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,12,"$100,000 under $200,000",nret_rentroyinc,1635631,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,13,"$200,000 under $500,000",nret_rentroyinc,828982,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,14,"$500,000 under $1,000,000",nret_rentroyinc,208277,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,15,"$1,000,000 under $1,500,000",nret_rentroyinc,56452,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,16,"$1,500,000 under $2,000,000",nret_rentroyinc,26077,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,17,"$2,000,000 under $5,000,000",nret_rentroyinc,43616,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,18,"$5,000,000 under $10,000,000",nret_rentroyinc,12640,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,19,"$10,000,000 or more",nret_rentroyinc,9537,AZ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty income
+17in14ar.xls,0,"All returns, total",rentroyinc,104770745,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,1,No adjusted gross income,rentroyinc,2983809,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,2,"$1 under $5,000",rentroyinc,527355,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,3,"$5,000 under $10,000",rentroyinc,979685,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,4,"$10,000 under $15,000",rentroyinc,1446142,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,5,"$15,000 under $20,000",rentroyinc,1691023,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,6,"$20,000 under $25,000",rentroyinc,1287194,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,7,"$25,000 under $30,000",rentroyinc,1367647,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,8,"$30,000 under $40,000",rentroyinc,2567458,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,9,"$40,000 under $50,000",rentroyinc,2862359,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,10,"$50,000 under $75,000",rentroyinc,7673446,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,11,"$75,000 under $100,000",rentroyinc,7718817,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,12,"$100,000 under $200,000",rentroyinc,22531818,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,13,"$200,000 under $500,000",rentroyinc,21309906,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,14,"$500,000 under $1,000,000",rentroyinc,10736593,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,15,"$1,000,000 under $1,500,000",rentroyinc,4407802,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,16,"$1,500,000 under $2,000,000",rentroyinc,2566264,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,17,"$2,000,000 under $5,000,000",rentroyinc,5581252,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,18,"$5,000,000 under $10,000,000",rentroyinc,2373360,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,19,"$10,000,000 or more",rentroyinc,4158816,BA,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income
+17in14ar.xls,0,"All returns, total",nret_rentroyloss,4201919,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,1,No adjusted gross income,nret_rentroyloss,251602,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,2,"$1 under $5,000",nret_rentroyloss,61737,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,3,"$5,000 under $10,000",nret_rentroyloss,93297,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,4,"$10,000 under $15,000",nret_rentroyloss,110233,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,5,"$15,000 under $20,000",nret_rentroyloss,96578,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,6,"$20,000 under $25,000",nret_rentroyloss,123693,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,7,"$25,000 under $30,000",nret_rentroyloss,115426,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,8,"$30,000 under $40,000",nret_rentroyloss,295731,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,9,"$40,000 under $50,000",nret_rentroyloss,275972,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,10,"$50,000 under $75,000",nret_rentroyloss,677880,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,11,"$75,000 under $100,000",nret_rentroyloss,678873,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,12,"$100,000 under $200,000",nret_rentroyloss,1028434,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,13,"$200,000 under $500,000",nret_rentroyloss,269380,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,14,"$500,000 under $1,000,000",nret_rentroyloss,70988,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,15,"$1,000,000 under $1,500,000",nret_rentroyloss,20740,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,16,"$1,500,000 under $2,000,000",nret_rentroyloss,9454,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,17,"$2,000,000 under $5,000,000",nret_rentroyloss,14946,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,18,"$5,000,000 under $10,000,000",nret_rentroyloss,3921,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,19,"$10,000,000 or more",nret_rentroyloss,3034,BB,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total rental and royalty loss
+17in14ar.xls,0,"All returns, total",rentroyloss,49241288,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,1,No adjusted gross income,rentroyloss,7071002,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,2,"$1 under $5,000",rentroyloss,499148,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,3,"$5,000 under $10,000",rentroyloss,787760,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,4,"$10,000 under $15,000",rentroyloss,804907,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,5,"$15,000 under $20,000",rentroyloss,686871,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,6,"$20,000 under $25,000",rentroyloss,741067,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,7,"$25,000 under $30,000",rentroyloss,1016672,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,8,"$30,000 under $40,000",rentroyloss,2522427,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,9,"$40,000 under $50,000",rentroyloss,2227365,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,10,"$50,000 under $75,000",rentroyloss,5744095,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,11,"$75,000 under $100,000",rentroyloss,6352705,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,12,"$100,000 under $200,000",rentroyloss,9190603,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,13,"$200,000 under $500,000",rentroyloss,6367329,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,14,"$500,000 under $1,000,000",rentroyloss,2141535,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,15,"$1,000,000 under $1,500,000",rentroyloss,875698,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,16,"$1,500,000 under $2,000,000",rentroyloss,413182,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,17,"$2,000,000 under $5,000,000",rentroyloss,879484,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,18,"$5,000,000 under $10,000,000",rentroyloss,365787,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
+17in14ar.xls,19,"$10,000,000 or more",rentroyloss,553653,BC,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Total rental and royalty income loss
 17in14ar.xls,0,"All returns, total",nret_partnerscorpinc,6240408,BD,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with partnership or S corporation net income
 17in14ar.xls,1,No adjusted gross income,nret_partnerscorpinc,89178,BD,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with partnership or S corporation net income
 17in14ar.xls,2,"$1 under $5,000",nret_partnerscorpinc,73454,BD,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with partnership or S corporation net income
@@ -2579,86 +2579,86 @@ src,irsstub,incrange,variable,value,excel_column,table_description,column_descri
 17in14ar.xls,17,"$2,000,000 under $5,000,000",partnerscorploss,7767942,BG,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Partnership or S corporation net loss
 17in14ar.xls,18,"$5,000,000 under $10,000,000",partnerscorploss,5485485,BG,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Partnership or S corporation net loss
 17in14ar.xls,19,"$10,000,000 or more",partnerscorploss,25651529,BG,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Partnership or S corporation net loss
-17in14ar.xls,0,"All returns, total",BH,604796,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,1,No adjusted gross income,BH,13838,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,2,"$1 under $5,000",BH,9225,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,3,"$5,000 under $10,000",BH,11069,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,4,"$10,000 under $15,000",BH,13779,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,5,"$15,000 under $20,000",BH,9362,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,6,"$20,000 under $25,000",BH,11079,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,7,"$25,000 under $30,000",BH,14142,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,8,"$30,000 under $40,000",BH,20254,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,9,"$40,000 under $50,000",BH,23589,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,10,"$50,000 under $75,000",BH,60177,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,11,"$75,000 under $100,000",BH,72083,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,12,"$100,000 under $200,000",BH,174775,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,13,"$200,000 under $500,000",BH,112086,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,14,"$500,000 under $1,000,000",BH,30292,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,15,"$1,000,000 under $1,500,000",BH,9952,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,16,"$1,500,000 under $2,000,000",BH,5199,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,17,"$2,000,000 under $5,000,000",BH,9001,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,18,"$5,000,000 under $10,000,000",BH,2723,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,19,"$10,000,000 or more",BH,2170,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,0,"All returns, total",BI,35105233,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,1,No adjusted gross income,BI,588823,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,2,"$1 under $5,000",BI,13167,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,3,"$5,000 under $10,000",BI,46488,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,4,"$10,000 under $15,000",BI,72556,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,5,"$15,000 under $20,000",BI,67417,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,6,"$20,000 under $25,000",BI,91542,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,7,"$25,000 under $30,000",BI,103399,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,8,"$30,000 under $40,000",BI,215539,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,9,"$40,000 under $50,000",BI,328262,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,10,"$50,000 under $75,000",BI,767873,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,11,"$75,000 under $100,000",BI,1326428,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,12,"$100,000 under $200,000",BI,3523827,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,13,"$200,000 under $500,000",BI,6044429,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,14,"$500,000 under $1,000,000",BI,3107692,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,15,"$1,000,000 under $1,500,000",BI,1868292,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,16,"$1,500,000 under $2,000,000",BI,1446940,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,17,"$2,000,000 under $5,000,000",BI,4173001,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,18,"$5,000,000 under $10,000,000",BI,2754205,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,19,"$10,000,000 or more",BI,8565354,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,0,"All returns, total",BJ,57812,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,1,No adjusted gross income,BJ,4310,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,2,"$1 under $5,000",BJ,1113,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,3,"$5,000 under $10,000",BJ,14,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,4,"$10,000 under $15,000",BJ,4230,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,5,"$15,000 under $20,000",BJ,1120,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,6,"$20,000 under $25,000",BJ,3,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,7,"$25,000 under $30,000",BJ,1544,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,8,"$30,000 under $40,000",BJ,3543,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,9,"$40,000 under $50,000",BJ,2121,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,10,"$50,000 under $75,000",BJ,2566,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,11,"$75,000 under $100,000",BJ,6281,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,12,"$100,000 under $200,000",BJ,10614,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,13,"$200,000 under $500,000",BJ,8299,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,14,"$500,000 under $1,000,000",BJ,4644,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,15,"$1,000,000 under $1,500,000",BJ,2069,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,16,"$1,500,000 under $2,000,000",BJ,999,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,17,"$2,000,000 under $5,000,000",BJ,2284,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,18,"$5,000,000 under $10,000,000",BJ,928,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,19,"$10,000,000 or more",BJ,1132,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,0,"All returns, total",BK,3977699,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,1,No adjusted gross income,BK,1705259,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,2,"$1 under $5,000",BK,3040,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,3,"$5,000 under $10,000",BK,1656,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,4,"$10,000 under $15,000",BK,5186,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,5,"$15,000 under $20,000",BK,721,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,6,"$20,000 under $25,000",BK,6,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,7,"$25,000 under $30,000",BK,39490,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,8,"$30,000 under $40,000",BK,18171,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,9,"$40,000 under $50,000",BK,26320,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,10,"$50,000 under $75,000",BK,27622,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,11,"$75,000 under $100,000",BK,31645,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,12,"$100,000 under $200,000",BK,124383,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,13,"$200,000 under $500,000",BK,168806,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,14,"$500,000 under $1,000,000",BK,118132,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,15,"$1,000,000 under $1,500,000",BK,162988,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,16,"$1,500,000 under $2,000,000",BK,111247,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,17,"$2,000,000 under $5,000,000",BK,264669,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,18,"$5,000,000 under $10,000,000",BK,208878,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
-17in14ar.xls,19,"$10,000,000 or more",BK,959478,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
+17in14ar.xls,0,"All returns, total",nret_estateinc,604796,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,1,No adjusted gross income,nret_estateinc,13838,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,2,"$1 under $5,000",nret_estateinc,9225,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,3,"$5,000 under $10,000",nret_estateinc,11069,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,4,"$10,000 under $15,000",nret_estateinc,13779,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,5,"$15,000 under $20,000",nret_estateinc,9362,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,6,"$20,000 under $25,000",nret_estateinc,11079,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,7,"$25,000 under $30,000",nret_estateinc,14142,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,8,"$30,000 under $40,000",nret_estateinc,20254,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,9,"$40,000 under $50,000",nret_estateinc,23589,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,10,"$50,000 under $75,000",nret_estateinc,60177,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,11,"$75,000 under $100,000",nret_estateinc,72083,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,12,"$100,000 under $200,000",nret_estateinc,174775,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,13,"$200,000 under $500,000",nret_estateinc,112086,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,14,"$500,000 under $1,000,000",nret_estateinc,30292,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,15,"$1,000,000 under $1,500,000",nret_estateinc,9952,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,16,"$1,500,000 under $2,000,000",nret_estateinc,5199,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,17,"$2,000,000 under $5,000,000",nret_estateinc,9001,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,18,"$5,000,000 under $10,000,000",nret_estateinc,2723,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,19,"$10,000,000 or more",nret_estateinc,2170,BH,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust income
+17in14ar.xls,0,"All returns, total",estateinc,35105233,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,1,No adjusted gross income,estateinc,588823,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,2,"$1 under $5,000",estateinc,13167,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,3,"$5,000 under $10,000",estateinc,46488,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,4,"$10,000 under $15,000",estateinc,72556,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,5,"$15,000 under $20,000",estateinc,67417,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,6,"$20,000 under $25,000",estateinc,91542,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,7,"$25,000 under $30,000",estateinc,103399,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,8,"$30,000 under $40,000",estateinc,215539,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,9,"$40,000 under $50,000",estateinc,328262,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,10,"$50,000 under $75,000",estateinc,767873,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,11,"$75,000 under $100,000",estateinc,1326428,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,12,"$100,000 under $200,000",estateinc,3523827,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,13,"$200,000 under $500,000",estateinc,6044429,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,14,"$500,000 under $1,000,000",estateinc,3107692,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,15,"$1,000,000 under $1,500,000",estateinc,1868292,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,16,"$1,500,000 under $2,000,000",estateinc,1446940,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,17,"$2,000,000 under $5,000,000",estateinc,4173001,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,18,"$5,000,000 under $10,000,000",estateinc,2754205,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,19,"$10,000,000 or more",estateinc,8565354,BI,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust income
+17in14ar.xls,0,"All returns, total",nret_estateloss,57812,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,1,No adjusted gross income,nret_estateloss,4310,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,2,"$1 under $5,000",nret_estateloss,1113,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,3,"$5,000 under $10,000",nret_estateloss,14,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,4,"$10,000 under $15,000",nret_estateloss,4230,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,5,"$15,000 under $20,000",nret_estateloss,1120,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,6,"$20,000 under $25,000",nret_estateloss,3,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,7,"$25,000 under $30,000",nret_estateloss,1544,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,8,"$30,000 under $40,000",nret_estateloss,3543,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,9,"$40,000 under $50,000",nret_estateloss,2121,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,10,"$50,000 under $75,000",nret_estateloss,2566,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,11,"$75,000 under $100,000",nret_estateloss,6281,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,12,"$100,000 under $200,000",nret_estateloss,10614,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,13,"$200,000 under $500,000",nret_estateloss,8299,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,14,"$500,000 under $1,000,000",nret_estateloss,4644,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,15,"$1,000,000 under $1,500,000",nret_estateloss,2069,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,16,"$1,500,000 under $2,000,000",nret_estateloss,999,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,17,"$2,000,000 under $5,000,000",nret_estateloss,2284,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,18,"$5,000,000 under $10,000,000",nret_estateloss,928,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,19,"$10,000,000 or more",nret_estateloss,1132,BJ,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with estate and trust loss
+17in14ar.xls,0,"All returns, total",estateloss,3977699,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,1,No adjusted gross income,estateloss,1705259,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,2,"$1 under $5,000",estateloss,3040,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,3,"$5,000 under $10,000",estateloss,1656,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,4,"$10,000 under $15,000",estateloss,5186,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,5,"$15,000 under $20,000",estateloss,721,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,6,"$20,000 under $25,000",estateloss,6,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,7,"$25,000 under $30,000",estateloss,39490,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,8,"$30,000 under $40,000",estateloss,18171,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,9,"$40,000 under $50,000",estateloss,26320,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,10,"$50,000 under $75,000",estateloss,27622,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,11,"$75,000 under $100,000",estateloss,31645,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,12,"$100,000 under $200,000",estateloss,124383,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,13,"$200,000 under $500,000",estateloss,168806,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,14,"$500,000 under $1,000,000",estateloss,118132,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,15,"$1,000,000 under $1,500,000",estateloss,162988,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,16,"$1,500,000 under $2,000,000",estateloss,111247,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,17,"$2,000,000 under $5,000,000",estateloss,264669,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,18,"$5,000,000 under $10,000,000",estateloss,208878,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
+17in14ar.xls,19,"$10,000,000 or more",estateloss,959478,BK,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Estate and trust loss
 17in14ar.xls,0,"All returns, total",BL,481113,BL,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
 17in14ar.xls,1,No adjusted gross income,BL,26863,BL,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",
 17in14ar.xls,2,"$1 under $5,000",BL,22211,BL,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",

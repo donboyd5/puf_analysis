@@ -26,18 +26,37 @@
 # python setup.py install
 
 
+# %% about this program
+
+# does the following:
+    # create unweighted national puf for 2017 using custom growfactors for 2011 to 2017
+    # create weights for this 2017 national puf to come close to IRS national targets
+    # create tentative state weights for this regrown-reweighted national puf, without constraining them to national record weights
+    # use sum of tentative state weights as initial weights for 2nd round of national reweighting
+    # create new national reweights starting from the sums of state weights
+    # create state weights where sums are constrained to these new national weights
+    # advance this 2017 file to 2018 using default puf growfactors for 2017 to 2018 and estimate of weight growth
+
+# the resulting 2018-income puf is used by puf_tax_analysis.py for NY project policy simulations
+
+# does NOT do the following:
+    # get IRS national reported values for targeting -- see puf_download_national_target_files.py
+    # get IRS Historical Table 2 state values to be used in state targeting -- see puf_download_state_HT2target_files.py
+    # create new (combination) HT2 variables and get each state's share of the total -- see puf_ht2_shares.py
+
+
 # %% imports
 import sys
 # either of the following is close but it can't find paramtols in calculator.py:
 # sys.path.append('C:/programs_python/Tax-Calculator/build/lib/')  # needed
 # sys.path.insert(0, 'C:/programs_python/Tax-Calculator/build/lib/') # this is close
 
-import taxcalc as tc  # updated taxcalc!!!
+import taxcalc as tc  # this is the lastest taxcalc from GH master as of 12/13/2020
 import pandas as pd
 import numpy as np
 from datetime import date
 
-import functions_advance_puf as adv  # updated taxcalc!!!
+import functions_advance_puf as adv  # this is the lastest taxcalc from GH master as of 12/13/2020
 import functions_reweight_puf as rwp
 import functions_geoweight_puf as gwp
 import functions_ht2_analysis as fht
@@ -60,7 +79,7 @@ DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based
 DATADIR = r'C:\programs_python\puf_analysis\data/'
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 PUFDIR = IGNOREDIR + 'puf_versions/'
-RESULTDIR = r'C:\programs_python\puf_analysis\results/'
+TABDIR = r'C:\programs_python\puf_analysis\result_tables/'
 
 
 # %% paths to specific already existing files
@@ -68,7 +87,8 @@ LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'
 
 # growfactors
 GF_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'growfactors.csv'
-GF_CUSTOM = DATADIR + 'growfactors_custom.csv'  # selected growfactors reflect IRS growth between 2011 and 2017
+# GF_CUSTOM = DATADIR + 'growfactors_custom.csv'  # selected growfactors reflect IRS growth between 2011 and 2017
+GF_CUSTOM = DATADIR + 'growfactors_custom_busincloss.csv'  # now also includes business income and loss items
 GF_ONES = DATADIR + 'growfactors_ones.csv'
 
 WEIGHTS_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'puf_weights.csv'

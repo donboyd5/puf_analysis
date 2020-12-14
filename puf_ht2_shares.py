@@ -17,7 +17,7 @@ import puf_utilities as pu
 
 # %% locations and file names
 DATADIR = r'C:\programs_python\puf_analysis\data/'
-RESULTDIR = r'C:\programs_python\puf_analysis\results/'
+RESULTDIR = r'C:\programs_python\puf_analysis\result_tables/'
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 
 
@@ -46,4 +46,7 @@ tmp = ht2_shares[ht2_shares.ht2_stub != 0].groupby(['ht2var', 'ht2_stub'])['shar
 
 ht2_shares.to_csv(DATADIR + 'ht2_shares.csv', index=None)
 # pu.uvals(ht2_shares.ht2var)
+
+ht2_shares.query('state=="NY" & ht2var=="aiitax"')
+
 

@@ -24,27 +24,27 @@ DATADIR = 'C:/programs_python/puf_analysis/data/'
 
 
 # %% xlrange
-def xlrange(io, sheet_name=0,
-            firstrow=1, lastrow=None,
-            usecols=None, colnames=None):
-    # firstrow and lastrow are 1-based
-    if colnames is None:
-        if usecols is None:
-            colnames = None
-        elif isinstance(usecols, list):
-            colnames = usecols
-        else:
-            colnames = usecols.split(',')
-    nrows = None
-    if lastrow is not None:
-        nrows = lastrow - firstrow + 1
-    df = pd.read_excel(io,
-                       header=None,
-                       names=colnames,
-                       usecols=usecols,
-                       skiprows=firstrow - 1,
-                       nrows=nrows)
-    return df
+# def xlrange(io, sheet_name=0,
+#             firstrow=1, lastrow=None,
+#             usecols=None, colnames=None):
+#     # firstrow and lastrow are 1-based
+#     if colnames is None:
+#         if usecols is None:
+#             colnames = None
+#         elif isinstance(usecols, list):
+#             colnames = usecols
+#         else:
+#             colnames = usecols.split(',')
+#     nrows = None
+#     if lastrow is not None:
+#         nrows = lastrow - firstrow + 1
+#     df = pd.read_excel(io,
+#                        header=None,
+#                        names=colnames,
+#                        usecols=usecols,
+#                        skiprows=firstrow - 1,
+#                        nrows=nrows)
+#     return df
 
 
 # %% ONETIME:  2017 IRS Table urls
@@ -171,7 +171,7 @@ YEAR = '2017'
 fn = r'C:\programs_python\puf_analysis\data\soitables.xlsx'
 tabs = pd.read_excel(io=fn, sheet_name='national_' + YEAR)
 tabmaps = pd.read_excel(io=fn, sheet_name='tablemaps_' + YEAR)
-tabmaps = tabmaps.rename(columns={'col': 'excel_column'})
+# tabmaps = tabmaps.rename(columns={'col': 'excel_column'})
 
 # loop through the tables listed in tabs
 # tab = 'tab14'
@@ -187,7 +187,7 @@ for tab in tabsuse:
     tabinfo = pd.merge(tabd, tabmaps, on='table')
 
     # get the table data using this info
-    df = xlrange(io=DOWNDIR + tabd.src.values[0],
+    df = pu.xlrange(io=DOWNDIR + tabd.src.values[0],
                  firstrow=tabd.firstrow.values[0],
                  lastrow=tabd.lastrow.values[0],
                  usecols=tabinfo.excel_column.str.cat(sep=", "),
@@ -217,6 +217,38 @@ targets_all.to_csv(DATADIR + 'targets' + YEAR + '.csv', index=False)
 
 # note that we can drop targets not yet identified by dropping those where
 # column_description is NaN (or where len(variable) <= 2)
+
+
+# %% create e02000 Sch E total rental, royalty, partnership, S-corporation, etc, income/loss
+
+# puf.csv has e02000 Sch E total rental, royalty, partnership, S-corporation, etc, income/loss (includes e26270 and e27200)
+# but has only one of the 3 separate components:
+    # It does NOT have
+    #   e25550 rents and royalties
+    #   e26390 and e26400
+    # but it does have e26270 partnerships/ S corps
+# Meanwhile IRS Publication 1304 Table 1.4 has the components, but not the e02000 total
+
+# Thus we create targets from Table 1.4 of positive and negative versions of e02000
+# we do not create targets for numbers of returns with these values because summing the counts given
+# in the IRS data need not be mutually exclusive
+
+
+# nret_rentroyinc
+# rentroyinc
+# nret_rentroyloss
+# rentroyloss
+# nret_partnerscorpinc
+# partnerscorpinc
+# nret_partnerscorploss
+# partnerscorploss
+# nret_estateinc
+# estateinc
+# nret_estateloss
+# estateloss
+# create e02000_pos as sum of rentroyinc partnerscorpinc estateinc
+# create e02000_neg as sum of rentroyloss partnerscorploss estateloss
+
 
 
 # %% ONETIME save irs income range mappings based on data
