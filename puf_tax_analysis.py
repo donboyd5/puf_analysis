@@ -64,9 +64,12 @@ REFDIR = r'C:\programs_python\puf_analysis\reforms/'
 
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 PUFDIR = IGNOREDIR + 'puf_versions/'
-RESULTDIR = r'C:\programs_python\puf_analysis\results/'
+TCOUTDIR = PUFDIR + 'taxcalc_output/'
+TCREFORMDIR = TCOUTDIR + 'reforms_output/'
 
-TCOUTDIR = IGNOREDIR + 'taxcalc_output/'
+WEIGHTDIR = PUFDIR + 'weights/'
+
+TABDIR = IGNOREDIR + 'result_tables/'
 
 
 # %% constants
@@ -477,19 +480,19 @@ df.query('filer == True').s006.sum()  # 147,804,768 not 154,586,946.9856476
 
 
 # %% calc: get puf regrown reweighted data and create recs
-puf2018 = pd.read_parquet(PUFDIR + 'puf2018_weighted' + '.parquet', engine='pyarrow')
+puf2018 = pd.read_parquet(TCOUTDIR + 'puf2018_weighted.parquet', engine='pyarrow')
 puf2018.c00100.describe()
 
 pidfiler = puf2018[['pid', 'filer']]
 
-sweights_2018 = pd.read_csv(PUFDIR + 'allweights2018_geo2017_grown.csv')
+sweights2018 = pd.read_csv(WEIGHTDIR + 'allweights2018_geo2017_grown.csv')
 # check the weights
 # puf2018.loc[puf2018.pid==11, ['pid', 's006']]
 puf2018[['pid', 's006']].head(20)
-sweights_2018.head(5)
+sweights2018.head(5)
 
 # create a national weights dataframe suitable for tax-calculator
-weights_us = sweights_2018.loc[:, ['pid', 'weight']].rename(columns={'weight': 'WT2018'})
+weights_us = sweights2018.loc[:, ['pid', 'weight']].rename(columns={'weight': 'WT2018'})
 weights_us = puf2018[['pid', 's006']].rename(columns={'s006': 'WT2018'})
 weights_us['WT2018'] = weights_us.WT2018 * 100
 
@@ -500,8 +503,8 @@ weights_us['WT2018'] = weights_us.WT2018 * 100
     # agi  11643.439106 billion
 pu.uvals(puf2018.columns)
 # all returns
-puf2018.s006.sum()  # 180,177,697
-(puf2018.s006 * puf2018.c00100).sum() / 1e9  # 11895.191672684836
+puf2018.s006.sum()  # 180,177,697 now  180237724.14567396
+(puf2018.s006 * puf2018.c00100).sum() / 1e9  # 11895.191672684836 now 11885.502416361425
 # equivalent all-records puf.csv value is  11966 $71b greater
 
 # filers
@@ -511,14 +514,14 @@ puf2018.query('filer == True').s006.sum()  # 154,586,946.9856476
 # $11,890 is puf value
 
 temp = pd.merge(puf2018.loc[:, ['pid', 's006', 's006_default', 'c00100']],
-                sweights_2018.loc[:, ['pid', 'weight']],
+                sweights2018.loc[:, ['pid', 'weight']],
                 on='pid', how='inner')
 temp.s006.sum()  # 155345878
 temp.weight.sum()
 temp.s006_default.sum() # 147903590
 (temp.weight * temp.c00100).sum() / 1e9  # 11,820
 
-sweights_2018.weight.sum()
+sweights2018.weight.sum()
 
 
 # %% calc: records object
@@ -537,7 +540,7 @@ calc_base = tc.Calculator(policy=pol_base, records=recs)
 calc_base.calc_all()
 
 # solo_reform(reform_name, base_name, calc_base)
-STACKDIR = TCOUTDIR + 'unstacked/'  # define where to send the output - must be an existing dir
+STACKDIR = TCOUTDIR + 'solo_vs_2017law/'  # define where to send the output - must be an existing dir
 solo_reform('law2017', 'law2017', calc_base)
 solo_reform('allrates2018', 'law2017', calc_base)
 solo_reform('sd2018', 'law2017', calc_base)
