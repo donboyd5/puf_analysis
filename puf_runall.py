@@ -28,7 +28,7 @@
 
 # %% about this program
 
-# does the following:
+# this program does the following:
     # create unweighted national puf for 2017 using custom growfactors for 2011 to 2017
     # create weights for this 2017 national puf to come close to IRS national targets
     # create tentative state weights for this regrown-reweighted national puf, without constraining them to national record weights
@@ -39,8 +39,10 @@
 
 # the resulting 2018-income puf is used by puf_tax_analysis.py for NY project policy simulations
 
-# does NOT do the following:
+# it does NOT do target preparation needed for this program; for that, see the following:
     # get IRS national reported values for targeting -- see puf_download_national_target_files.py
+    # create new (combination) IRS variables -- also see puf_download_national_target_files.py
+    # map puf variables to IRS targets -- see puf_ONETIME_create_puf_irs_mappings_and_targets.py
     # get IRS Historical Table 2 state values to be used in state targeting -- see puf_download_state_HT2target_files.py
     # create new (combination) HT2 variables and get each state's share of the total -- see puf_ht2_shares.py
 
@@ -79,6 +81,7 @@ DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based
 DATADIR = r'C:\programs_python\puf_analysis\data/'
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 PUFDIR = IGNOREDIR + 'puf_versions/'
+TCOUTDIR = PUFDIR + 'taxcalc_output/'
 TABDIR = r'C:\programs_python\puf_analysis\result_tables/'
 
 
@@ -93,14 +96,14 @@ GF_ONES = DATADIR + 'growfactors_ones.csv'
 
 WEIGHTS_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'puf_weights.csv'
 
-POSSIBLE_TARGETS = DATADIR + 'targets2017_possible.csv'
+# POSSIBLE_TARGETS = DATADIR + 'targets2017_possible.csv'
 
 HT2_SHARES = DATADIR + 'ht2_shares.csv'
 
 
 # %% names of files to create
-PUF_DEFAULT = PUFDIR + 'puf2017_default.parquet'
-PUF_REGROWN = PUFDIR + 'puf2017_regrown.parquet'
+PUF_DEFAULT = TCOUTDIR + 'puf2017_default.parquet'
+PUF_REGROWN = TCOUTDIR + 'puf2017_regrown.parquet'
 
 
 # %% constants
@@ -114,6 +117,7 @@ puf.columns
 pufvars = puf.columns.tolist()
 pd.DataFrame (pufvars, columns=['pufvar']).to_csv(DATADIR + 'pufvars.csv', index=None)
 
+# just need to create the advanced puf files once
 adv.advance_puf(puf, 2017, PUF_DEFAULT)
 
 adv.advance_puf_custom(puf, 2017,
@@ -126,7 +130,8 @@ adv.advance_puf_custom(puf, 2017,
 # %% ONETIME advance regrown 2017 file to 2018: default growfactors, no weights or ratios, then calculate 2018 law
 # note that this will NOT have weights that we want. We will correct that AFTER we have weights for 2017 that we want
 
-puf2017_regrown = pd.read_parquet(PUFDIR + 'puf2017_regrown' + '.parquet', engine='pyarrow')
+# puf2017_regrown = pd.read_parquet(PUFDIR + 'puf2017_regrown' + '.parquet', engine='pyarrow')
+puf2017_regrown = pd.read_parquet(PUF_REGROWN, engine='pyarrow')
 
 # Note: advance does NOT extrapolate weights. It just picks the weights from the growfactors file
 # puf2017_regrown.loc[puf2017_regrown.pid==0, 's006'] = 100
@@ -144,10 +149,10 @@ puf2018.c00100.describe()
 puf2018['pid'] = np.arange(len(puf2018))
 puf2018['filer'] = pu.filers(puf2018, year=2018)  # overwrite the 2017 filers info
 
-puf2018.to_parquet(PUFDIR + 'puf2018' + '.parquet', engine='pyarrow')
+puf2018.to_parquet(TCOUTDIR + 'puf2018' + '.parquet', engine='pyarrow')
 
-puf2017_regrown.filer.sum()  # 233640
-puf2018.filer.sum()  # 233238
+puf2017_regrown.filer.sum()  # 233572
+puf2018.filer.sum()  # 233174
 
 # puf2017_regrown.c00100.sum()
 # puf2018.c00100.sum()

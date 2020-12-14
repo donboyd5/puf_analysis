@@ -11,7 +11,7 @@ e00300,taxint,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax 
 e00300_nnz,nret_taxint,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with taxable interest,17in14ar.xls,H
 e00600,orddiv,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Ordinary dividends,17in14ar.xls,M
 e00600_nnz,nret_orddiv,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with ordinary dividends,17in14ar.xls,L
-c01000,cgnet,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Net capital gains (calculated),17in14ar.xls,calculated
+c01000,cgnet,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Net capital gains less loss (calculated),17in14ar.xls,calculated
 c01000_nnz,nret_cgnet,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with net capital gains (calculated),17in14ar.xls,calculated
 c01000pos,cggross,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Capital gains gross taxable,17in14ar.xls,AA
 c01000pos_nnz,nret_cggross,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with capital gains gross taxable,17in14ar.xls,Z
@@ -23,6 +23,14 @@ e02400,socsectot,"Table 1.4.  All Returns: Sources of Income, Adjustments, and T
 e02400_nnz,nret_socsectot,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with total Social Security benefits,17in14ar.xls,BR
 c02500,socsectaxable,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Taxable Social Security benefits,17in14ar.xls,BU
 c02500_nnz,nret_socsectaxable,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with taxable Social Security benefits,17in14ar.xls,BT
+e00900,busprofnet,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Net income less loss: Business or professional net income (calculated),17in14ar.xls,calculated
+e00900pos,busprofnetinc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Business or professional net income,17in14ar.xls,U
+e00900pos_nnz,nret_busprofnetinc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with business or professional net income,17in14ar.xls,T
+e00900neg,busprofnetloss,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Business or professional net loss,17in14ar.xls,W
+e00900neg_nnz,nret_busprofnetloss,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with business or professional net loss,17in14ar.xls,V
+e02000,e02000,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income","Net income less loss: Rent/royalty, partner/S, estates income (calculated)",17in14ar.xls,calculated
+e02000pos,e02000inc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income","Positive rent/royalty, partner/S, estates income (calculated)",17in14ar.xls,calculated
+e02000neg,e02000loss,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income","Loss rent/royalty, partner/S, estates income (calculated)",17in14ar.xls,calculated
 e26270pos,partnerscorpinc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Partnership or S corporation net income,17in14ar.xls,BE
 e26270pos_nnz,nret_partnerscorpinc,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Number of returns with partnership or S corporation net income,17in14ar.xls,BD
 e26270neg,partnerscorploss,"Table 1.4.  All Returns: Sources of Income, Adjustments, and Tax Items, by Size of Adjusted Gross Income",Partnership or S corporation net loss,17in14ar.xls,BG

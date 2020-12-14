@@ -213,42 +213,13 @@ for tab in tabsuse:
 
 targets_all = pd.concat(tablist)
 targets_all.info()
+
+# IMPORTANT - convert value to numeric
+targets_all["value"] = pd.to_numeric(targets_all.value, errors='coerce')
 targets_all.to_csv(DATADIR + 'targets' + YEAR + '.csv', index=False)
 
 # note that we can drop targets not yet identified by dropping those where
 # column_description is NaN (or where len(variable) <= 2)
-
-
-# %% create e02000 Sch E total rental, royalty, partnership, S-corporation, etc, income/loss
-
-# puf.csv has e02000 Sch E total rental, royalty, partnership, S-corporation, etc, income/loss (includes e26270 and e27200)
-# but has only one of the 3 separate components:
-    # It does NOT have
-    #   e25550 rents and royalties
-    #   e26390 and e26400
-    # but it does have e26270 partnerships/ S corps
-# Meanwhile IRS Publication 1304 Table 1.4 has the components, but not the e02000 total
-
-# Thus we create targets from Table 1.4 of positive and negative versions of e02000
-# we do not create targets for numbers of returns with these values because summing the counts given
-# in the IRS data need not be mutually exclusive
-
-
-# nret_rentroyinc
-# rentroyinc
-# nret_rentroyloss
-# rentroyloss
-# nret_partnerscorpinc
-# partnerscorpinc
-# nret_partnerscorploss
-# partnerscorploss
-# nret_estateinc
-# estateinc
-# nret_estateloss
-# estateloss
-# create e02000_pos as sum of rentroyinc partnerscorpinc estateinc
-# create e02000_neg as sum of rentroyloss partnerscorploss estateloss
-
 
 
 # %% ONETIME save irs income range mappings based on data
@@ -366,7 +337,6 @@ YEAR = '2017'
 targets_remap = pd.read_csv(DATADIR + 'targets' + YEAR + '.csv').drop(['incrange'], axis=1)
 targets_remap.columns
 targets_remap.info()
-targets_remap['value'] = pd.to_numeric(targets_remap['value'], errors='coerce')
 targets_remap.value.max()
 
 # drop targets for which I haven't yet set column descriptions as we won't
@@ -407,8 +377,8 @@ check = targets_remap.copy()
 check['type'] = 'non_item'
 check.loc[item_mask, 'type'] = 'item'
 # check = check[['common_stub', 'type', 'irsstub', 'value']].groupby(['common_stub', 'type', 'irsstub']).agg(['count'])
-check = check[['type', 'irsstub', 'common_stub', 'value']].groupby \
-    (['type', 'irsstub', 'common_stub']).agg(['count'])
+check = (check[['type', 'irsstub', 'common_stub', 'value']].
+         groupby(['type', 'irsstub', 'common_stub']).agg(['count']))
 check
 
 # drop duplicate records, unnecessary columns, and collapse
@@ -470,6 +440,86 @@ targets_collapsed.loc[loss_mask, 'value'] *= -1
 targets_collapsed.to_csv(DATADIR + 'targets' + YEAR + '_clean.csv', index=False)
 
 
+# %% info re creating e02000 Sch E total rental, royalty, partnership, S-corporation, etc, income/loss
+
+# puf.csv has e02000 Sch E total rental, royalty, partnership, S-corporation, etc, income/loss (includes e26270 and e27200)
+# but has only one of the 3 separate components:
+    # It does NOT have
+    #   e25550 rents and royalties
+    #   e26390 and e26400
+    # but it does have e26270 partnerships/ S corps
+# Meanwhile IRS Publication 1304 Table 1.4 has the components, but not the e02000 total
+
+# Thus we create targets from Table 1.4 of positive and negative versions of e02000
+# we do not create targets for numbers of returns with these values because summing the counts given
+# in the IRS data need not be mutually exclusive
+
+
+# nret_rentroyinc
+# rentroyinc
+# nret_rentroyloss
+# rentroyloss
+# nret_partnerscorpinc
+# partnerscorpinc
+# nret_partnerscorploss
+# partnerscorploss
+# nret_estateinc
+# estateinc
+# nret_estateloss
+# estateloss
+
+# create e02000_pos as sum of rentroyinc partnerscorpinc estateinc
+# create e02000_neg as sum of rentroyloss partnerscorploss estateloss
+
+# note that busprofnetinc busprofnetloss together are e00900
+
+# YEAR = '2017'
+# df = pd.read_csv(DATADIR + 'targets' + YEAR + '.csv')
+# df.info()
+
+# vars = ['rentroyinc', 'rentroyloss', 'partnerscorpinc', 'partnerscorploss',
+#         'estateinc', 'estateloss']
+# keepcols = ['irsstub', 'variable', 'value']
+# dfsub = df.query('variable in @vars')[keepcols]
+# dfsub.info()
+# dfsub
+
+# dfwide = dfsub.pivot(index='irsstub', columns='variable', values='value').reset_index()
+# dfwide
+# dfwide.info()
+
+# dfwide = dfwide.fillna(0)  # to be safe
+# dfwide['e02000inc'] = dfwide.rentroyinc + dfwide.partnerscorpinc + dfwide.estateinc
+# dfwide['e02000loss'] = dfwide.rentroyloss + dfwide.partnerscorploss + dfwide.estateloss
+# dfwide['e02000'] = dfwide.e02000inc - dfwide.e02000loss
+# dfwide.describe()
+# dfwide.sum()
+
+# # make long, add info needed, and concatenate with original data frame
+# dfl = (dfwide.loc[:, ['irsstub', 'e02000', 'e02000inc', 'e02000loss']].
+#        melt(id_vars='irsstub'))
+# # we need src, incrange, excel_column, table_description, column_description
+# # create initial version from values for partnerscorpinc
+# stub = df.query('variable == "partnerscorploss"').loc[:, ['src', 'irsstub', 'incrange', 'table_description']]
+# stub
+
+# dfl2 = pd.merge(dfl, stub, how='left', on='irsstub')
+# dfl2['excel_column'] = 'calculated'
+# dfl2['column_description'] = ''
+# dfl2.loc[dfl2['variable'] == 'e02000', 'column_description'] = 'Calc: Net rent/royalty, partner/S, estates'
+# dfl2.loc[dfl2['variable'] == 'e02000inc', 'column_description'] = 'Calc: Positive rent/royalty, partner/S, estates'
+# dfl2.loc[dfl2['variable'] == 'e02000loss', 'column_description'] = 'Calc: Loss rent/royalty, partner/S, estates'
+
+# # finally, combine and save
+# df.info()
+# dfl2.info()
+
+# df_plusvars = df.append(dfl2)
+# df_plusvars.info()
+# df_plusvars.to_csv(DATADIR + 'targets' + YEAR + '_plusvars.csv', index=False)
+
+
+
 # %% create any necessary new columns
 targets_clean = pd.read_csv(DATADIR + 'targets' + YEAR + '_clean.csv')
 targets_clean.columns
@@ -477,7 +527,11 @@ targets_clean.columns
 # get just what we need for value creation, pivot, create, and add to the data
 pu.uvals(targets_clean.variable)
 keepcols = ['src', 'table_description', 'common_stub', 'incrange', 'variable', 'value']
-irsvars = ['cggross', 'cgloss', 'nret_cggross', 'nret_cgloss']
+cgvars = ['cggross', 'cgloss', 'nret_cggross', 'nret_cgloss']
+busvars = ['busprofnetinc', 'busprofnetloss']  # for e09000
+e02000vars = ['rentroyinc', 'rentroyloss', 'partnerscorpinc', 'partnerscorploss',
+        'estateinc', 'estateloss']
+irsvars = cgvars + busvars + e02000vars
 sub = targets_clean.query("variable in @irsvars").loc[:, keepcols]
 
 # verify that src and table_description are the same for both; if so, then
@@ -491,13 +545,31 @@ wide
 wide['cgnet'] = wide.cggross + wide.cgloss
 wide['nret_cgnet'] = wide.nret_cggross + wide.nret_cgloss  # obviously this is just an assumption, we don't know for sure
 
+wide['busprofnet'] = wide.busprofnetinc + wide.busprofnetloss
+
+wide['e02000inc'] = wide.rentroyinc + wide.partnerscorpinc + wide.estateinc
+wide['e02000loss'] = wide.rentroyloss + wide.partnerscorploss + wide.estateloss
+wide['e02000'] = wide.e02000inc + wide.e02000loss
+
 # long = pd.melt(wide.loc[:, ['common_stub', 'cgnet', 'nret_cgnet']], id_vars='common_stub')
 long = pd.melt(wide.drop(columns=irsvars), id_vars=stubs)
 pu.uvals(long.variable) # check
 
-long['column_description'] = np.where(long.variable=='cgnet',
-                                      'Net capital gains (calculated)',
-                                      'Number of returns with net capital gains (calculated)')
+long['column_description'] = ''
+long.loc[long['variable'] == 'cgnet', 'column_description'] = 'Net capital gains less loss (calculated)'
+long.loc[long['variable'] == 'nret_cgnet', 'column_description'] = (
+    'Number of returns with net capital gains (calculated)')
+
+long.loc[long['variable'] == 'busprofnet', 'column_description'] = (
+    'Net income less loss: Business or professional net income (calculated)')
+
+long.loc[long['variable'] == 'e02000', 'column_description'] = (
+    'Net income less loss: Rent/royalty, partner/S, estates income (calculated)')
+long.loc[long['variable'] == 'e02000inc', 'column_description'] = (
+    'Positive rent/royalty, partner/S, estates income (calculated)')
+long.loc[long['variable'] == 'e02000loss', 'column_description'] = (
+    'Loss rent/royalty, partner/S, estates income (calculated)')
+
 long['excel_column'] = 'calculated'
 
 targets_clean.columns
