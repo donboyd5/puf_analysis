@@ -370,6 +370,25 @@ law2018xQlimit = {**law2018, **qbid_limitfalse}  # TCJA but with qbid limit set 
 # Out-of-Range Action: error
 
 
+# %% ONETIME: create and save default puf files at different levels and add filer indicator
+PUF2017LAW_2018LEVELS_DEFAULT = TCOUTDIR + 'puf2017law_2018levels_default.parquet'
+PUFTCJA_2018LEVELS_DEFAULT = TCOUTDIR + 'pufTCJA_2018levels_default.parquet'
+
+puf = pd.read_csv(LATEST_OFFICIAL_PUF)
+clp.implement_reform(eval('law2017'))
+recs = tc.Records(data=puf, start_year=2011)  # start_year not needed for puf.csv
+
+# create 2018-level 2017-law file PUF2017LAW_2018LEVELS_DEFAULT
+pol = tc.Policy()
+calc = tc.Calculator(policy=pol, records=recs)
+calc.advance_to_year(2018)
+calc.calc_all()
+pufdf = calc.dataframe(variable_list=[], all_vars=True)
+pufdf['pid'] = np.arange(len(pufdf))
+pufdf['filer'] = pu.filers(pufdf, year=2018)
+pufdf.to_parquet(PUF2017LAW_2018LEVELS_DEFAULT, engine='pyarrow')
+
+# create 2018-level TCJA file PUFTCJA_2018LEVELS_DEFAULT
 
 
 
@@ -433,20 +452,28 @@ def solo_reform(reform_name, base_name, calc_base):
     return None
 
 
-# %% check: run 2017 law and 2018 law (x qbid limit) on default puf.csv
+# %% CHECK: run 2017 law and 2018 law (x qbid limit) on default puf.csv
+PUF2017LAW_2018LEVELS_DEFAULT = TCOUTDIR + 'puf2017law_2018levels_default.parquet'
+PUFTCJA_2018LEVELS_DEFAULT = TCOUTDIR + 'pufTCJA_2018levels_default.parquet'
+
 puf = pd.read_csv(LATEST_OFFICIAL_PUF)
 recs_puf = tc.Records(data=puf)
 
-# law2018xQlimit
-
+# 2017 law
 clp = tc.Policy()
 clp.implement_reform(eval('law2017'))
 calc_clp = tc.Calculator(records=recs_puf, policy=clp)
 calc_clp.advance_to_year(2018)
 calc_clp.calc_all()
 calc_clp.weighted_total('iitax') / 1e9  # 1719.791464209197
+# add pid and filer indicator
+pufdf = calc_clp.dataframe(variable_list=[], all_vars=True)
+pufdf['pid'] = np.arange(len(pufdf))
+pufdf['filer'] = pu.filers(pufdf, year=2018)
+pufdf.to_parquet(PUF2017LAW_2018LEVELS_DEFAULT, engine='pyarrow')
 
-# 2018 law, setting QBID limit to False
+
+# TCJA 2018 law, setting QBID limit to False
 ref=tc.Policy()
 ref.implement_reform(eval('law2018xQlimit'))
 calc_ref = tc.Calculator(records=recs_puf, policy=ref)
@@ -454,6 +481,11 @@ calc_ref.advance_to_year(2018)
 calc_ref.calc_all()
 calc_ref.weighted_total('iitax') / 1e9  # 1521.8399218240877
 # note: IRS number is ~1,538.749 table 1.1 Total income tax
+pufdf = calc_ref.dataframe(variable_list=[], all_vars=True)
+pufdf['pid'] = np.arange(len(pufdf))
+pufdf['filer'] = pu.filers(pufdf, year=2018)
+pufdf.to_parquet(PUFTCJA_2018LEVELS_DEFAULT, engine='pyarrow')
+
 
 # 2018 law default - WITHOUT setting QBID limit to False
 ref2=tc.Policy()

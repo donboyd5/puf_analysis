@@ -136,7 +136,7 @@ weights2018_default.to_csv(WEIGHTDIR + 'weights2018_default.csv', index=None)
 del(df)
 
 
-# %% ONETIME: create and save default and regrown 2017 pufs, and add filer indicator
+# %% ONETIME: create and save regrown 2017 puf, and add filer indicator
 puf = pd.read_csv(LATEST_OFFICIAL_PUF)
 puf.columns
 pufvars = puf.columns.tolist()
