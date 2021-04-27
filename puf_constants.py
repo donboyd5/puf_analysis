@@ -8,6 +8,7 @@ Created on Thu Oct 15 04:29:41 2020
 # %% imports
 import pandas as pd
 import json
+from pathlib import Path
 
 
 # %% filenames and urls
@@ -17,7 +18,8 @@ HT2_2017 = "17in55cmagi.csv"
 HT2_2018 = "18in55cmagi.csv"
 
 DATADIR = r'C:\programs_python\puf_analysis\data/'
-TARGET_MAP = DATADIR + 'target_mappings.csv'
+DATADIR = Path.cwd() / 'data'
+TARGET_MAP = DATADIR / 'target_mappings.csv'
 
 
 # %% agi stubs
@@ -66,18 +68,18 @@ ht2common_stubs = pd.DataFrame([
 # use the common IRS stubs, which are the LCD of the main irsstubs and the
 # itemized deduction IRS stubs
 # irsstubs = pd.read_csv(DATADIR + 'irsstub_labels.csv')
-irsstubs = pd.read_csv(DATADIR + 'irsstub_common_labels.csv')
+irsstubs = pd.read_csv(DATADIR / 'irsstub_common_labels.csv')
 
 irspuf_target_map = pd.read_csv(TARGET_MAP)
 
 # get previously determined national-puf mapping
 # json.dump(pufirs_fullmap, open(DATADIR + 'pufirs_fullmap.json', 'w'))
 # this dict defines the order in which we want tables sorted, so get it
-pufirs_fullmap = json.load(open(DATADIR + 'pufirs_fullmap.json'))
+pufirs_fullmap = json.load(open(DATADIR / 'pufirs_fullmap.json'))
 
-ht2puf_fullmap = json.load(open(DATADIR + 'ht2puf_fullmap.json'))
+ht2puf_fullmap = json.load(open(DATADIR / 'ht2puf_fullmap.json'))
 
-pufvars = pd.read_csv(DATADIR + 'pufvars.csv')
+pufvars = pd.read_csv(DATADIR / 'pufvars.csv')
 
 # %% target varnames (puf names and HT2 names and my names)
 targvars_all = ['nret_all', 'nret_mars1', 'nret_mars2', 'c00100', 'e00300', 'e00600']

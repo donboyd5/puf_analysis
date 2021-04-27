@@ -2,3 +2,4 @@ ignore/
 downloads/
 *.out
 *.h5
+*.pyc
