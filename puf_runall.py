@@ -52,6 +52,7 @@ import sys
 # either of the following is close but it can't find paramtols in calculator.py:
 # sys.path.append('C:/programs_python/Tax-Calculator/build/lib/')  # needed
 # sys.path.insert(0, 'C:/programs_python/Tax-Calculator/build/lib/') # this is close
+from pathlib import Path
 
 import taxcalc as tc  # this is the lastest taxcalc from GH master as of 12/13/2020
 import pandas as pd
