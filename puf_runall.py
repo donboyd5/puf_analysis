@@ -48,6 +48,8 @@
 
 
 # %% imports
+from importlib import reload
+
 import sys
 # either of the following is close but it can't find paramtols in calculator.py:
 # sys.path.append('C:/programs_python/Tax-Calculator/build/lib/')  # needed
@@ -68,11 +70,16 @@ import puf_constants as pc
 import puf_utilities as pu
 
 # microweight - apparently we have to tell python where to find this
-sys.path.append('c:/programs_python/weighting/')  # needed
+# sys.path.append('c:/programs_python/weighting/')  # needed
+weighting_dir = Path.home() / 'Documents/python_projects/weighting'
+# weighting_dir.exists()
+sys.path.append(str(weighting_dir))  # needed
 import src.microweight as mw
 
 from timeit import default_timer as timer
-from importlib import reload
+
+
+# %% reload any potentially updated imports
 # reload(pc)
 # reload(rwp)
 # reload(gwp)

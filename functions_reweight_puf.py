@@ -3,13 +3,18 @@
 import numpy as np
 import pandas as pd
 import sys
+from pathlib import Path
 from functools import reduce
 
 import puf_constants as pc
 import puf_utilities as pu
 
-# microweight - apparently we have to tell python where to find this
-sys.path.append('c:/programs_python/weighting/')  # needed
+# microweight - we have to tell python where to find this
+# sys.path.append('c:/programs_python/weighting/')  # needed
+weighting_dir = Path.home() / 'Documents/python_projects/weighting'
+# weighting_dir.exists()
+sys.path.append(str(weighting_dir))  # needed
+
 import src.microweight as mw
 
 
