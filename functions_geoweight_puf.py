@@ -8,6 +8,7 @@ Created on Mon Nov 16 11:58:25 2020
 import sys
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 import puf_utilities as pu
 # microweight - apparently we have to tell python where to find this

@@ -55,13 +55,14 @@ import sys
 # sys.path.append('C:/programs_python/Tax-Calculator/build/lib/')  # needed
 # sys.path.insert(0, 'C:/programs_python/Tax-Calculator/build/lib/') # this is close
 from pathlib import Path
+import os
 
-import taxcalc as tc  # this is the lastest taxcalc from GH master as of 12/13/2020
+import taxcalc as tc
 import pandas as pd
 import numpy as np
 from datetime import date
 
-import functions_advance_puf as adv  # this is the lastest taxcalc from GH master as of 12/13/2020
+import functions_advance_puf as adv
 import functions_reweight_puf as rwp
 import functions_geoweight_puf as gwp
 import functions_ht2_analysis as fht
@@ -86,12 +87,20 @@ from timeit import default_timer as timer
 
 
 # %%  locations
-DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
+# machine = 'windows'
+machine = 'linux'
 
-DATADIR = r'C:\programs_python\puf_analysis\data/'
+if machine == 'windows':
+    DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
+    DATADIR = r'C:\programs_python\puf_analysis\data/'
+    # the following locations store files not saved in git
+    IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
+elif machine == 'linux':
+    # /home/donboyd/Dropbox/PUF files/files_based_on_puf2011
+    DIR_FOR_OFFICIAL_PUF = r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/'
+    DATADIR = '/media/don/ignore/data/'
+    IGNOREDIR = '/media/don/ignore/' # /media/don
 
-# the following locations store files not saved in git
-IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 PUFDIR = IGNOREDIR + 'puf_versions/'
 TCOUTDIR = PUFDIR + 'taxcalc_output/'
 WEIGHTDIR = PUFDIR + 'weights/'
@@ -153,6 +162,7 @@ pd.DataFrame (pufvars, columns=['pufvar']).to_csv(DATADIR + 'pufvars.csv', index
 # just need to create the advanced puf files once
 adv.advance_puf(puf, 2017, PUF_DEFAULT)
 
+# djb here
 adv.advance_puf_custom(puf, 2017,
                        gfcustom=GF_CUSTOM,
                        gfones=GF_ONES,
