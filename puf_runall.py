@@ -80,8 +80,8 @@ import src.microweight as mw
 from timeit import default_timer as timer
 
 
-# %% reload any potentially updated imports
-# reload(pc)
+# %% reimports
+reload(pc)
 # reload(rwp)
 # reload(gwp)
 
@@ -157,12 +157,15 @@ del(df)
 puf = pd.read_csv(LATEST_OFFICIAL_PUF)
 puf.columns
 pufvars = puf.columns.tolist()
-pd.DataFrame (pufvars, columns=['pufvar']).to_csv(DATADIR + 'pufvars.csv', index=None)
+pd.DataFrame(pufvars, columns=['pufvar']).to_csv(DATADIR + 'pufvars.csv', index=None)
 
 # just need to create the advanced puf files once
 adv.advance_puf(puf, 2017, PUF_DEFAULT)
 
-# djb here
+# djb I had to extract puf_weights from puf_weights.csv.gz due to:
+# FileNotFoundError: [Errno 2] No such file or directory: 
+# '/home/donboyd/anaconda3/envs/analysis/lib/python3.8/site-packages/taxcalc/puf_weights.csv'
+# apparently it needs to be out of the gz file
 adv.advance_puf_custom(puf, 2017,
                        gfcustom=GF_CUSTOM,
                        gfones=GF_ONES,
@@ -647,6 +650,11 @@ weights_save.to_csv(wfname, index=None)
 # %% create report on results with the revised georevised national weights
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
 # pid, the second will be the weight of interest
+
+# DJB 5/3/3031
+# FileNotFoundError: [Errno 2] No such file or directory: 
+# '/media/don/ignore/puf_versions/weights/weights_reweight1.csv'
+
 wfname_base = WEIGHTDIR + 'weights2017_geo_unrestricted.csv'
 weights_base = pd.read_csv(wfname_base)
 
