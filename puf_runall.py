@@ -772,7 +772,7 @@ qshares[stvars].sum(axis=1).sum()
 #geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
 #reweight_method = 'ipopt'  # ipopt or lsq
 #wfname_national = PUFDIR + 'weights_georwt1_' + geomethod + '_' + reweight_method + '.csv'
-wfname_national = WEIGHTDIR + 'weights20107_georwt1.csv'
+wfname_national = WEIGHTDIR + 'weights2017_georwt1.csv'
 wfname_national
 final_national_weights = pd.read_csv(wfname_national)
 # final_national_weights.head(20)
@@ -940,6 +940,9 @@ sweights2018 = sweights2017.copy()
 sweights2018[wtvars] = sweights2018[wtvars] * wtgrowfactor
 
 sweights2018.to_csv(WEIGHTDIR + 'allweights2018_geo2017_grown.csv', index=None)
+
+
+# %% djb experiment 2021: poisson
 
 
 
