@@ -1,4 +1,11 @@
 
+# TODO:
+# compare geotargets to national values
+# compare geotarget shares to naive expected shares
+# develop measure of difficulty
+# adjust targets or weights to account for difficulty
+
+
 # %% imports
 from importlib import reload
 
@@ -84,15 +91,13 @@ qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
 compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
 
 
-# %% retrieve stub info
+# %% retrieve puf and targets info
 pkl_name = IGNOREDIR + 'pickle.pkl'
 open_file = open(pkl_name, "rb")
 pkl = pickle.load(open_file)
 open_file.close()
 
 targvars, ht2wide, pufsub, dropsdf_wide = pkl
-
-
 
 
 # %% prep
@@ -106,13 +111,15 @@ final_national_weights = pd.read_csv(wfname_national)
 pufsub
 pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
 
-# get the puf stub data
-stub = 10
+# get the puf data for a stub and convert to float
+stub = 2
 qx = '(ht2_stub == @stub)'
 
 pufstub = pufsub.query(qx)[['pid', 'ht2_stub'] + targvars]
-pufstub.replace({False: 0.0, True: 1.0}, inplace=True)
+# pufstub.replace({False: 0.0, True: 1.0}, inplace=True)
+pufstub[targvars] = pufstub[targvars].astype(float)
 
+# get targets and national weights
 targetsdf = ht2wide.query(qx)[['stgroup'] + targvars]
 whdf = pd.merge(pufstub[['pid']], final_national_weights[['pid', 'weight']], how='left', on='pid')
 
@@ -124,16 +131,47 @@ xmat
 xmat[:, 0:7]
 xmat.sum(axis=0)
 
-targmat = targetsdf[targvars].to_numpy()
-targmat = np.where(targmat==0, 1e3, targmat) 
+geotargets = targetsdf[targvars].to_numpy()
+geotargets = np.where(geotargets==0, 1e3, geotargets) 
 # replace any zeros with 1e3
 
 
+# %% check the targets data
+# how do target sums for nation compare to nationally weighted puf??
+geotargets.shape
+targetsums = geotargets.sum(axis=0)
+targetsums
 
+pufsums = xmat.T.dot(wh)
+targetsums - pufsums
+np.round(targetsums / pufsums, 3)
+
+vnum = 4
+targetsums[[vnum]] - pufsums[[vnum]]
+
+# %% force geotargets to add to the national sums (although differences are not large)
+factors = pufsums / targetsums
+factors
+geotargets_adj = geotargets * factors
+
+geotargets_adj
+targetsums_adj = geotargets_adj.sum(axis=0)
+targetsums_adj
+
+targetsums_adj - pufsums  # good
+
+
+# %% which targets seem hard to hit??
+np.sort(geotargets_adj.flatten())  # no zero values
+
+
+
+
+# %% define a problem
 # p = mtp.Problem(h=1000, s=3, k=3, xsd=.1, ssd=.5, pctzero=.4)
 # prob = mw.Microweight(wh=p.wh, xmat=p.xmat, geotargets=p.geotargets)
 
-prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targmat)
+prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=geotargets_adj)
 
 
 # %% test one stub directly
@@ -183,18 +221,18 @@ geoipopt_opts = {
         # 'scale_goal': 1e3,
          # 'ccgoal': 10000,
          'addup': True,  # default is false
-         'output_file': '/home/donboyd/Documents/test10.out',
          'max_iter': 100,
          'linear_solver': 'ma86',  # ma27, ma77, ma57, ma86 work, not ma97
          'quiet': False}
 
-geoipopt_opts = geoipopt_base.copy()
+geoipopt_opts.update({'output_file': '/home/donboyd/Documents/test6.out'})
 geoipopt_opts.update({'addup': False})
 geoipopt_opts.update({'addup': True})
 geoipopt_opts.update({'scaling': True})
 geoipopt_opts.update({'scale_goal': 1e6})
-geoipopt_opts.update({'crange': .05})
-geoipopt_opts.update({'addup_range': .0})
+geoipopt_opts.update({'crange': .02})
+geoipopt_opts.update({'max_iter': 100})
+geoipopt_opts.update({'addup_range': .005})
 geoipopt_opts.update({'xlb': .001})
 geoipopt_opts.update({'xub': 100.0})
 geoipopt_opts
@@ -206,6 +244,8 @@ ipres.geotargets_opt
 
 np.quantile(np.abs(ipres.pdiff), qtiles)
 np.quantile(np.abs(ipres.whs_opt), qtiles)
+np.quantile(ipres.method_result.g, qtiles)
+
 
 ipres.geotargets_opt - targmat
 
