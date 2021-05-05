@@ -56,6 +56,7 @@ import sys
 # sys.path.insert(0, 'C:/programs_python/Tax-Calculator/build/lib/') # this is close
 from pathlib import Path
 import os
+import pickle
 
 import taxcalc as tc
 import pandas as pd
@@ -521,11 +522,12 @@ geomethod = 'qmatrix-ipopt'
 options = {'quiet': True,
            # xlb, xub: lower and upper bounds on ratio of new state weights to initial state weights
            'xlb': 0.1,
-           'xub': 100,
+           'xub': 100,           
            # crange is desired constraint tolerance
            # 0.0001 means try to come within 0.0001 x the target
            # i.e., within 0.01% of the target
-           'crange': .0001
+           'crange': .0001,
+           'linear_solver': 'ma57'
            }
 
 # qmatrix-lsq does not work as robustly as qmatrix-ipopt although it can be faster
@@ -588,7 +590,7 @@ g.sort_values(ascending=False).head(50)
 
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
 # pid, the second will be the weight of interest
-wfname_base = WEIGHTDIR + 'weights_reweight1.csv'
+wfname_base = WEIGHTDIR + 'weights2017_reweight1.csv'  # djb change
 weights_base = pd.read_csv(wfname_base)
 
 # method = 'ipopt'  # ipopt or lsq
@@ -767,6 +769,19 @@ qshares[stvars] = qshares[stvars].div(qshares[stvars].sum(axis=1), axis=0)
 # check
 qshares[stvars].sum(axis=1).sum()
 
+# %% save before running final loop
+# targvars
+# ht2wide
+# pufsub
+# dropsdf_wide
+
+save_list = [targvars, ht2wide, pufsub, dropsdf_wide]
+save_name = IGNOREDIR + 'pickle.pkl'
+
+open_file = open(save_name, "wb")
+pickle.dump(save_list, open_file)
+open_file.close()
+
 
 # %% run the final loop
 #geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
@@ -792,7 +807,8 @@ options = {'qmax_iter': 50,
            'qshares': qshares,  # qshares or None
            'xlb': 0.1,
            'xub': 100,
-           'crange': .0001
+           'crange': .0001,
+           'linear_solver': 'ma57'
            }
 
 # geomethod = 'qmatrix-lsq'
