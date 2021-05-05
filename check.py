@@ -8,9 +8,9 @@ https://github.com/PSLmodels/Tax-Calculator/blob/62f7e21bac6dd582e029c101a619373
 
 """
 
-
 import pandas as pd
 import taxcalc as tc
+
 
 DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
 LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'  # August 20, 2020 puf.csv

@@ -48,17 +48,22 @@
 
 
 # %% imports
+from importlib import reload
+
 import sys
 # either of the following is close but it can't find paramtols in calculator.py:
 # sys.path.append('C:/programs_python/Tax-Calculator/build/lib/')  # needed
 # sys.path.insert(0, 'C:/programs_python/Tax-Calculator/build/lib/') # this is close
+from pathlib import Path
+import os
+import pickle
 
-import taxcalc as tc  # this is the lastest taxcalc from GH master as of 12/13/2020
+import taxcalc as tc
 import pandas as pd
 import numpy as np
 from datetime import date
 
-import functions_advance_puf as adv  # this is the lastest taxcalc from GH master as of 12/13/2020
+import functions_advance_puf as adv
 import functions_reweight_puf as rwp
 import functions_geoweight_puf as gwp
 import functions_ht2_analysis as fht
@@ -67,23 +72,36 @@ import puf_constants as pc
 import puf_utilities as pu
 
 # microweight - apparently we have to tell python where to find this
-sys.path.append('c:/programs_python/weighting/')  # needed
+# sys.path.append('c:/programs_python/weighting/')  # needed
+weighting_dir = Path.home() / 'Documents/python_projects/weighting'
+# weighting_dir.exists()
+sys.path.append(str(weighting_dir))  # needed
 import src.microweight as mw
 
 from timeit import default_timer as timer
-from importlib import reload
-# reload(pc)
+
+
+# %% reimports
+reload(pc)
 # reload(rwp)
 # reload(gwp)
 
 
 # %%  locations
-DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
+# machine = 'windows'
+machine = 'linux'
 
-DATADIR = r'C:\programs_python\puf_analysis\data/'
+if machine == 'windows':
+    DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
+    DATADIR = r'C:\programs_python\puf_analysis\data/'
+    # the following locations store files not saved in git
+    IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
+elif machine == 'linux':
+    # /home/donboyd/Dropbox/PUF files/files_based_on_puf2011
+    DIR_FOR_OFFICIAL_PUF = r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/'
+    DATADIR = '/media/don/ignore/data/'
+    IGNOREDIR = '/media/don/ignore/' # /media/don
 
-# the following locations store files not saved in git
-IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 PUFDIR = IGNOREDIR + 'puf_versions/'
 TCOUTDIR = PUFDIR + 'taxcalc_output/'
 WEIGHTDIR = PUFDIR + 'weights/'
@@ -140,11 +158,15 @@ del(df)
 puf = pd.read_csv(LATEST_OFFICIAL_PUF)
 puf.columns
 pufvars = puf.columns.tolist()
-pd.DataFrame (pufvars, columns=['pufvar']).to_csv(DATADIR + 'pufvars.csv', index=None)
+pd.DataFrame(pufvars, columns=['pufvar']).to_csv(DATADIR + 'pufvars.csv', index=None)
 
 # just need to create the advanced puf files once
 adv.advance_puf(puf, 2017, PUF_DEFAULT)
 
+# djb I had to extract puf_weights from puf_weights.csv.gz due to:
+# FileNotFoundError: [Errno 2] No such file or directory: 
+# '/home/donboyd/anaconda3/envs/analysis/lib/python3.8/site-packages/taxcalc/puf_weights.csv'
+# apparently it needs to be out of the gz file
 adv.advance_puf_custom(puf, 2017,
                        gfcustom=GF_CUSTOM,
                        gfones=GF_ONES,
@@ -500,11 +522,12 @@ geomethod = 'qmatrix-ipopt'
 options = {'quiet': True,
            # xlb, xub: lower and upper bounds on ratio of new state weights to initial state weights
            'xlb': 0.1,
-           'xub': 100,
+           'xub': 100,           
            # crange is desired constraint tolerance
            # 0.0001 means try to come within 0.0001 x the target
            # i.e., within 0.01% of the target
-           'crange': .0001
+           'crange': .0001,
+           'linear_solver': 'ma57'
            }
 
 # qmatrix-lsq does not work as robustly as qmatrix-ipopt although it can be faster
@@ -567,7 +590,7 @@ g.sort_values(ascending=False).head(50)
 
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
 # pid, the second will be the weight of interest
-wfname_base = WEIGHTDIR + 'weights_reweight1.csv'
+wfname_base = WEIGHTDIR + 'weights2017_reweight1.csv'  # djb change
 weights_base = pd.read_csv(wfname_base)
 
 # method = 'ipopt'  # ipopt or lsq
@@ -629,6 +652,11 @@ weights_save.to_csv(wfname, index=None)
 # %% create report on results with the revised georevised national weights
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
 # pid, the second will be the weight of interest
+
+# DJB 5/3/3031
+# FileNotFoundError: [Errno 2] No such file or directory: 
+# '/media/don/ignore/puf_versions/weights/weights_reweight1.csv'
+
 wfname_base = WEIGHTDIR + 'weights2017_geo_unrestricted.csv'
 weights_base = pd.read_csv(wfname_base)
 
@@ -741,12 +769,25 @@ qshares[stvars] = qshares[stvars].div(qshares[stvars].sum(axis=1), axis=0)
 # check
 qshares[stvars].sum(axis=1).sum()
 
+# %% save before running final loop
+# targvars
+# ht2wide
+# pufsub
+# dropsdf_wide
+
+save_list = [targvars, ht2wide, pufsub, dropsdf_wide]
+save_name = IGNOREDIR + 'pickle.pkl'
+
+open_file = open(save_name, "wb")
+pickle.dump(save_list, open_file)
+open_file.close()
+
 
 # %% run the final loop
 #geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
 #reweight_method = 'ipopt'  # ipopt or lsq
 #wfname_national = PUFDIR + 'weights_georwt1_' + geomethod + '_' + reweight_method + '.csv'
-wfname_national = WEIGHTDIR + 'weights20107_georwt1.csv'
+wfname_national = WEIGHTDIR + 'weights2017_georwt1.csv'
 wfname_national
 final_national_weights = pd.read_csv(wfname_national)
 # final_national_weights.head(20)
@@ -766,7 +807,8 @@ options = {'qmax_iter': 50,
            'qshares': qshares,  # qshares or None
            'xlb': 0.1,
            'xub': 100,
-           'crange': .0001
+           'crange': .0001,
+           'linear_solver': 'ma57'
            }
 
 # geomethod = 'qmatrix-lsq'
@@ -914,6 +956,9 @@ sweights2018 = sweights2017.copy()
 sweights2018[wtvars] = sweights2018[wtvars] * wtgrowfactor
 
 sweights2018.to_csv(WEIGHTDIR + 'allweights2018_geo2017_grown.csv', index=None)
+
+
+# %% djb experiment 2021: poisson
 
 
 

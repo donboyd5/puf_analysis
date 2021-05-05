@@ -185,4 +185,3 @@ def get_compfile(allstates_long, ht2_compare):
     comp.abspdiff.sort_values(ascending=False)
     return comp
 
-

@@ -11,14 +11,32 @@ import json
 from pathlib import Path
 
 
+# %%  locations
+# machine = 'windows'
+machine = 'linux'
+
+if machine == 'windows':
+    DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
+    DATADIR = r'C:\programs_python\puf_analysis\data/'
+    # the following locations store files not saved in git
+    IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
+elif machine == 'linux':
+    # /home/donboyd/Dropbox/PUF files/files_based_on_puf2011
+    DIR_FOR_OFFICIAL_PUF = Path(r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/')
+    DATADIR = Path('/media/don/ignore/data/')
+    IGNOREDIR = Path('/media/don/ignore/')
+
+# print(DATADIR)
+
+
 # %% filenames and urls
 # https://www.irs.gov/statistics/soi-tax-stats-historic-table-2
 WEBDIR = 'https://www.irs.gov/pub/irs-soi/'
 HT2_2017 = "17in55cmagi.csv"
 HT2_2018 = "18in55cmagi.csv"
 
-DATADIR = r'C:\programs_python\puf_analysis\data/'
-DATADIR = Path.cwd() / 'data'
+# DATADIR = r'C:\programs_python\puf_analysis\data/'
+# DATADIR = Path.cwd() / 'data'
 TARGET_MAP = DATADIR / 'target_mappings.csv'
 
 
