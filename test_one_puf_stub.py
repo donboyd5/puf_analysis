@@ -44,6 +44,7 @@ import src.microweight as mw
 # reload(pc)
 # reload(rwp)
 # reload(gwp)
+reload(mw)
 
 
 # %%  locations
@@ -85,6 +86,12 @@ POSSIBLE_TARGETS = DATADIR + 'targets2017_possible.csv'
 
 HT2_SHARES = DATADIR + 'ht2_shares.csv'
 
+# %% functions
+def wtdsums(df, vars, weight):
+
+    return wtdsums
+
+
 
 # %% constants
 qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
@@ -99,6 +106,11 @@ open_file.close()
 
 targvars, ht2wide, pufsub, dropsdf_wide = pkl
 
+# %% counts by stub
+pufsub
+pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
+
+
 
 # %% prep
 wfname_national = WEIGHTDIR + 'weights2017_georwt1.csv'
@@ -108,11 +120,8 @@ final_national_weights = pd.read_csv(wfname_national)
 
 # %% define a stub
 
-pufsub
-pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
-
 # get the puf data for a stub and convert to float
-stub = 2
+stub = 10
 qx = '(ht2_stub == @stub)'
 
 pufstub = pufsub.query(qx)[['pid', 'ht2_stub'] + targvars]
@@ -151,19 +160,50 @@ targetsums[[vnum]] - pufsums[[vnum]]
 
 # %% force geotargets to add to the national sums (although differences are not large)
 factors = pufsums / targetsums
-factors
+np.round(factors, 4)
+np.argmax(np.abs(factors - 1))
+targvars[15]  # 12 c01000 capital gains  15 c18300
+factors[15]
+factors.flatten()[np.argmax(np.abs(factors - 1))]
+
 geotargets_adj = geotargets * factors
+geotargets_adj / geotargets
 
 geotargets_adj
 targetsums_adj = geotargets_adj.sum(axis=0)
 targetsums_adj
 
-targetsums_adj - pufsums  # good
+np.round(targetsums_adj - pufsums, 5)  # good
 
 
 # %% which targets seem hard to hit??
 np.sort(geotargets_adj.flatten())  # no zero values
+# construct initial weights
+init_shares = (targetsdf.nret_all / targetsdf.nret_all.sum()).to_numpy()
+targetsdf.stgroup
+init_shares
+Q_init = np.tile(init_shares, (wh.size, 1))
+Q_init.shape
 
+whs_init = np.multiply(Q_init.T, wh).T
+whs_init.shape
+
+geotargets_init = np.dot(whs_init.T, xmat)
+target_ratios = geotargets_init / geotargets_adj
+target_ratios.shape
+target_ratios.flatten()
+imax = np.argmax(target_ratios)
+np.argmax(target_ratios, axis=0)
+np.argmax(target_ratios, axis=1)
+target_ratios.flatten()[imax]
+
+geotargets_init.flatten()[13]
+geotargets_adj.flatten()[13]
+geotargets.flatten()[13]
+# ans.geotargets_opt.flatten()[13]
+targvars[13]
+
+init_diffs = np.abs(target_ratios.flatten() - 1.0)
 
 
 
@@ -179,14 +219,26 @@ prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=geotargets_adj)
 
 poisson_opts = {
     'scaling': True,
-    'scale_goal': 1e3,
+    'scale_goal': 10.,
     'init_beta': 0.5,
     'stepmethod': 'jvp',  # jac or jvp for newton; also vjp, findiff if lsq
     'quiet': True}
 poisson_opts
 
+ib = reslsq.method_result.beta_opt.flatten()
+np.size(ib)
+
+
 poisson_opts.update({'stepmethod': 'jac'})
-poisson_opts.update({'max_iter': 20})
+poisson_opts.update({'stepmethod': 'jvp'})
+poisson_opts.update({'max_iter': 30})
+poisson_opts.update({'scaling': True})
+poisson_opts.update({'scale_goal': 1e1})
+poisson_opts.update({'init_beta': ib})
+poisson_opts.update({'init_beta': 0.5})
+
+# idea: start with lsq to get initial beta and then go from there
+
 
 ans = prob.geoweight(method='poisson-newton', options=poisson_opts)
 ans.elapsed_seconds
@@ -197,21 +249,48 @@ ans.whs_opt
 
 poisson_lsq = {
     'scaling': True,
-    'scale_goal': 1e3,
+    'scale_goal': 10.,
     'init_beta': 0.5,
     'stepmethod': 'findiff',  # jac or jvp for newton; also vjp, findiff if lsq
     'quiet': True}
 poisson_lsq
 
 poisson_lsq.update({'stepmethod': 'jac'})
+poisson_lsq.update({'stepmethod': 'jvp'})
+poisson_lsq.update({'stepmethod': 'findiff'})
+poisson_lsq.update({'scale_goal': 1e1})
+poisson_lsq.update({'max_nfev': 200})
+poisson_lsq.update({'init_beta': 0.0})
+poisson_lsq.update({'ftol': 3e-2})
 
 reslsq = prob.geoweight(method='poisson-lsq', options=poisson_lsq)
 reslsq.elapsed_seconds
 reslsq.sspd
 np.quantile(np.abs(reslsq.pdiff), qtiles)
+np.quantile(reslsq.whs_opt, qtiles)
+
+dir(reslsq.method_result)
+reslsq.method_result.beta_opt.shape
+reslsq.method_result.beta_opt.size
+np.quantile(reslsq.method_result.beta_opt, qtiles)
+
+# c17000	
+# Iteration     Total nfev        Cost      Cost reduction    Step norm     Optimality 
+# good:
+# 18             20         2.6532e+03      2.22e+02       2.37e+02       7.25e+01 
+# 20, initial cost 5.0065e+04, final cost 2.6532e+03, first-order optimality 7.25e+01
+# bad
+# 9             10         4.6550e+03      8.15e+02       7.30e+02       4.97e+01    
+# 10, initial cost 5.0065e+04, final cost 4.6550e+03, first-order optimality 4.97e+01.
 
 
-# %% ipoopt geo
+# np.quantile(reslsq.method_result.beta_opt, qtiles)
+# array([-6441.40456227, -5301.09844519, -1045.63633219,  -441.84611902,
+#         -167.47558302,    23.80319664,   274.96759786,   875.14966463,
+#         1157.70746797,  1716.71928114,  4188.58560741])
+
+
+# %% ipopt geo
 geoipopt_opts = {
         'xlb': .1, 'xub': 10., # default 0.1, 10.0
          'crange': 0.0,  # default 0.0
@@ -225,31 +304,51 @@ geoipopt_opts = {
          'linear_solver': 'ma86',  # ma27, ma77, ma57, ma86 work, not ma97
          'quiet': False}
 
-geoipopt_opts.update({'output_file': '/home/donboyd/Documents/test6.out'})
+geoipopt_opts.update({'output_file': '/home/donboyd/Documents/test4.out'})
+geoipopt_opts.update({'xlb': 0.0})
+geoipopt_opts.update({'xub': 1e6})
 geoipopt_opts.update({'addup': False})
 geoipopt_opts.update({'addup': True})
 geoipopt_opts.update({'scaling': True})
 geoipopt_opts.update({'scale_goal': 1e6})
-geoipopt_opts.update({'crange': .02})
+geoipopt_opts.update({'crange': .01})
+geoipopt_opts.update({'crange': crange_calc * 1.})
+geoipopt_opts
+
+np.round(init_diffs, 3)*100.0
+init_diffs
+cr2 = init_diffs.copy()
+cr2[crange_calc > 0.5] = 0.2 # np.inf
+cr2[(crange_calc > .1) & (crange_calc <= 0.5)] = .035
+cr2[crange_calc <= .1] = .005
+np.round(cr2, 3)
+geoipopt_opts.update({'crange': cr2})
+
 geoipopt_opts.update({'max_iter': 100})
 geoipopt_opts.update({'addup_range': .005})
 geoipopt_opts.update({'xlb': .001})
-geoipopt_opts.update({'xub': 100.0})
+geoipopt_opts.update({'xub': 1000.0})
 geoipopt_opts
 
 ipres = prob.geoweight(method='geoipopt', options=geoipopt_opts)
 ipres.elapsed_seconds
-ipres.sspd
+ipres.sspd  # 9709353493.535954
 ipres.geotargets_opt
+
+np.corrcoef(reslsq.whs_opt.flatten(), ipres.whs_opt.flatten())
+
+# array([3.09695042e-02, 6.83918768e-02, 2.58291444e-01, 4.28184185e-01,
+#        1.75463618e+00, 6.92272991e+00, 2.07672319e+01, 4.18776204e+01,
+#        6.51681760e+01, 1.71746580e+02, 9.85351017e+04])
 
 np.quantile(np.abs(ipres.pdiff), qtiles)
 np.quantile(np.abs(ipres.whs_opt), qtiles)
 np.quantile(ipres.method_result.g, qtiles)
 
 
-ipres.geotargets_opt - targmat
+ipres.geotargets_opt - geotargets_adj
 
-ipres.geotargets_opt / targmat
+np.round(ipres.geotargets_opt / geotargets_adj, 2)
 
 
 
