@@ -1,10 +1,22 @@
 
 # TODO:
-# compare geotargets to national values
-# compare geotarget shares to naive expected shares
+# DONE: compare geotargets to national values
+# DONE: compare geotarget shares to naive expected shares
 # develop measure of difficulty
 # adjust targets or weights to account for difficulty
 
+# Conclusions:
+# poisson_lsq with jac, scalegoal 10.0 seems best
+# poisson_lsq with findiff also good
+# poisson_lsq with jvp-linop can't use x_scale='jac' so it is not good
+# poisson_newton too dependent on starting point
+
+# geoipopt is good but not terribly fast and requires good guesses re constraint ranges
+
+# qmatrix??
+
+
+# sudo sync && sudo sysctl -w vm.drop_caches=3
 
 # %% imports
 from importlib import reload
@@ -106,11 +118,6 @@ open_file.close()
 
 targvars, ht2wide, pufsub, dropsdf_wide = pkl
 
-# %% counts by stub
-pufsub
-pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
-
-
 
 # %% prep
 wfname_national = WEIGHTDIR + 'weights2017_georwt1.csv'
@@ -118,10 +125,15 @@ wfname_national
 final_national_weights = pd.read_csv(wfname_national)
 # final_national_weights.head(20)
 
+# %% counts by stub
+pufsub
+pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
+
+
 # %% define a stub
 
 # get the puf data for a stub and convert to float
-stub = 10
+stub = 4
 qx = '(ht2_stub == @stub)'
 
 pufstub = pufsub.query(qx)[['pid', 'ht2_stub'] + targvars]
@@ -155,16 +167,15 @@ pufsums = xmat.T.dot(wh)
 targetsums - pufsums
 np.round(targetsums / pufsums, 3)
 
-vnum = 4
-targetsums[[vnum]] - pufsums[[vnum]]
+# vnum = 4
+# targetsums[[vnum]] - pufsums[[vnum]]
 
 # %% force geotargets to add to the national sums (although differences are not large)
 factors = pufsums / targetsums
 np.round(factors, 4)
-np.argmax(np.abs(factors - 1))
-targvars[15]  # 12 c01000 capital gains  15 c18300
-factors[15]
-factors.flatten()[np.argmax(np.abs(factors - 1))]
+imax = np.argmax(np.abs(factors - 1))
+targvars[imax]  # 12 c01000 capital gains  15 c18300
+factors[imax]
 
 geotargets_adj = geotargets * factors
 geotargets_adj / geotargets
@@ -174,6 +185,7 @@ targetsums_adj = geotargets_adj.sum(axis=0)
 targetsums_adj
 
 np.round(targetsums_adj - pufsums, 5)  # good
+targetsums_adj / pufsums
 
 
 # %% which targets seem hard to hit??
@@ -190,6 +202,7 @@ whs_init.shape
 
 geotargets_init = np.dot(whs_init.T, xmat)
 target_ratios = geotargets_init / geotargets_adj
+np.quantile(target_ratios, qtiles)
 target_ratios.shape
 target_ratios.flatten()
 imax = np.argmax(target_ratios)
@@ -226,6 +239,7 @@ poisson_opts = {
 poisson_opts
 
 ib = reslsq.method_result.beta_opt.flatten()
+poisson_opts.update({'init_beta': ib})
 np.size(ib)
 
 
@@ -234,7 +248,6 @@ poisson_opts.update({'stepmethod': 'jvp'})
 poisson_opts.update({'max_iter': 30})
 poisson_opts.update({'scaling': True})
 poisson_opts.update({'scale_goal': 1e1})
-poisson_opts.update({'init_beta': ib})
 poisson_opts.update({'init_beta': 0.5})
 
 # idea: start with lsq to get initial beta and then go from there
@@ -257,11 +270,20 @@ poisson_lsq
 
 poisson_lsq.update({'stepmethod': 'jac'})
 poisson_lsq.update({'stepmethod': 'jvp'})
+poisson_lsq.update({'stepmethod': 'jvp-linop'})
 poisson_lsq.update({'stepmethod': 'findiff'})
 poisson_lsq.update({'scale_goal': 1e1})
-poisson_lsq.update({'max_nfev': 200})
+poisson_lsq.update({'max_nfev': 200}) # 
+#  9.3020e+02 cost at 40
 poisson_lsq.update({'init_beta': 0.0})
 poisson_lsq.update({'ftol': 3e-2})
+
+poisson_lsq.update({'x_scale': 'jac'})  # can't use jac for jvp-linop
+poisson_lsq.update({'x_scale': 1e2})
+poisson_lsq.update({'x_scale': geotargets.flatten()   / 1e6})
+poisson_lsq.update({'x_scale': 1e7 / geotargets.flatten()})
+
+poisson_lsq
 
 reslsq = prob.geoweight(method='poisson-lsq', options=poisson_lsq)
 reslsq.elapsed_seconds
