@@ -153,7 +153,7 @@ xmat[:, 0:7]
 xmat.sum(axis=0)
 
 geotargets = targetsdf[targvars].to_numpy()
-geotargets = np.where(geotargets==0, 1e3, geotargets) 
+geotargets = np.where(geotargets==0, 1e3, geotargets)
 # replace any zeros with 1e3
 
 
@@ -273,13 +273,13 @@ poisson_lsq.update({'stepmethod': 'jvp'})
 poisson_lsq.update({'stepmethod': 'jvp-linop'})
 poisson_lsq.update({'stepmethod': 'findiff'})
 poisson_lsq.update({'scale_goal': 1e1})
-poisson_lsq.update({'max_nfev': 200}) # 
+poisson_lsq.update({'max_nfev': 200}) #
 #  9.3020e+02 cost at 40
 poisson_lsq.update({'init_beta': 0.0})
 poisson_lsq.update({'ftol': 3e-2})
 
 poisson_lsq.update({'x_scale': 'jac'})  # can't use jac for jvp-linop
-poisson_lsq.update({'x_scale': 1e2})
+poisson_lsq.update({'x_scale': 1e0})
 poisson_lsq.update({'x_scale': geotargets.flatten()   / 1e6})
 poisson_lsq.update({'x_scale': 1e7 / geotargets.flatten()})
 
@@ -295,21 +295,105 @@ dir(reslsq.method_result)
 reslsq.method_result.beta_opt.shape
 reslsq.method_result.beta_opt.size
 np.quantile(reslsq.method_result.beta_opt, qtiles)
+np.quantile(reslsq.pdiff, qtiles)
 
-# c17000	
-# Iteration     Total nfev        Cost      Cost reduction    Step norm     Optimality 
-# good:
-# 18             20         2.6532e+03      2.22e+02       2.37e+02       7.25e+01 
-# 20, initial cost 5.0065e+04, final cost 2.6532e+03, first-order optimality 7.25e+01
-# bad
-# 9             10         4.6550e+03      8.15e+02       7.30e+02       4.97e+01    
-# 10, initial cost 5.0065e+04, final cost 4.6550e+03, first-order optimality 4.97e+01.
+# hvp
+opts = {
+    'scaling': True,
+    'scale_goal': 10.0,  # this is an important parameter!
+    'init_beta': 0.5,
+    'objscale': 1.0,
+    'method': 'trust-ncg',  # Newton-CG, trust-ncg, trust-krylov
+    'maxiter': 100,
+    'quiet': True}
+opts.update({'method': 'Newton-CG'})
+opts.update({'method': 'trust-ncg'})
+opts.update({'method': 'trust-krylov'})  # a lot of output
+opts.update({'method': 'trust-exact'}) # no, requires hessian
+opts.update({'method': 'dogleg'}) # no, requires hessian
+opts
+gwp4 = prob.geoweight(method='poisson-hvp', options=opts)
+gwp4.elapsed_seconds
+gwp4.sspd
+
+ncg = gwp4 # Warning: Desired error not necessarily achieved due to precision loss.
+tncg = gwp4 # does not progress
+tk = gwp4
+
+# trust-exact  dogleg
 
 
-# np.quantile(reslsq.method_result.beta_opt, qtiles)
-# array([-6441.40456227, -5301.09844519, -1045.63633219,  -441.84611902,
-#         -167.47558302,    23.80319664,   274.96759786,   875.14966463,
-#         1157.70746797,  1716.71928114,  4188.58560741])
+
+# lbfgs
+opts = {
+    'scaling': True,
+    'scale_goal': 10.0,  # this is an important parameter!
+    'init_beta': 0.5,
+    'objscale': 1.0,
+    'maxiter': 100,
+    'tolerance': 1e-8,
+    'num_correction_pairs': 10,
+    'max_line_search_iterations': 50,
+    'max_iterations': 100,
+    'quiet': True}
+
+opts.update({'scale_goal': 1e1})
+opts.update({'init_beta': 0.0})
+opts.update({'init_beta': 0.5})
+opts.update({'tolerance': 1e-5})
+opts.update({'max_iterations': 100})
+opts.update({'max_line_search_iterations': 100})
+opts.update({'num_correction_pairs': 100})
+opts.update({'objscale': 1e-8})
+opts
+rlbfgs = prob.geoweight(method='poisson-lbfgs', options=opts)
+rlbfgs.elapsed_seconds
+rlbfgs.sspd
+rlbfgs.method_result.result.num_iterations
+rlbfgs.method_result.result.num_objective_evaluations
+rlbfgs.method_result.result.failed
+
+dir(rlbfgs.method_result.result)
+
+# {'scaling': True,
+#  'scale_goal': 10.0,
+#  'init_beta': 0.5,
+#  'objscale': 1e-08,
+#  'maxiter': 100,
+#  'tolerance': 1e-06,
+#  'num_correction_pairs': 10,
+#  'max_line_search_iterations': 50,
+#  'max_iterations': 100,
+#  'quiet': True}
+
+
+# bfgs
+opts = {
+    'scaling': True,
+    'scale_goal': 1e3,  # this is an important parameter!
+    'maxiter': 2000,
+    'init_beta': 0.5,
+    'return_all': True,
+    'tol': 1e-6,
+    'disp': True}
+opts.update({'tol': 1e-10})
+opts.update({'gtol': 1e-10})
+opts.update({'line_search_maxiter': 100})
+opts
+gwp5 = prob.geoweight(method='poisson-bfgs', options=opts)
+gwp5.elapsed_seconds
+gwp5.sspd
+
+# dir(gwp5.method_result.result)
+gwp5.method_result.result.nfev
+gwp5.method_result.result.nit
+gwp5.method_result.result.status
+gwp5.method_result.result.success
+# gwp5.method_result.result.x
+np.quantile(np.abs(gwp5.pdiff), qtiles)
+gwp5.geotargets_opt
+
+resb = prob.geoweight(method='poisson-bfgs', options={})
 
 
 # %% ipopt geo
@@ -426,5 +510,5 @@ tempout = grouped.apply(gwp.get_geo_weights,
                                 independent=False,
                                 geomethod=geomethod,
                                 options=options,
-                                intermediate_path=TEMPDIR)           
+                                intermediate_path=TEMPDIR)
 
