@@ -126,14 +126,14 @@ final_national_weights = pd.read_csv(wfname_national)
 # final_national_weights.head(20)
 
 # %% counts by stub
-pufsub
+# pufsub
 pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
 
 
 # %% define a stub
 
 # get the puf data for a stub and convert to float
-stub = 4
+stub = 10
 qx = '(ht2_stub == @stub)'
 
 pufstub = pufsub.query(qx)[['pid', 'ht2_stub'] + targvars]
@@ -281,14 +281,14 @@ poisson_lsq.update({'ftol': 3e-2})
 poisson_lsq.update({'x_scale': 'jac'})  # can't use jac for jvp-linop
 poisson_lsq.update({'x_scale': 1e0})
 poisson_lsq.update({'x_scale': geotargets.flatten()   / 1e6})
-poisson_lsq.update({'x_scale': 1e7 / geotargets.flatten()})
-
+poisson_lsq.update({'x_scale': 1e11 / geotargets.flatten()})
 poisson_lsq
 
 reslsq = prob.geoweight(method='poisson-lsq', options=poisson_lsq)
 reslsq.elapsed_seconds
 reslsq.sspd
 np.quantile(np.abs(reslsq.pdiff), qtiles)
+np.quantile(reslsq.pdiff, qtiles)
 np.quantile(reslsq.whs_opt, qtiles)
 
 dir(reslsq.method_result)
@@ -319,6 +319,28 @@ gwp4.sspd
 ncg = gwp4 # Warning: Desired error not necessarily achieved due to precision loss.
 tncg = gwp4 # does not progress
 tk = gwp4
+
+# now try newton method
+opts = {
+    'scaling': True,
+    'scale_goal': 10.0,  # this is an important parameter!
+    'init_beta': 0.5,
+    'max_iter': 10,
+    'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
+    'quiet': True}
+opts.update({'stepmethod': 'jac'})
+opts.update({'stepmethod': 'jvp'})
+opts.update({'max_iter': 50})
+opts.update({'step_mult': 0.75})
+opts.update({'step_mult': 0.5})
+opts.update({'step_mult': 0.25})
+opts.update({'init_beta': 0.0})
+opts.update({'maxp_tol': 0.01}) # max pct diff tolerance .01 is 1/100 percent
+opts
+gwpn = prob.geoweight(method='poisson-newton', options=opts)
+gwpn.elapsed_seconds
+gwpn.sspd
+np.round(np.quantile(gwpn.pdiff, qtiles), 3)
 
 # trust-exact  dogleg
 
