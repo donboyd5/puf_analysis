@@ -325,8 +325,8 @@ opts = {
     'scaling': True,
     'scale_goal': 10.0,  # this is an important parameter!
     'init_beta': 0.5,
-    'max_iter': 10,
-    'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
+    # 'max_iter': 20,
+    # 'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
     'quiet': True}
 opts.update({'stepmethod': 'jac'})
 opts.update({'stepmethod': 'jvp'})
@@ -343,6 +343,59 @@ gwpn.sspd
 np.round(np.quantile(gwpn.pdiff, qtiles), 3)
 
 # trust-exact  dogleg
+
+# tensor flow bfgs (even though it says lbfgs)
+# https://www.tensorflow.org/probability/api_docs/python/tfp/optimizer/bfgs_minimize
+opts = {
+    'scaling': True,
+    'scale_goal': 10.0,  # this is an important parameter!
+    'init_beta': 0.5,
+    'objscale': 1.,
+    'maxiter': 100,
+    'tolerance': 1e-6,
+    'num_correction_pairs': 10,
+    'max_line_search_iterations': 50,
+    'max_iterations': 100,
+    'quiet': True}
+opts.update({'objscale': 1.0})
+opts.update({'max_iterations': 500})
+opts.update({'max_line_search_iterations': 100})
+opts
+gwtf = prob.geoweight(method='poisson-lbfgs', options=opts)
+gwtf.elapsed_seconds
+gwtf.sspd
+dir(gwtf.method_result.result)
+gwtf.method_result.result.converged
+gwtf.method_result.result.num_iterations
+gwtf.method_result.result.num_objective_evaluations
+
+
+# tensor flow lbfgs
+# https://www.tensorflow.org/probability/api_docs/python/tfp/optimizer/lbfgs_minimize
+opts = {
+    'scaling': True,
+    'scale_goal': 10.0,  # this is an important parameter!
+    'init_beta': 0.5,
+    'objscale': 1.,
+    'maxiter': 100,
+    'tolerance': 1e-6,
+    'num_correction_pairs': 10,
+    'max_line_search_iterations': 50,
+    'max_iterations': 100,
+    'quiet': True}
+opts.update({'objscale': 1.0})
+opts.update({'max_iterations': 1000})
+opts.update({'max_line_search_iterations': 100})
+opts.update({'num_correction_pairs': 20})
+opts
+gwtfl = prob.geoweight(method='poisson-lbfgs', options=opts)
+gwtfl.elapsed_seconds
+gwtfl.sspd
+dir(gwtfl.method_result.result)
+gwtfl.method_result.result.converged
+gwtfl.method_result.result.num_iterations
+gwtfl.method_result.result.num_objective_evaluations
+
 
 
 
