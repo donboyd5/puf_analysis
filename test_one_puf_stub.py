@@ -133,7 +133,7 @@ pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
 # %% define a stub
 
 # get the puf data for a stub and convert to float
-stub = 10
+stub = 5
 qx = '(ht2_stub == @stub)'
 
 pufstub = pufsub.query(qx)[['pid', 'ht2_stub'] + targvars]
@@ -252,22 +252,6 @@ poisson_opts.update({'init_beta': 0.5})
 
 # idea: start with lsq to get initial beta and then go from there
 
-
-ans = prob.geoweight(method='poisson-newton', options=poisson_opts)
-ans.elapsed_seconds
-ans.sspd
-np.quantile(np.abs(ans.pdiff), qtiles)
-ans.geotargets_opt
-ans.whs_opt
-
-poisson_lsq = {
-    'scaling': True,
-    'scale_goal': 10.,
-    'init_beta': 0.5,
-    'stepmethod': 'findiff',  # jac or jvp for newton; also vjp, findiff if lsq
-    'quiet': True}
-poisson_lsq
-
 poisson_lsq.update({'stepmethod': 'jac'})
 poisson_lsq.update({'stepmethod': 'jvp'})
 poisson_lsq.update({'stepmethod': 'jvp-linop'})
@@ -297,28 +281,36 @@ reslsq.method_result.beta_opt.size
 np.quantile(reslsq.method_result.beta_opt, qtiles)
 np.quantile(reslsq.pdiff, qtiles)
 
-# hvp
+# tensor flow jax
 opts = {
     'scaling': True,
     'scale_goal': 10.0,  # this is an important parameter!
     'init_beta': 0.5,
     'objscale': 1.0,
-    'method': 'trust-ncg',  # Newton-CG, trust-ncg, trust-krylov
-    'maxiter': 100,
+    'method': 'BFGS',  # BFGS or LBFGS
+    'max_iterations': 50,
+    'max_line_search_iterations': 50,
+    'num_correction_pairs': 10,  # LBFGS only
+    'parallel_iterations': 1,
+    'tolerance': 1e-8,
     'quiet': True}
-opts.update({'method': 'Newton-CG'})
-opts.update({'method': 'trust-ncg'})
-opts.update({'method': 'trust-krylov'})  # a lot of output
-opts.update({'method': 'trust-exact'}) # no, requires hessian
-opts.update({'method': 'dogleg'}) # no, requires hessian
+opts.update({'method': 'BFGS'})
+opts.update({'method': 'LBFGS'})
+opts.update({'max_iterations': 1500})
+opts.update({'max_line_search_iterations': 100})
+opts.update({'parallel_iterations': 1})
+opts.update({'num_correction_pairs': 100})  # LBFGS only
+opts.update({'objscale': 1e-3})
 opts
-gwp4 = prob.geoweight(method='poisson-hvp', options=opts)
+gwp4 = prob.geoweight(method='poisson-mintfjax', options=opts)
 gwp4.elapsed_seconds
-gwp4.sspd
+gwp4.sspd  # does not converge
+dir(gwp4.method_result.result)
+gwp4.method_result.result.converged
+gwp4.method_result.result.num_iterations
+gwp4.method_result.result.num_objective_evaluations
+gwp4.method_result.result.objective_value
 
-ncg = gwp4 # Warning: Desired error not necessarily achieved due to precision loss.
-tncg = gwp4 # does not progress
-tk = gwp4
 
 # now try newton method
 opts = {
@@ -326,7 +318,7 @@ opts = {
     'scale_goal': 10.0,  # this is an important parameter!
     'init_beta': 0.5,
     # 'max_iter': 20,
-    # 'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
+    'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
     'quiet': True}
 opts.update({'stepmethod': 'jac'})
 opts.update({'stepmethod': 'jvp'})
@@ -343,132 +335,6 @@ gwpn.sspd
 np.round(np.quantile(gwpn.pdiff, qtiles), 3)
 
 # trust-exact  dogleg
-
-# tensor flow bfgs (even though it says lbfgs)
-# https://www.tensorflow.org/probability/api_docs/python/tfp/optimizer/bfgs_minimize
-opts = {
-    'scaling': True,
-    'scale_goal': 10.0,  # this is an important parameter!
-    'init_beta': 0.5,
-    'objscale': 1.,
-    'maxiter': 100,
-    'tolerance': 1e-6,
-    'num_correction_pairs': 10,
-    'max_line_search_iterations': 50,
-    'max_iterations': 100,
-    'quiet': True}
-opts.update({'objscale': 1.0})
-opts.update({'max_iterations': 500})
-opts.update({'max_line_search_iterations': 100})
-opts
-gwtf = prob.geoweight(method='poisson-lbfgs', options=opts)
-gwtf.elapsed_seconds
-gwtf.sspd
-dir(gwtf.method_result.result)
-gwtf.method_result.result.converged
-gwtf.method_result.result.num_iterations
-gwtf.method_result.result.num_objective_evaluations
-
-
-# tensor flow lbfgs
-# https://www.tensorflow.org/probability/api_docs/python/tfp/optimizer/lbfgs_minimize
-opts = {
-    'scaling': True,
-    'scale_goal': 10.0,  # this is an important parameter!
-    'init_beta': 0.5,
-    'objscale': 1.,
-    'maxiter': 100,
-    'tolerance': 1e-6,
-    'num_correction_pairs': 10,
-    'max_line_search_iterations': 50,
-    'max_iterations': 100,
-    'quiet': True}
-opts.update({'objscale': 1.0})
-opts.update({'max_iterations': 1000})
-opts.update({'max_line_search_iterations': 100})
-opts.update({'num_correction_pairs': 20})
-opts
-gwtfl = prob.geoweight(method='poisson-lbfgs', options=opts)
-gwtfl.elapsed_seconds
-gwtfl.sspd
-dir(gwtfl.method_result.result)
-gwtfl.method_result.result.converged
-gwtfl.method_result.result.num_iterations
-gwtfl.method_result.result.num_objective_evaluations
-
-
-
-
-# lbfgs
-opts = {
-    'scaling': True,
-    'scale_goal': 10.0,  # this is an important parameter!
-    'init_beta': 0.5,
-    'objscale': 1.0,
-    'maxiter': 100,
-    'tolerance': 1e-8,
-    'num_correction_pairs': 10,
-    'max_line_search_iterations': 50,
-    'max_iterations': 100,
-    'quiet': True}
-
-opts.update({'scale_goal': 1e1})
-opts.update({'init_beta': 0.0})
-opts.update({'init_beta': 0.5})
-opts.update({'tolerance': 1e-5})
-opts.update({'max_iterations': 100})
-opts.update({'max_line_search_iterations': 100})
-opts.update({'num_correction_pairs': 100})
-opts.update({'objscale': 1e-8})
-opts
-rlbfgs = prob.geoweight(method='poisson-lbfgs', options=opts)
-rlbfgs.elapsed_seconds
-rlbfgs.sspd
-rlbfgs.method_result.result.num_iterations
-rlbfgs.method_result.result.num_objective_evaluations
-rlbfgs.method_result.result.failed
-
-dir(rlbfgs.method_result.result)
-
-# {'scaling': True,
-#  'scale_goal': 10.0,
-#  'init_beta': 0.5,
-#  'objscale': 1e-08,
-#  'maxiter': 100,
-#  'tolerance': 1e-06,
-#  'num_correction_pairs': 10,
-#  'max_line_search_iterations': 50,
-#  'max_iterations': 100,
-#  'quiet': True}
-
-
-# bfgs
-opts = {
-    'scaling': True,
-    'scale_goal': 1e3,  # this is an important parameter!
-    'maxiter': 2000,
-    'init_beta': 0.5,
-    'return_all': True,
-    'tol': 1e-6,
-    'disp': True}
-opts.update({'tol': 1e-10})
-opts.update({'gtol': 1e-10})
-opts.update({'line_search_maxiter': 100})
-opts
-gwp5 = prob.geoweight(method='poisson-bfgs', options=opts)
-gwp5.elapsed_seconds
-gwp5.sspd
-
-# dir(gwp5.method_result.result)
-gwp5.method_result.result.nfev
-gwp5.method_result.result.nit
-gwp5.method_result.result.status
-gwp5.method_result.result.success
-# gwp5.method_result.result.x
-np.quantile(np.abs(gwp5.pdiff), qtiles)
-gwp5.geotargets_opt
-
-resb = prob.geoweight(method='poisson-bfgs', options={})
 
 
 # %% ipopt geo
@@ -491,9 +357,9 @@ geoipopt_opts.update({'xub': 1e6})
 geoipopt_opts.update({'addup': False})
 geoipopt_opts.update({'addup': True})
 geoipopt_opts.update({'scaling': True})
-geoipopt_opts.update({'scale_goal': 1e6})
+geoipopt_opts.update({'scale_goal': 1e1})
 geoipopt_opts.update({'crange': .01})
-geoipopt_opts.update({'crange': crange_calc * 1.})
+# geoipopt_opts.update({'crange': crange_calc * 1.})
 geoipopt_opts
 
 np.round(init_diffs, 3)*100.0
