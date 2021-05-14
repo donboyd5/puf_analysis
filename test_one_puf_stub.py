@@ -6,9 +6,9 @@
 # adjust targets or weights to account for difficulty
 
 # Conclusions:
-# poisson_lsq with jac, scalegoal 10.0 seems best
-# poisson_lsq with findiff also good
-# poisson_lsq with jvp-linop can't use x_scale='jac' so it is not good
+# opts with jac, scalegoal 10.0 seems best
+# opts with findiff also good
+# opts with jvp-linop can't use x_scale='jac' so it is not good
 # poisson_newton too dependent on starting point
 
 # geoipopt is good but not terribly fast and requires good guesses re constraint ranges
@@ -133,7 +133,7 @@ pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
 # %% define a stub
 
 # get the puf data for a stub and convert to float
-stub = 5
+stub = 10
 qx = '(ht2_stub == @stub)'
 
 pufstub = pufsub.query(qx)[['pid', 'ht2_stub'] + targvars]
@@ -217,6 +217,7 @@ geotargets.flatten()[13]
 targvars[13]
 
 init_diffs = np.abs(target_ratios.flatten() - 1.0)
+np.round(np.quantile(init_diffs, qtiles), 2)
 
 
 
@@ -227,48 +228,49 @@ init_diffs = np.abs(target_ratios.flatten() - 1.0)
 prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=geotargets_adj)
 
 
-# %% test one stub directly
+# %% START: test one stub directly
 # prob = mw.Microweight(wh=p.wh, xmat=p.xmat, geotargets=ngtargets)
 
-poisson_opts = {
+
+
+# %%.. least squares
+opts = {
     'scaling': True,
     'scale_goal': 10.,
     'init_beta': 0.5,
-    'stepmethod': 'jvp',  # jac or jvp for newton; also vjp, findiff if lsq
+    'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
     'quiet': True}
-poisson_opts
+opts
 
 ib = reslsq.method_result.beta_opt.flatten()
-poisson_opts.update({'init_beta': ib})
+opts.update({'init_beta': ib})
 np.size(ib)
-
-
-poisson_opts.update({'stepmethod': 'jac'})
-poisson_opts.update({'stepmethod': 'jvp'})
-poisson_opts.update({'max_iter': 30})
-poisson_opts.update({'scaling': True})
-poisson_opts.update({'scale_goal': 1e1})
-poisson_opts.update({'init_beta': 0.5})
-
 # idea: start with lsq to get initial beta and then go from there
 
-poisson_lsq.update({'stepmethod': 'jac'})
-poisson_lsq.update({'stepmethod': 'jvp'})
-poisson_lsq.update({'stepmethod': 'jvp-linop'})
-poisson_lsq.update({'stepmethod': 'findiff'})
-poisson_lsq.update({'scale_goal': 1e1})
-poisson_lsq.update({'max_nfev': 200}) #
-#  9.3020e+02 cost at 40
-poisson_lsq.update({'init_beta': 0.0})
-poisson_lsq.update({'ftol': 3e-2})
+opts.update({'stepmethod': 'jac'})
+opts.update({'stepmethod': 'jvp'})
+opts.update({'stepmethod': 'jvp-linop'})
+opts.update({'stepmethod': 'findiff'})
 
-poisson_lsq.update({'x_scale': 'jac'})  # can't use jac for jvp-linop
-poisson_lsq.update({'x_scale': 1e0})
-poisson_lsq.update({'x_scale': geotargets.flatten()   / 1e6})
-poisson_lsq.update({'x_scale': 1e11 / geotargets.flatten()})
-poisson_lsq
+opts.update({'max_iter': 30})
+opts.update({'scaling': True})
+opts.update({'scale_goal': 1e1})
+opts.update({'init_beta': 0.5})
 
-reslsq = prob.geoweight(method='poisson-lsq', options=poisson_lsq)
+opts.update({'max_nfev': 200}) #
+opts.update({'max_nfev': 20})
+opts.update({'ftol': 3e-2})
+
+opts.update({'x_scale': 'jac'})  # can't use jac for jvp-linop
+opts.update({'x_scale': 1e0})
+opts.update({'x_scale': geotargets.flatten()   / 1e6})
+opts.update({'x_scale': 1e11 / geotargets.flatten()})
+
+opts.update({'init_beta': reslsq.method_result.beta_opt.flatten()})
+
+opts
+
+reslsq = prob.geoweight(method='poisson-lsq', options=opts)
 reslsq.elapsed_seconds
 reslsq.sspd
 np.quantile(np.abs(reslsq.pdiff), qtiles)
@@ -281,7 +283,7 @@ reslsq.method_result.beta_opt.size
 np.quantile(reslsq.method_result.beta_opt, qtiles)
 np.quantile(reslsq.pdiff, qtiles)
 
-# tensor flow jax
+# %% ..tensor flow jax
 opts = {
     'scaling': True,
     'scale_goal': 10.0,  # this is an important parameter!
@@ -311,8 +313,35 @@ gwp4.method_result.result.num_iterations
 gwp4.method_result.result.num_objective_evaluations
 gwp4.method_result.result.objective_value
 
+# %% ..geoweight poisson ipopt
+ipopts = {
+    'output_file': '/home/donboyd/Documents/gwpi_puf.out',
+    'print_user_options': 'yes',
+    'file_print_level': 5,
+    'max_iter': 10000,
+    'hessian_approximation': 'limited-memory',
+    'limited_memory_update_type': 'SR1',  # BFGS, SR1
+    'mu_strategy': 'adaptive',  # monotone, adaptive
+    'mehrotra_algorithm': 'no',  # no, yes; yes is bad
+    'linear_solver': 'ma57',  # ma27, ma77, ma57, ma86 work, not ma97
+    'ma57_automatic_scaling': 'yes',
+    'obj_scaling_factor': 1e-3,
+    # 'nlp_scaling_method': 'equilibration-based',
+    'nlp_scaling_max_gradient': 20.,
+    'accept_every_trial_step': 'no'
+}
+opts = {
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.5,
+    'ipopts': ipopts}
+opts
+gwpi = prob.geoweight(method='poisson-ipopt', options=opts)
+gwpi.elapsed_seconds
+gwpi.sspd
 
-# now try newton method
+
+# %% ..newton method
 opts = {
     'scaling': True,
     'scale_goal': 10.0,  # this is an important parameter!
@@ -322,12 +351,19 @@ opts = {
     'quiet': True}
 opts.update({'stepmethod': 'jac'})
 opts.update({'stepmethod': 'jvp'})
-opts.update({'max_iter': 50})
-opts.update({'step_mult': 0.75})
-opts.update({'step_mult': 0.5})
-opts.update({'step_mult': 0.25})
-opts.update({'init_beta': 0.0})
+opts.update({'max_iter': 40})
+opts.update({'linesearch': True})
+opts.update({'linesearch': False})
+opts.update({'init_p': 1.0})
+opts.update({'init_p': 0.75})
+opts.update({'init_p': 0.5})
+opts.update({'init_p': 0.33})
+opts.update({'init_p': 0.25})
+opts.update({'init_p': 0.10})
+opts.update({'init_p': 0.0})
 opts.update({'maxp_tol': 0.01}) # max pct diff tolerance .01 is 1/100 percent
+opts.update({'init_beta': reslsq.method_result.beta_opt.flatten()})
+opts.update({'init_beta': 0.5})
 opts
 gwpn = prob.geoweight(method='poisson-newton', options=opts)
 gwpn.elapsed_seconds
@@ -336,9 +372,69 @@ np.round(np.quantile(gwpn.pdiff, qtiles), 3)
 
 # trust-exact  dogleg
 
+# %% ..scipy minmize
+opts = {
+    'scaling': True,
+    'scale_goal': 10.0,  # this is an important parameter!
+    'maxiter': 200,
+    'method': 'BFGS',  # BFGS L-BFGS-B Newton-CG trust-krylov, trust-ncg
+    'hesstype': None,  # None, hessian, or hvp
+    'disp': True}
+
+opts.update({'method': 'L-BFGS-B'})  # not yet working with jax - explore
+
+opts.update({'method': 'BFGS'})  # SLOW when large; does not use hessian or hvp
+opts.update({'method': 'Newton-CG'}) # SLOW when large; allows None, hessian, or hvp
+opts.update({'method': 'trust-ncg'})  # SLOW when large; requires hessian or hvp
+opts.update({'method': 'trust-krylov'})  # FAILS when too large; GOOD with hessp when large; requires hessian or hvp; a lot of output
+opts.update({'method': 'Powell'})  # SLOW when large; does not use jac or hess
+opts.update({'method': 'CG'})  # SLOW when large; does not use hess or hessp
+opts.update({'method': 'TNC'}) # SLOW when large; does not use hess or hessp; Truncated Newton Conjugate
+opts.update({'method': 'COBYLA'})  # did not converge on large; does not use jac or hess
+opts.update({'method': 'SLSQP'})  # SLOW when large; does not use hess or hessp
+opts.update({'method': 'trust-constr'})  # LARGE breaks it; GOOD with hessp; not clear if it uses hess/hessp, no message, but slower with hessp
+opts.update({'method': 'trust-exact'})  # requires hess, cannot use hessp
+opts.update({'method': 'dogleg'})  # requies hessian, MUST be psd; cannot use hessp
+
+
+opts.update({'maxiter': 5})
+opts.update({'maxiter': 100})
+
+opts.update({'hesstype': None})
+opts.update({'hesstype': 'hessian'})
+opts.update({'hesstype': 'hvp'})  # hvp always uses more hessian evaluations than hessian does
+
+opts
+gwpsp = prob.geoweight(method='poisson-minscipy', options=opts)
+gwpsp.elapsed_seconds
+dir(gwpsp).method_result)
+
+# trust-ncg
+bv1 = gwpsp.method_result.beta_opt # trust-ncg 5 iter
+sspd1 = gwpsp.sspd
+sspd1  # 186,318,265,030.6275
+
+# Newton-CG
+bv2 = gwpsp.method_result.beta_opt # 5 iter
+sspd2 = gwpsp.sspd  # 105,978,284,437
+sspd2
+
+# trust-krylov hvp
+bv3 = gwpsp.method_result.beta_opt # 5 iter
+sspd3 = gwpsp.sspd  # 186,318,265,030.
+sspd3
+
+
+# slsqp no hess
+bv4 = gwpsp.method_result.beta_opt # 5 iter
+sspd4 = gwpsp.sspd  # 800,300
+sspd4
+
+bv4a = gwpsp.method_result.beta_opt # 50 iter
+
 
 # %% ipopt geo
-geoipopt_opts = {
+opts = {
         'xlb': .1, 'xub': 10., # default 0.1, 10.0
          'crange': 0.0,  # default 0.0
          # 'print_level': 0,
@@ -351,33 +447,33 @@ geoipopt_opts = {
          'linear_solver': 'ma86',  # ma27, ma77, ma57, ma86 work, not ma97
          'quiet': False}
 
-geoipopt_opts.update({'output_file': '/home/donboyd/Documents/test4.out'})
-geoipopt_opts.update({'xlb': 0.0})
-geoipopt_opts.update({'xub': 1e6})
-geoipopt_opts.update({'addup': False})
-geoipopt_opts.update({'addup': True})
-geoipopt_opts.update({'scaling': True})
-geoipopt_opts.update({'scale_goal': 1e1})
-geoipopt_opts.update({'crange': .01})
-# geoipopt_opts.update({'crange': crange_calc * 1.})
-geoipopt_opts
+opts.update({'output_file': '/home/donboyd/Documents/test4.out'})
+opts.update({'xlb': 0.0})
+opts.update({'xub': 1e6})
+opts.update({'addup': False})
+opts.update({'addup': True})
+opts.update({'scaling': True})
+opts.update({'scale_goal': 1e1})
+opts.update({'crange': .0001})
+# opts.update({'crange': crange_calc * 1.})
+opts
 
 np.round(init_diffs, 3)*100.0
 init_diffs
 cr2 = init_diffs.copy()
-cr2[crange_calc > 0.5] = 0.2 # np.inf
-cr2[(crange_calc > .1) & (crange_calc <= 0.5)] = .035
-cr2[crange_calc <= .1] = .005
+cr2[init_diffs > 0.5] = 0.2 # np.inf
+cr2[(init_diffs > .1) & (init_diffs <= 0.5)] = .035
+cr2[init_diffs <= .1] = .005
 np.round(cr2, 3)
-geoipopt_opts.update({'crange': cr2})
+opts.update({'crange': cr2})
 
-geoipopt_opts.update({'max_iter': 100})
-geoipopt_opts.update({'addup_range': .005})
-geoipopt_opts.update({'xlb': .001})
-geoipopt_opts.update({'xub': 1000.0})
-geoipopt_opts
+opts.update({'max_iter': 100})
+opts.update({'addup_range': .005})
+opts.update({'xlb': .001})
+opts.update({'xub': 1000.0})
+opts
 
-ipres = prob.geoweight(method='geoipopt', options=geoipopt_opts)
+ipres = prob.geoweight(method='geodirect_ipopt', options=opts)
 ipres.elapsed_seconds
 ipres.sspd  # 9709353493.535954
 ipres.geotargets_opt
