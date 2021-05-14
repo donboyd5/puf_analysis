@@ -351,7 +351,7 @@ opts = {
     'quiet': True}
 opts.update({'stepmethod': 'jac'})
 opts.update({'stepmethod': 'jvp'})
-opts.update({'max_iter': 40})
+opts.update({'max_iter': 30})
 opts.update({'linesearch': True})
 opts.update({'linesearch': False})
 opts.update({'init_p': 1.0})
