@@ -239,18 +239,18 @@ opts = {
     'scale_goal': 10.,
     'init_beta': 0.5,
     'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
+    'max_nfev': 100,
     'quiet': True}
 opts
-
 ib = reslsq.method_result.beta_opt.flatten()
 opts.update({'init_beta': ib})
 np.size(ib)
 # idea: start with lsq to get initial beta and then go from there
 
-opts.update({'stepmethod': 'jac'})
-opts.update({'stepmethod': 'jvp'})
-opts.update({'stepmethod': 'jvp-linop'})
-opts.update({'stepmethod': 'findiff'})
+opts.update({'stepmethod': 'jac', 'x_scale': 'jac'})
+opts.update({'stepmethod': 'jvp', 'x_scale': 'jac'})
+opts.update({'stepmethod': 'jvp-linop', 'x_scale': 1.0})
+opts.update({'stepmethod': 'findiff', 'x_scale': 'jac'})
 
 opts.update({'max_iter': 30})
 opts.update({'scaling': True})
@@ -282,6 +282,7 @@ reslsq.method_result.beta_opt.shape
 reslsq.method_result.beta_opt.size
 np.quantile(reslsq.method_result.beta_opt, qtiles)
 np.quantile(reslsq.pdiff, qtiles)
+
 
 # %% ..tensor flow jax
 opts = {
@@ -318,22 +319,23 @@ ipopts = {
     'output_file': '/home/donboyd/Documents/gwpi_puf.out',
     'print_user_options': 'yes',
     'file_print_level': 5,
-    'max_iter': 10000,
+    'max_iter': 5000,
     'hessian_approximation': 'limited-memory',
     'limited_memory_update_type': 'SR1',  # BFGS, SR1
-    'mu_strategy': 'adaptive',  # monotone, adaptive
-    'mehrotra_algorithm': 'no',  # no, yes; yes is bad
+    'obj_scaling_factor': 1e-2,
+    'nlp_scaling_method': 'gradient-based',  # gradient-based, equilibration-based
+    'nlp_scaling_max_gradient': 1., # 100 default, only if gradient-based
+    # 'mehrotra_algorithm': 'yes',  # no, yes
+    # 'mu_strategy': 'adaptive',  # monotone, adaptive
+    # 'accept_every_trial_step': 'no',
     'linear_solver': 'ma57',  # ma27, ma77, ma57, ma86 work, not ma97
-    'ma57_automatic_scaling': 'yes',
-    'obj_scaling_factor': 1e-3,
-    # 'nlp_scaling_method': 'equilibration-based',
-    'nlp_scaling_max_gradient': 20.,
-    'accept_every_trial_step': 'no'
+    'ma57_automatic_scaling': 'yes'
 }
 opts = {
     'scaling': True,
     'scale_goal': 1e1,
     'init_beta': 0.5,
+    'quiet': False,
     'ipopts': ipopts}
 opts
 gwpi = prob.geoweight(method='poisson-ipopt', options=opts)
