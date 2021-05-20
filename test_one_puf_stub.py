@@ -242,9 +242,9 @@ opts = {
     'max_nfev': 100,
     'quiet': True}
 opts
-ib = reslsq.method_result.beta_opt.flatten()
-opts.update({'init_beta': ib})
-np.size(ib)
+# ib = reslsq.method_result.beta_opt.flatten()
+# opts.update({'init_beta': ib})
+# np.size(ib)
 # idea: start with lsq to get initial beta and then go from there
 
 opts.update({'stepmethod': 'jac', 'x_scale': 'jac'})
@@ -299,8 +299,8 @@ opts = {
     'quiet': True}
 opts.update({'method': 'BFGS'})
 opts.update({'method': 'LBFGS'})
-opts.update({'max_iterations': 1500})
-opts.update({'max_line_search_iterations': 100})
+opts.update({'max_iterations': 10000})
+opts.update({'max_line_search_iterations': 1000})
 opts.update({'parallel_iterations': 1})
 opts.update({'num_correction_pairs': 100})  # LBFGS only
 opts.update({'objscale': 1e-3})
