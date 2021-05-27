@@ -5,6 +5,32 @@ import taxcalc as tc
 import puf_extrapolate_custom as xc
 import puf_utilities as pu
 
+def advance_puf2(puf, year, gfactors, weights, adjust_ratios, savepath):
+    print('creating records object...')
+    # gfactors_object = tc.GrowFactors(pd.read_csv(gfactors))
+    gfactors_object = tc.GrowFactors(gfactors)
+    # recs = tc.Records(data=puf, start_year=2011)  # start_year not needed for puf.csv
+    recs = tc.Records(data=puf,
+                  start_year=2011,
+                  gfactors=gfactors_object,
+                  weights=weights,
+                  adjust_ratios=adjust_ratios)
+    pol = tc.Policy()
+    calc = tc.Calculator(policy=pol, records=recs)
+    print(f'advancing puf to {year}...')
+    calc.advance_to_year(year)
+    print(f'calculating policy for {year}...')
+    calc.calc_all()
+    pufdf = calc.dataframe(variable_list=[], all_vars=True)
+    pufdf['pid'] = np.arange(len(pufdf))
+    pufdf['filer'] = pu.filers(pufdf)
+
+    print('saving the advanced puf...')
+    pufdf.to_parquet(savepath, engine='pyarrow')
+    print('all done')
+    # no return
+    return None
+
 
 def advance_puf(puf, year, savepath):
     print('creating records object...')
