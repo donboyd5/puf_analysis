@@ -98,17 +98,19 @@ reload(adv)
 # TCOUTDIR = PUFDIR + 'taxcalc_output/'
 # WEIGHTDIR = PUFDIR + 'weights/'
 
-
+# input files found here:
 DIR_FOR_OFFICIAL_PUF = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
-
 # PUFDIR = '/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-05-21/'
 PUFDIR = DIR_FOR_OFFICIAL_PUF
 WEIGHTDIR = DIR_FOR_OFFICIAL_PUF
-DATADIR = '/media/don/ignore/data/'
-SCRATCHDIR = '/media/don/scratch/'
-TCOUTDIR = '/media/don/pufanalysis_output/'
 
-# TABDIR = IGNOREDIR + 'result_tables/'
+# working storage
+SCRATCHDIR = '/media/don/scratch/'
+
+# put output files here:
+OUTDIR = '/media/don/pufanalysis_output/'
+OUTDATADIR = OUTDIR + 'data/'
+OUTTABDIR = OUTDIR + 'result_tables/'
 
 # TEMPDIR = IGNOREDIR + 'intermediate_results/'
 
@@ -120,15 +122,14 @@ GF_USE = PUFDIR + 'growfactors.csv'
 WEIGHTS_USE = PUFDIR + 'puf_weights.csv'
 RATIOS_USE = PUFDIR + 'puf_ratios.csv'
 
-
-# POSSIBLE_TARGETS = DATADIR + 'targets2017_possible.csv'
+POSSIBLE_TARGETS = OUTDATADIR + 'targets2017_possible.csv'
 
 # HT2_SHARES = DATADIR + 'ht2_shares.csv'
 
 
 # %% names of files to create
-PUF_DEFAULT = TCOUTDIR + 'puf2017_default.parquet'
-PUF_REGROWN = TCOUTDIR + 'puf2017_regrown.parquet'
+PUF_DEFAULT = OUTDATADIR + 'puf2017_default.parquet'
+PUF_REGROWN = OUTDATADIR + 'puf2017_regrown.parquet'
 
 
 # %% constants
@@ -144,18 +145,73 @@ df['pid'] = np.arange(len(df))
 df.info()
 
 
-# weights2017_default = df.loc[:, ['pid', 'WT2017']].rename(columns={'WT2017': 'weight'})
-# weights2017_default['shortname'] = 'weights2017_default'
-# weights2017_default.to_csv(WEIGHTDIR + 'weights2017_default.csv', index=None)
-
-# weights2018_default = df.loc[:, ['pid', 'WT2018']].rename(columns={'WT2018': 'weight'})
-# weights2018_default['shortname'] = 'weights2018_default'
-# weights2018_default.to_csv(WEIGHTDIR + 'weights2018_default.csv', index=None)
-
-# del(df)
+weights2017_default = df.loc[:, ['pid', 'WT2017']].rename(columns={'WT2017': 'weight'})
+weights2017_default['shortname'] = 'weights2017_default'
+weights2017_default.info()
+weights2017_default.to_csv(OUTDATADIR + 'weights2017_default.csv', index=None)
 
 
-# %% ONETIME: create and save regrown 2017 puf, and add filer indicator
+weights2018_default = df.loc[:, ['pid', 'WT2018']].rename(columns={'WT2018': 'weight'})
+weights2018_default['shortname'] = 'weights2018_default'
+weights2018_default.to_csv(OUTDATADIR + 'weights2018_default.csv', index=None)
+
+del(df)
+
+# %% NEW advance the base puf to 2017
+puf = pd.read_csv(PUF_USE) # 248591 records  # 252868 recs)
+puf.columns
+puf.info() # 89 columns
+pufvars = puf.columns.tolist()
+# pd.DataFrame(pufvars, columns=['pufvar']).to_csv(DATADIR + 'pufvars.csv', index=None)
+
+# just need to create the advanced puf files once
+# adv.advance_puf(puf, 2017, savepath=SCRATCHDIR)
+adv.advance_puf2(puf, year=2017,
+    gfactors=GF_USE,
+    weights=WEIGHTS_USE,
+    adjust_ratios=RATIOS_USE,
+    savepath=OUTDATADIR + 'puf2017.parquet')
+
+# %% Techniques for looking at data frames
+puf2017 = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', engine='pyarrow')
+puf2017.info() # 208 columns
+pu.uvals(puf.columns)
+pu.uvals(puf2017.columns)
+
+# compare a few numbers
+# q = 'RECID==3'
+recs = [3, 5, 6]
+q = 'RECID.isin(@recs)'
+vars = ['RECID', 'filer', 's006', 'e00200', 'e00300', 'e00900']
+puf.query(q)[vars]
+puf2017.query(q)[vars]
+puf2018.query(q)[vars]
+
+
+# %% NEW Advance to 2018??
+# Note: advance does NOT extrapolate weights. It just picks the weights from the growfactors file
+# puf2017.loc[puf2017.pid==0, 's006']
+puf2017 = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', engine='pyarrow')
+recs = tc.Records(data=puf2017, start_year=2017)
+
+pol = tc.Policy()
+calc = tc.Calculator(policy=pol, records=recs)
+calc.advance_to_year(2018)
+calc.calc_all()
+puf2018 = calc.dataframe(variable_list=[], all_vars=True)
+puf2018.c00100.describe()
+puf2018['pid'] = np.arange(len(puf2018))
+puf2018['filer'] = pu.filers(puf2018, year=2018)  # overwrite the 2017 filers info
+
+puf2018.to_parquet(OUTDATADIR + 'puf2018' + '.parquet', engine='pyarrow')
+
+# puf2017_regrown.filer.sum()  # 233572
+puf2017.filer.sum()  # now 233510
+puf2018.filer.sum()  # now 233104 # 233174
+
+
+# %% OLD ONETIME: create and save regrown 2017 puf, and add filer indicator
+# DO NOT USE NOW (5/28/2021) - only consider after
 puf = pd.read_csv(PUF_USE) # 248591 records  # 252868 recs)
 puf.columns
 pufvars = puf.columns.tolist()
