@@ -91,7 +91,7 @@ reload(adv)
 # %%  locations
 
 # DIR_FOR_OFFICIAL_PUF = r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/'
-# DATADIR = '/media/don/ignore/data/'
+WINDATADIR = '/media/don/ignore/data/' # files that were created in Windows version of this
 # IGNOREDIR = '/media/don/ignore/' # /media/don
 
 # PUFDIR = IGNOREDIR + 'puf_versions/'
@@ -99,9 +99,10 @@ reload(adv)
 # WEIGHTDIR = PUFDIR + 'weights/'
 
 # input files found here:
-DIR_FOR_OFFICIAL_PUF = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
-# PUFDIR = '/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-05-21/'
-PUFDIR = DIR_FOR_OFFICIAL_PUF
+DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
+# PUFCSVDIR = '/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-05-21/'
+
+PUFDIR = DIR_FOR_OFFICIAL_PUFCSV
 WEIGHTDIR = DIR_FOR_OFFICIAL_PUF
 
 # working storage
@@ -122,9 +123,15 @@ GF_USE = PUFDIR + 'growfactors.csv'
 WEIGHTS_USE = PUFDIR + 'puf_weights.csv'
 RATIOS_USE = PUFDIR + 'puf_ratios.csv'
 
+
+# target files previously created in other programs
+
+# created in:  puf_ONETIME_create_puf_irs_mappings_and_targets.py
 POSSIBLE_TARGETS = OUTDATADIR + 'targets2017_possible.csv'
 
-# HT2_SHARES = DATADIR + 'ht2_shares.csv'
+# created in: puf_ht2_shares.py
+# windows version is in /media/don/ignore/data
+HT2_SHARES = WINDATADIR + 'ht2_shares.csv'
 
 
 # %% names of files to create
@@ -135,6 +142,44 @@ PUF_REGROWN = OUTDATADIR + 'puf2017_regrown.parquet'
 # %% constants
 qtiles = (0, .01, .1, .25, .5, .75, .9, .99, 1)
 compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
+
+
+# %% PLAY AREA (To be removed)
+df = pd.read_csv(HT2_SHARES)
+df.info()
+df.head()
+df.describe()
+df.ht2_stub.value_counts()
+df.ht2var.value_counts()
+df[['ht2var', 'ht2description']].drop_duplicates()
+df.state.value_counts()
+df.state.value_counts().size  # 52 (states, DC, OA)
+# df.state.value_counts().sort_values()
+sorted(df.state.unique())
+pu.uvals(df.state)
+# do the shares all add to one?
+tmp = df.groupby(['ht2_stub', 'pufvar', 'ht2description'])[['share']].sum().reset_index()
+type(tmp)
+np.allclose(tmp.share, 1.0)
+badshares = tmp.query('share < 0.999999999 or share > 1.0000001')
+# stub 1 has 8 vars that have sum 0 rather than 1
+# 36	1	c04800	Taxable income amount	0.0
+# 37	1	c04800_nnz	Number of returns with taxable income	0.0
+# 40	1	c17000	Total medical and dental expense deduction amount	0.0
+# 41	1	c17000_nnz	Number of returns with Total medical and denta...	0.0
+# 42	1	c18300	Taxes paid amount	0.0
+# 43	1	c18300_nnz	Number of returns with taxes paid	0.0
+# 44	1	c19700	Total charitable contributions amount	0.0
+# 45	1	c19700_nnz	Number of returns with Total charitable contri...	0.0
+badstub1 = badshares.pufvar.tolist()
+# ['c04800', 'c04800_nnz', 'c17000', 'c17000_nnz', 'c18300', 'c18300_nnz', 'c19700', 'c19700_nnz']
+
+
+# # produces Pandas Series
+# data.groupby('month')['duration'].sum()
+# # Produces Pandas DataFrame
+# data.groupby('month')[['duration']].sum()
+
 
 
 # %% ONETIME get and save default puf weights in common format
@@ -157,7 +202,7 @@ weights2018_default.to_csv(OUTDATADIR + 'weights2018_default.csv', index=None)
 
 del(df)
 
-# %% NEW advance the base puf to 2017
+# %% NEW advance the PUF_USE puf to 2017
 puf = pd.read_csv(PUF_USE) # 248591 records  # 252868 recs)
 puf.columns
 puf.info() # 89 columns
@@ -172,10 +217,11 @@ adv.advance_puf2(puf, year=2017,
     adjust_ratios=RATIOS_USE,
     savepath=OUTDATADIR + 'puf2017.parquet')
 
+
 # %% Techniques for looking at data frames
 puf2017 = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', engine='pyarrow')
-puf2017.info() # 208 columns
-pu.uvals(puf.columns)
+puf2017.info() # 208 columns, 248591 records
+# pu.uvals(puf.columns)
 pu.uvals(puf2017.columns)
 
 # compare a few numbers
@@ -183,7 +229,6 @@ pu.uvals(puf2017.columns)
 recs = [3, 5, 6]
 q = 'RECID.isin(@recs)'
 vars = ['RECID', 'filer', 's006', 'e00200', 'e00300', 'e00900']
-puf.query(q)[vars]
 puf2017.query(q)[vars]
 puf2018.query(q)[vars]
 
@@ -262,7 +307,7 @@ puf2018.filer.sum()  # 233174
 # puf2018.c00100.sum()
 
 
-# %% define possible targets - we may not use all of them
+# %% define possible targets, currently for 2017 - we may not use all of them
 ptargets = rwp.get_possible_targets(targets_fname=POSSIBLE_TARGETS)
 ptargets
 ptargets.info()
@@ -289,10 +334,18 @@ pufsub.info()
 pu.uvals(pufsub.columns)
 
 
+# %% create pufsub from one of the pufs
+pu.uvals(puf2017.columns)
+# puf2017 has 233510 records -- it only includes filers
+pufsub = rwp.prep_puf(puf2017, ptargets)
+pufsub.info()  # 233510 records
+pu.uvals(pufsub.columns)
+
+
 # %% get initial weights for regrown file
 # all weight files will have pid, weight, shortname as columns
-weights_initial = pd.read_csv(WEIGHTDIR + 'weights2017_default.csv') # 248591 records
-weights_initial.info()
+weights_initial = pd.read_csv(OUTDATADIR + 'weights2017_default.csv') # 248591 records
+weights_initial.info()  # includes nonfilers
 
 # weights_regrown = pd.read_csv(PUFDIR + 'weights_regrown.csv')  # these are same as default as of now 12/12/2020
 # weights_regrown  # MUST have columns pid, weight -- no other columns or names
@@ -302,11 +355,16 @@ weights_initial.info()
 # %% get % differences from targets at initial weights
 pdiff_init = rwp.get_pctdiffs(pufsub, weights_initial, ptargets)
 pdiff_init.shape
+pdiff_init.info()
 np.nanquantile(pdiff_init.abspdiff, qtiles)
 np.nanquantile(pdiff_init.pdiff, qtiles)
 pdiff_init.head(15)
-pdiff_init.query('abspdiff > 10')
-pdiff_init.query('abspdiff > 10')
+pdiff_init.query('abspdiff > 10')  # 567!!
+
+tmp = pdiff_init.query('abspdiff > 20').groupby(['pufvar']).size().reset_index(name='counts')
+tmp.sort_values(by=['counts'], ascending=False)
+
+pdiff_init.query('abspdiff > 20').groupby(['common_stub']).size().reset_index(name='counts').sort_values(by=['counts'], ascending=False)
 
 var = 'e00900pos' # e00900, e00900pos, e00900neg
 var = 'e02000neg' # e02000, e02000pos, e02000neg
@@ -339,6 +397,8 @@ badvars = ['c02400', 'c02400_nnz']  # would like to target but values are bad
 # c19700 Sch A: Charity contributions deducted
 bad_stub1_4_vars = ['c17000', 'c17000_nnz', 'c19700', 'c19700_nnz']
 
+# badstub1  # from before ??
+
 # define query
 qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values, query() doesn't allow is.nan()
 qx0 = "(pufvar in @untargeted)"
@@ -366,13 +426,15 @@ a = timer()
 new_weights = rwp.puf_reweight(pufsub, weights_initial, ptargets, method=method, drops=drops)
 b = timer()
 b - a
-# new_weights.sum()
+# new_weights.sum() # 1.527438e+08
+ptargets.nret_all # 152903231.0
+# 1.527438 / 1.5290923 * 100 - 100  # 0.1% off from targeted sum
 
 weights_save = new_weights.copy()
 weights_save['shortname'] = 'reweight1'
 weights_save = weights_save.drop(columns='weight').rename(columns={'reweight': 'weight'})
 
-wfname = WEIGHTDIR + 'weights2017_reweight1.csv'
+wfname = OUTDATADIR + 'weights2017_reweight1.csv'
 weights_save.to_csv(wfname, index=None)
 
 
@@ -392,10 +454,10 @@ pu.uvals(pdiff_rwt.pufvar)
 date_id = date.today().strftime("%Y-%m-%d")
 
 # get weights for the comparison report
-wfname = WEIGHTDIR + 'weights2017_reweight1.csv'
+wfname = OUTDATADIR + 'weights2017_reweight1.csv'
 weights_comp = pd.read_csv(wfname)
 
-rfname = TABDIR + 'compare_irs_pufregrown_reweighted_ipopt_' + date_id + '.txt'
+rfname = OUTTABDIR + 'compare_irs_pufregrown_reweighted_ipopt_' + date_id + '.txt'
 rtitle = 'Regrown reweighted puf, ipopt method, compared to IRS values, run on ' + date_id
 rwp.comp_report(pufsub,
                  weights_reweight=weights_comp,  # new_weights[['pid', 'reweight']],
@@ -410,7 +472,7 @@ pu.uvals(ptargets.columns)
 
 # %% develop state targets
 # get weights so that we can get puf sums by HT2 income range (rather than IRS range)
-wfname = WEIGHTDIR + 'weights2017_reweight1.csv'
+wfname = OUTDATADIR + 'weights2017_reweight1.csv'
 weights_national = pd.read_csv(wfname)
 
 # get national pufsums with these weights, for ht2 stubs
