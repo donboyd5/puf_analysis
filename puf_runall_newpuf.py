@@ -530,7 +530,7 @@ np.nanquantile(check.abspdiff, qtiles)
 # what's true of one state is true of all
 var = "c04800"
 st = "CA"
-check.query('pufvar == @var & stgroup==@st ').sort_values(by='ht2_stub', axis=0, ascending=True)
+tmp = check.query('pufvar == @var & stgroup==@st ').sort_values(by='ht2_stub', axis=0, ascending=True)
 # NY
 # agi looks good in all groups
 # c04800 taxable income pretty good in all but stub 2
@@ -615,12 +615,15 @@ uo = {'qmax_iter': 10,
       'lsmr_tol': 'auto'  # 'auto'  # 'auto' or None
       }
 
+# %% TEST: can we hit these targets??
+
+
 
 # %% initial geoweighting to get new tentative national weights from sums of unrestricted state weights
 # that is, get weights for each state (for each record), without adding-up restriction, and sum them
 
 # get our best current 2017 national weights, which were developed by reweighting the regrown 2017 puf
-wfname_init = WEIGHTDIR + 'weights2017_reweight1.csv'
+wfname_init = OUTDATADIR + 'weights2017_reweight1.csv'
 weights_init = pd.read_csv(wfname_init)
 
 grouped = pufsub.groupby('ht2_stub')
@@ -683,14 +686,14 @@ b - a
 
 
 # save just the pid and national weights
-wfname_result = WEIGHTDIR + 'weights2017_geo_unrestricted.csv'
+wfname_result = OUTDATADIR + 'weights2017_geo_unrestricted.csv'
 weights_save = nat_geo_weights.copy()
 weights_save = weights_save.loc[:, ['pid', 'geoweight_sum']].rename(columns={'geoweight_sum': 'weight'})
 weights_save['shortname'] = 'geoweight_sum'
 weights_save.to_csv(wfname_result, index=None)
 
 # write the full file of state weights to disk
-nat_geo_weights.to_csv(WEIGHTDIR + 'allweights2017_geo_unrestricted.csv', index=None)
+nat_geo_weights.to_csv(OUTDATADIR + 'allweights2017_geo_unrestricted.csv', index=None)
 
 nat_geo_weights.sum()
 
@@ -709,7 +712,7 @@ g.sort_values(ascending=False).head(50)
 
 # CAUTION: a weights df must always contain only 2 variables, the first will be assumed to be
 # pid, the second will be the weight of interest
-wfname_base = WEIGHTDIR + 'weights2017_reweight1.csv'  # djb change
+wfname_base = OUTDATADIR + 'weights2017_reweight1.csv'  # djb change
 weights_base = pd.read_csv(wfname_base)
 
 # method = 'ipopt'  # ipopt or lsq
@@ -718,10 +721,10 @@ date_id = date.today().strftime("%Y-%m-%d")
 # get weights for the comparison report
 # choose a geomethod
 geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
-wfname = WEIGHTDIR + 'weights2017_geo_unrestricted.csv'
+wfname = OUTDATADIR + 'weights2017_geo_unrestricted.csv'
 weights_comp = pd.read_csv(wfname)
 
-rfname = TABDIR + 'compare_irs_pufregrown_reweighted_vs_unrestricted_geosums_' + date_id + '.txt'
+rfname = OUTTABDIR + 'compare_irs_pufregrown_reweighted_vs_unrestricted_geosums_' + date_id + '.txt'
 rtitle = 'Regrown reweighted puf then georeweighted compared to IRS values, run on ' + date_id
 rwp.comp_report(pufsub,
                  weights_reweight=weights_comp,  # new_weights[['pid', 'reweight']],
@@ -744,7 +747,7 @@ rwp.comp_report(pufsub,
     # This is the TPC adjustment step in their paper
 
 geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
-wfname_init = WEIGHTDIR + 'weights2017_geo_unrestricted.csv'
+wfname_init = OUTDATADIR + 'weights2017_geo_unrestricted.csv'
 weights_init = pd.read_csv(wfname_init).rename(columns={'geo_rwt': 'weight'})
 
 # choose a reweight method and a corresponding set of drops
@@ -764,7 +767,7 @@ weights_save = new_weights.copy()
 weights_save['shortname'] = 'georeweight1'
 weights_save = weights_save.drop(columns='weight').rename(columns={'reweight': 'weight'})
 
-wfname = WEIGHTDIR + 'weights2017_georwt1.csv'
+wfname = OUTDATADIR + 'weights2017_georwt1.csv'
 weights_save.to_csv(wfname, index=None)
 
 
@@ -776,7 +779,7 @@ weights_save.to_csv(wfname, index=None)
 # FileNotFoundError: [Errno 2] No such file or directory:
 # '/media/don/ignore/puf_versions/weights/weights_reweight1.csv'
 
-wfname_base = WEIGHTDIR + 'weights2017_geo_unrestricted.csv'
+wfname_base = OUTDATADIR + 'weights2017_geo_unrestricted.csv'
 weights_base = pd.read_csv(wfname_base)
 
 # method = 'ipopt'  # ipopt or lsq
@@ -784,10 +787,10 @@ date_id = date.today().strftime("%Y-%m-%d")
 
 # get weights for the comparison report
 # wfname = PUFDIR + 'weights_georwt1_ipopt.csv'
-wfname = WEIGHTDIR + 'weights2017_georwt1.csv'
+wfname = OUTDATADIR + 'weights2017_georwt1.csv'
 weights_comp = pd.read_csv(wfname)
 
-rfname = TABDIR + 'compare_irs_pufregrown_unrestrictedgeosums_vs_geosumsreweighted_' + date_id + '.txt'
+rfname = OUTTABDIR + 'compare_irs_pufregrown_unrestrictedgeosums_vs_geosumsreweighted_' + date_id + '.txt'
 rtitle = 'Regrown reweighted puf georeweighted ipopt, compared to IRS values, run on ' + date_id
 rwp.comp_report(pufsub,
                  weights_reweight=weights_comp,  # new_weights[['pid', 'reweight']],
@@ -797,10 +800,10 @@ rwp.comp_report(pufsub,
                  outfile=rfname, title=rtitle)
 
 
-# %% construct new targets for geoweighting geoweight: get revised national weights based on independent state weights
+# %% construct new state targets for geoweighting geoweight: get revised national weights based on independent state weights
 
 # get NATIONAL weights to use as starting point for ht2 stubs -- from step above
-wfname = WEIGHTDIR + 'weights2017_georwt1.csv'
+wfname = OUTDATADIR + 'weights2017_georwt1.csv'
 weights = pd.read_csv(wfname)
 
 # get NATIONAL pufsums with these weights, by ht2 stub
@@ -824,7 +827,7 @@ ht2targets['target'] = ht2targets.pufsum * ht2targets.share
 ht2targets['diff'] = ht2targets.target - ht2targets.ht2
 ht2targets['pdiff'] = ht2targets['diff'] / ht2targets.ht2 * 100
 ht2targets['abspdiff'] = np.abs(ht2targets['pdiff'])
-ht2targets.to_csv(IGNOREDIR + 'ht2targets_temp.csv', index=None)  # temporary
+ht2targets.to_csv(SCRATCHDIR + 'ht2targets_temp.csv', index=None)  # temporary
 
 
 # %% explore the updated state-variable-stub targets
@@ -874,7 +877,7 @@ targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
 
 
 # %% Use independent weights as starting point
-wfname = WEIGHTDIR + 'allweights2017_geo_unrestricted.csv'
+wfname = OUTDATADIR + 'allweights2017_geo_unrestricted.csv'
 qshares = pd.read_csv(wfname)
 qshares.info()
 
@@ -895,7 +898,7 @@ qshares[stvars].sum(axis=1).sum()
 # dropsdf_wide
 
 save_list = [targvars, ht2wide, pufsub, dropsdf_wide]
-save_name = IGNOREDIR + 'pickle.pkl'
+save_name = SCRATCHDIR + 'pickle.pkl'
 
 open_file = open(save_name, "wb")
 pickle.dump(save_list, open_file)
