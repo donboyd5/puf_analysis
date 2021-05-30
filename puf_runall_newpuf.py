@@ -88,55 +88,46 @@ reload(adv)
 # reload(gwp)
 
 
-# %%  locations
-
-# DIR_FOR_OFFICIAL_PUF = r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/'
+# %% physical locations
 WINDATADIR = '/media/don/ignore/data/' # files that were created in Windows version of this
-# IGNOREDIR = '/media/don/ignore/' # /media/don
-
-# PUFDIR = IGNOREDIR + 'puf_versions/'
-# TCOUTDIR = PUFDIR + 'taxcalc_output/'
-# WEIGHTDIR = PUFDIR + 'weights/'
-
-# input files found here:
 DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
-# PUFCSVDIR = '/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-05-21/'
-
-PUFDIR = DIR_FOR_OFFICIAL_PUFCSV
-WEIGHTDIR = DIR_FOR_OFFICIAL_PUF
 
 # working storage
 SCRATCHDIR = '/media/don/scratch/'
 
-# put output files here:
 OUTDIR = '/media/don/pufanalysis_output/'
+
+# %%  relative locations to use
+
+# input locations
+PUFDIR = DIR_FOR_OFFICIAL_PUFCSV
+WEIGHTDIR = DIR_FOR_OFFICIAL_PUF
+
+# output locations
 OUTDATADIR = OUTDIR + 'data/'
 OUTTABDIR = OUTDIR + 'result_tables/'
 
-# TEMPDIR = IGNOREDIR + 'intermediate_results/'
-
 
 # %% paths to specific already existing files
-
 PUF_USE = PUFDIR + 'puf.csv'
 GF_USE = PUFDIR + 'growfactors.csv'
 WEIGHTS_USE = PUFDIR + 'puf_weights.csv'
 RATIOS_USE = PUFDIR + 'puf_ratios.csv'
 
 
-# target files previously created in other programs
+# paths to target files previously created in other programs
 
 # created in:  puf_ONETIME_create_puf_irs_mappings_and_targets.py
 POSSIBLE_TARGETS = OUTDATADIR + 'targets2017_possible.csv'
 
 # created in: puf_ht2_shares.py
 # windows version is in /media/don/ignore/data
-HT2_SHARES = WINDATADIR + 'ht2_shares.csv'
+HT2_SHARES = WINDATADIR + 'ht2_shares.csv'  # rebuild this
 
 
 # %% names of files to create
 PUF_DEFAULT = OUTDATADIR + 'puf2017_default.parquet'
-PUF_REGROWN = OUTDATADIR + 'puf2017_regrown.parquet'
+# PUF_REGROWN = OUTDATADIR + 'puf2017_regrown.parquet'  # not doing regrowing
 
 
 # %% constants
