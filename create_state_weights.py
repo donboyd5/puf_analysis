@@ -55,6 +55,7 @@ import sys
 # sys.path.append('C:/programs_python/Tax-Calculator/build/lib/')  # needed
 # sys.path.insert(0, 'C:/programs_python/Tax-Calculator/build/lib/') # this is close
 from pathlib import Path
+from collections import namedtuple
 import os
 import pickle
 
@@ -141,9 +142,11 @@ compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
 # %% start
 
 # get initial national weights, divide by 100, add pid, and save a csv file for each year we will work with
-fsw.save_pufweights(wtpath=WEIGHTS_USE, outdir=OUTWEIGHTDIR, years=(2017, 2018))
+# fsw.save_pufweights(wtpath=WEIGHTS_USE, outdir=OUTWEIGHTDIR, years=(2017, 2018))
 
-# advance the puf.csv being used and save as puf+str(year).parquet
+# NOT IMPLEMENTED: optionally "regrow" puf.csv (advance to 2017 with specialized grow factors
+
+# advance puf.csv to a future year, add pid and filer, and save as puf+str(year).parquet
 fsw.advance_and_save_puf(
     year=2017,
     pufpath=PUF_USE,
@@ -152,8 +155,59 @@ fsw.advance_and_save_puf(
     ratiopath=RATIOS_USE,
     outdir=OUTDATADIR)
 
+# get previously (elsewhere) created info on possible national targets for 2017 - a superset of what we may use
+# from common_stub	incrange	pufvar	irsvar	irs	table_description	column_description	src	excel_column
+# should have variables:
+#   common_stub	incrange, pufvar, irsvar, irs, table_description, column_description, src	excel_column
+targs = fsw.get_possible_targets(targets_fname=POSSIBLE_TARGETS)  # targs.ptargets, .ptarget_names
+# targs.ptarget_names
+# targs.ptargets.columns.str.contains('_nnz')
+
+# create pufsub from puf{year}.parquet file
+#   adds pid, filer, stubs, and target variables; only includes filer records
+pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', targs.ptargets)
+
+# get differences from targets at initial weights
+weights_initial = fsw.get_pufweights(wtpath=WEIGHTS_USE, year=2017)
+pdiff_init = rwp.get_pctdiffs(pufsub, weights_initial, targs.ptargets)
+
+# djb -- got this far
+
+# %% scratch
+def get_possible_targets(targets_fname):
+    targets_possible = pd.read_csv(targets_fname)
+
+    target_mappings = targets_possible.drop(labels=['common_stub', 'incrange', 'irs'], axis=1).drop_duplicates()
+    target_vars = target_mappings.pufvar.to_list()
+
+    # get names of puf variables for which we will need to create nnz indicator
+    innz = target_mappings.pufvar.str.contains('_nnz')
+    nnz_vars = target_mappings.pufvar[innz]
+    # pufvars_to_nnz = nnz_vars.str.rsplit(pat='_', n=1, expand=True)[0].to_list()
+
+    possible_wide = targets_possible.loc[:, ['common_stub', 'pufvar', 'irs']] \
+        .pivot(index='common_stub', columns='pufvar', values='irs') \
+        .reset_index()
+    possible_wide.columns.name = None
+    return possible_wide
+
+    # # create a named tuple of items to return
+    # fields = ('elapsed_seconds',
+    #           'whs_opt',
+    #           'geotargets_opt',
+    #           'beta_opt')
+    # Result = namedtuple('Result', fields, defaults=(None,) * len(fields))
+
+    # res = Result(elapsed_seconds=b - a,
+    #              whs_opt=whs_opt,
+    #              geotargets_opt=geotargets_opt,
+    #              beta_opt=beta_opt)
 
 
+# from collections import namedtuple
+Point = namedtuple('Point', 'x y')
+pt1 = Point(1.0, 5.0)
+pt2 = Point(2.5, 1.5)
 
 
 # %% OLD below here
