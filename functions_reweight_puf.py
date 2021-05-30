@@ -341,7 +341,7 @@ def stub_opt(df, targets, method, drops=None):
 
 
 def ulist(thelist):
-    # return unique list with out changing order of original list
+    # return unique list without changing order of original list
     ulist = []
     for x in thelist:
         if x not in ulist:
