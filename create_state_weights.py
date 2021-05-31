@@ -94,7 +94,6 @@ reload(pc)
 reload(rpt)
 reload(rwp)
 reload(test)
-# reload(rwp)
 # reload(gwp)
 
 
@@ -169,7 +168,7 @@ fsw.advance_and_save_puf(
 # from common_stub	incrange	pufvar	irsvar	irs	table_description	column_description	src	excel_column
 # should have variables:
 #   common_stub	incrange, pufvar, irsvar, irs, table_description, column_description, src	excel_column
-targs = fsw.get_potential_national_targets(targets_fname=POSSIBLE_TARGETS)  # targs.ptargets, .ptarget_names
+ptargets = fsw.get_potential_national_targets(targets_fname=POSSIBLE_TARGETS)  # targs.ptargets, .ptarget_names
 # targs._fields
 # targs.ptarget_names
 # targs.ptargets.columns.str.contains('_nnz')
@@ -177,30 +176,25 @@ targs = fsw.get_potential_national_targets(targets_fname=POSSIBLE_TARGETS)  # ta
 # %% 3. create pufsub -- puf subset of filers, with just those variables needed for potential targets
 # from puf{year}.parquet file; only includes filer records
 # adds pid, filer, stubs, and target variables
-pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', targs.ptargets)
+pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
 
 # % get differences from targets at initial weights and produce report
 weights_initial = fsw.get_pufweights(wtpath=WEIGHTS_USE, year=2017)  # adds pid and shortname
-pdiff_init = rwp.get_pctdiffs(pufsub, weights_initial, targs.ptargets)
+pdiff_init = rwp.get_pctdiffs(pufsub, weights_initial, ptargets)
 np.round(np.nanquantile(pdiff_init.abspdiff, qtiles), 2)
 
 rpt.comp_report(
     pdiff_init,
     outfile=OUTTABDIR + 'baseline_national.txt',
     title='2017 puf values using official weights, growfactors, and puf_ratios versus IRS targets.')
-# rpt.comp_report(pdiff_init, outfile=SCRATCHDIR + 'temp.txt', title='Test comparison report', ipdiff_df=pdiff_init)
+
 
 # %% 4. Reweight national puf to come closer to targets
 drops = test.get_drops(pdiff_init)
-a = timer()
-weights_reweight = rwp.puf_reweight(pufsub, weights_initial, targs.ptargets, method='ipopt', drops=drops)
-b = timer()
-b - a
-
-temp = weights_reweight[['pid', 'reweight']].rename(columns={'reweight': 'weight'})
+weights_reweight = rwp.puf_reweight(pufsub, weights_initial, ptargets, method='ipopt', drops=drops)
 
 # report on percent differences
-pdiff_reweighted = rwp.get_pctdiffs(pufsub, temp, targs.ptargets)
+pdiff_reweighted = rwp.get_pctdiffs(pufsub, weights_reweight, ptargets)
 np.round(np.nanquantile(pdiff_reweighted.abspdiff, qtiles), 2)
 rpt.comp_report(
     pdiff_reweighted,

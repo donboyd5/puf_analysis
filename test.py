@@ -10,7 +10,7 @@ untargeted = ['c01000', 'c01000_nnz',
               'c09200', 'c09200_nnz',  # income tax liability (including othertaxes) after non-refundable credits
               # for our new business-like income variables keep only the positive and negative
               # amounts and drop the _nnz and net values
-              'e00900', 'e00900neg_nnz', 'e00900pos_nnz',
+              'e00900', # 'e00900neg_nnz', 'e00900pos_nnz',
               'e02000',
               # maybe drop the partnership/S corp value
               'taxac_irs', 'taxac_irs_nnz']
@@ -33,6 +33,7 @@ def get_drops(pdiff_df):
     qx = qxnan + " or " + qx0 + " or " + qx1 + " or " + qx2
 
     drops = pdiff_df.query(qx).copy()
+    drops = drops.query("common_stub != 0") # we don't need to drop anything in stub 0 because we won't run it
     drops.sort_values(by=['common_stub', 'pufvar'], inplace=True)
     return drops
 

@@ -50,16 +50,16 @@ def get_potential_national_targets(targets_fname):
         .reset_index()
     possible_wide.columns.name = None
 
-    ptarget_names = possible_wide.columns.tolist()
-    ptarget_names.remove('common_stub')
+    # ptarget_names = possible_wide.columns.tolist()
+    # ptarget_names.remove('common_stub')
 
-    Result = namedtuple('Result', 'ptargets, ptarget_names')
+    # Result = namedtuple('Result', 'ptargets, ptarget_names')
 
-    res = Result(
-        ptargets=possible_wide,
-        ptarget_names=ptarget_names)
+    # res = Result(
+    #     ptargets=possible_wide,
+    #     ptarget_names=ptarget_names)
 
-    return res
+    return possible_wide
 
 
 def prep_puf(pufpath, targets):

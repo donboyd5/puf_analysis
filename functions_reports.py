@@ -12,16 +12,15 @@ def comp_report(pdiff_df, outfile, title, ipdiff_df=None):
     #   pdiff_df, and ipdiff_df if present, are data frames created by rwp.get_pctdiffs
 
     print(f'Preparing report...')
-    # comp = pd.merge(pdiffs, ipdiffs, on=['common_stub', 'pufvar'])
     comp = pdiff_df.copy()
     if ipdiff_df is not None:
         keep = ['common_stub', 'pufvar', 'pdiff']
         ipdiff_df.loc[:, keep].rename(columns={'pdiff': 'ipdiff'})
         comp = pd.merge(comp, ipdiff_df.loc[:, keep].rename(columns={'pdiff': 'ipdiff'}), how='left', on=['common_stub', 'pufvar'])
 
-    comp = pd.merge(comp, pc.irspuf_target_map, how='left', on='pufvar')
-    comp = pd.merge(comp, pc.irsstubs, how='left', on='common_stub')
-    # comp['ipdiff'] = 0
+    # we already have column_description so don't bring it in again
+    comp = pd.merge(comp, pc.irspuf_target_map.drop(columns=['column_description']), how='left', on='pufvar')  # get irsvar and other documentation
+
 
     ordered_vars = ['common_stub', 'incrange', 'pufvar', 'irsvar',
                     'target', 'puf', 'diff',
