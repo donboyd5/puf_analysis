@@ -89,8 +89,10 @@ from timeit import default_timer as timer
 # %% reimports
 reload(adv)
 reload(fsw)
+reload(mw)
 reload(pc)
 reload(rpt)
+reload(rwp)
 reload(test)
 # reload(rwp)
 # reload(gwp)
