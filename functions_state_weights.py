@@ -42,7 +42,7 @@ def advance_and_save_puf(year, pufpath, growpath, wtpath, ratiopath, outdir):
     print('All done!')
 
 
-def get_possible_targets(targets_fname):
+def get_potential_national_targets(targets_fname):
     targets_possible = pd.read_csv(targets_fname)
 
     possible_wide = targets_possible.loc[:, ['common_stub', 'pufvar', 'irs']] \

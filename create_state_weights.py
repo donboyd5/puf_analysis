@@ -65,6 +65,7 @@ import numpy as np
 from datetime import date
 
 import functions_advance_puf as adv
+import functions_reports as rpt
 import functions_reweight_puf as rwp
 import functions_geoweight_puf as gwp
 import functions_ht2_analysis as fht
@@ -73,6 +74,7 @@ import functions_state_weights as fsw
 import puf_constants as pc
 import puf_utilities as pu
 
+import test
 
 # microweight - apparently we have to tell python where to find this
 # sys.path.append('c:/programs_python/weighting/')  # needed
@@ -88,6 +90,8 @@ from timeit import default_timer as timer
 reload(adv)
 reload(fsw)
 reload(pc)
+reload(rpt)
+reload(test)
 # reload(rwp)
 # reload(gwp)
 
@@ -135,18 +139,19 @@ PUF_DEFAULT = OUTDATADIR + 'puf2017_default.parquet'
 
 
 # %% constants
-qtiles = (0, .01, .1, .25, .5, .75, .9, .99, 1)
+qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
 compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
+# see pc.STATES, STATES_DCPROA, STATES_DCPROAUS
 
 
-# %% start
+# %% BEGIN
 
 # get initial national weights, divide by 100, add pid, and save a csv file for each year we will work with
 # fsw.save_pufweights(wtpath=WEIGHTS_USE, outdir=OUTWEIGHTDIR, years=(2017, 2018))
 
-# NOT IMPLEMENTED: optionally "regrow" puf.csv (advance to 2017 with specialized grow factors
-
-# advance puf.csv to a future year, add pid and filer, and save as puf+str(year).parquet
+# %% 1. advance puf.csv to a future year, save as parquet file
+# add pid and filer, and save as puf+str(year).parquet
+# 1.a) advance official puf.csv with official weights, grow factors, and ratios
 fsw.advance_and_save_puf(
     year=2017,
     pufpath=PUF_USE,
@@ -155,41 +160,55 @@ fsw.advance_and_save_puf(
     ratiopath=RATIOS_USE,
     outdir=OUTDATADIR)
 
-# get previously (elsewhere) created info on possible national targets for 2017 - a superset of what we may use
+# 1.b) Alternative: advance by "regrowing" with custom growfactors and without puf_ratios
+# Not currently implemented
+
+# %% 2. get potential national targets for 2017, previously created
 # from common_stub	incrange	pufvar	irsvar	irs	table_description	column_description	src	excel_column
 # should have variables:
 #   common_stub	incrange, pufvar, irsvar, irs, table_description, column_description, src	excel_column
-targs = fsw.get_possible_targets(targets_fname=POSSIBLE_TARGETS)  # targs.ptargets, .ptarget_names
+targs = fsw.get_potential_national_targets(targets_fname=POSSIBLE_TARGETS)  # targs.ptargets, .ptarget_names
+# targs._fields
 # targs.ptarget_names
 # targs.ptargets.columns.str.contains('_nnz')
 
-# create pufsub from puf{year}.parquet file
-#   adds pid, filer, stubs, and target variables; only includes filer records
+# %% 3. create pufsub -- puf subset of filers, with just those variables needed for potential targets
+# from puf{year}.parquet file; only includes filer records
+# adds pid, filer, stubs, and target variables
 pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', targs.ptargets)
 
-# get differences from targets at initial weights
-weights_initial = fsw.get_pufweights(wtpath=WEIGHTS_USE, year=2017)
+# % get differences from targets at initial weights and produce report
+weights_initial = fsw.get_pufweights(wtpath=WEIGHTS_USE, year=2017)  # adds pid and shortname
 pdiff_init = rwp.get_pctdiffs(pufsub, weights_initial, targs.ptargets)
+np.round(np.nanquantile(pdiff_init.abspdiff, qtiles), 2)
+
+rpt.comp_report(
+    pdiff_init,
+    outfile=OUTTABDIR + 'baseline_national.txt',
+    title='2017 puf values using official weights, growfactors, and puf_ratios versus IRS targets.')
+# rpt.comp_report(pdiff_init, outfile=SCRATCHDIR + 'temp.txt', title='Test comparison report', ipdiff_df=pdiff_init)
+
+# %% 4. Reweight national puf to come closer to targets
+drops = test.get_drops(pdiff_init)
+a = timer()
+weights_reweight = rwp.puf_reweight(pufsub, weights_initial, targs.ptargets, method='ipopt', drops=drops)
+b = timer()
+b - a
+
+temp = weights_reweight[['pid', 'reweight']].rename(columns={'reweight': 'weight'})
+
+# report on percent differences
+pdiff_reweighted = rwp.get_pctdiffs(pufsub, temp, targs.ptargets)
+np.round(np.nanquantile(pdiff_reweighted.abspdiff, qtiles), 2)
+rpt.comp_report(
+    pdiff_reweighted,
+    outfile=OUTTABDIR + 'reweighted_national.txt',
+    title='Reweighted 2017 puf values versus IRS targets.',
+    ipdiff_df=pdiff_init)
 
 # djb -- got this far
 
 # %% scratch
-def get_possible_targets(targets_fname):
-    targets_possible = pd.read_csv(targets_fname)
-
-    target_mappings = targets_possible.drop(labels=['common_stub', 'incrange', 'irs'], axis=1).drop_duplicates()
-    target_vars = target_mappings.pufvar.to_list()
-
-    # get names of puf variables for which we will need to create nnz indicator
-    innz = target_mappings.pufvar.str.contains('_nnz')
-    nnz_vars = target_mappings.pufvar[innz]
-    # pufvars_to_nnz = nnz_vars.str.rsplit(pat='_', n=1, expand=True)[0].to_list()
-
-    possible_wide = targets_possible.loc[:, ['common_stub', 'pufvar', 'irs']] \
-        .pivot(index='common_stub', columns='pufvar', values='irs') \
-        .reset_index()
-    possible_wide.columns.name = None
-    return possible_wide
 
     # # create a named tuple of items to return
     # fields = ('elapsed_seconds',
@@ -203,11 +222,6 @@ def get_possible_targets(targets_fname):
     #              geotargets_opt=geotargets_opt,
     #              beta_opt=beta_opt)
 
-
-# from collections import namedtuple
-Point = namedtuple('Point', 'x y')
-pt1 = Point(1.0, 5.0)
-pt2 = Point(2.5, 1.5)
 
 
 # %% OLD below here
