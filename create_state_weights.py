@@ -150,7 +150,7 @@ compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
 # get initial national weights, divide by 100, add pid, and save a csv file for each year we will work with
 # fsw.save_pufweights(wtpath=WEIGHTS_USE, outdir=OUTWEIGHTDIR, years=(2017, 2018))
 
-# %% 1. advance puf.csv to a future year, save as parquet file
+# %% 1. Advance puf.csv to a future year, save as parquet file
 # add pid and filer, and save as puf+str(year).parquet
 # 1.a) advance official puf.csv with official weights, grow factors, and ratios
 fsw.advance_and_save_puf(
@@ -164,7 +164,7 @@ fsw.advance_and_save_puf(
 # 1.b) Alternative: advance by "regrowing" with custom growfactors and without puf_ratios
 # Not currently implemented
 
-# %% 2. get potential national targets for 2017, previously created
+# %% 2. Get potential national targets for 2017, previously created
 # from common_stub	incrange	pufvar	irsvar	irs	table_description	column_description	src	excel_column
 # should have variables:
 #   common_stub	incrange, pufvar, irsvar, irs, table_description, column_description, src	excel_column
@@ -173,7 +173,7 @@ ptargets = fsw.get_potential_national_targets(targets_fname=POSSIBLE_TARGETS)  #
 # targs.ptarget_names
 # targs.ptargets.columns.str.contains('_nnz')
 
-# %% 3. create pufsub -- puf subset of filers, with just those variables needed for potential targets
+# %% 3. Create pufsub -- puf subset of filers, with just those variables needed for potential targets
 # from puf{year}.parquet file; only includes filer records
 # adds pid, filer, stubs, and target variables
 pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
@@ -202,7 +202,78 @@ rpt.comp_report(
     title='Reweighted 2017 puf values versus IRS targets.',
     ipdiff_df=pdiff_init)
 
+# %% 5. Prepare state targets for the states of interest
+# get df with ht2 shares
+ht2targets = test.get_pufht2_targets(
+    pufsub,
+    weightdf=weights_reweight,
+    ht2sharespath=HT2_SHARES,
+    compstates=compstates)
+
+# report on (a) any HT2 state shares that don't add to 100% and (b) HT2 targets vs. puf targets
+rpt.ht2puf_report(
+    ht2targets,
+    outfile=OUTTABDIR + 'ht2vspuf_targets_national.txt',
+    title='Comparison of PUF targets, PUF values, and Historical Table 2 values')
+
+
+tmp = ht2targets.groupby(['ht2_stub', 'pufvar', 'ht2description'])[['share']].sum().reset_index()
+
+tmp = ht2_collapsed.groupby(['ht2_stub', 'pufvar', 'ht2description'])[['share']].sum().reset_index()
+np.allclose(tmp.share, 1.0)
+badshares = tmp.query('share < 0.999999999 or share > 1.0000001')
+badshares.info()
+
+
+# %% 6. develop state targets
+
+
+# get national pufsums with these weights, for ht2 stubs
+# these are the amounts we will share across states
+pufsums_ht2 = rwp.get_wtdsums(pufsub, ptarget_names, weights_national, stubvar='ht2_stub')
+pufsums_ht2long = pd.melt(pufsums_ht2, id_vars='ht2_stub', var_name='pufvar', value_name='pufsum')
+pu.uvals(pufsums_ht2long.pufvar)
+
+
+# check ht2 shares
+
+
+# ht2_collapsed has the following columns:
+    # stgroup -- state abbreviation
+    # pufvar -- puf documentation variable name
+    # ht2var -- Historical Table 2 variable name (or one I created)
+    # ht2description
+    # ht2_stub -- integer 0-10 identifying HT2 AGI group, where 0 is all returns
+    # share -- this state's share (as decimal) of the HT2 US total for this variable-stub
+    # ht2 -- the HT2 reported 2017 value for this state-variable-stub combination
+    #        we will multiply the national puf variable-stub value by this share to construct state target
+st = 'NY'
+var = 'e00900'
+var = 'e26270'  # should be matched with a26270
+ht2_collapsed.query('stgroup == @st & pufvar==@var')
+
+
+pu.uvals(ht2_collapsed.pufvar)
+pu.uvals(ht2_collapsed.ht2var)
+
+# create targets by state and ht2_stub from pufsums and collapsed shares
+ht2_collapsed
+ht2targets = pd.merge(ht2_collapsed, pufsums_ht2long, on=['pufvar', 'ht2_stub'])
+ht2targets.info()
+pu.uvals(ht2targets.pufvar)
+pu.uvals(ht2targets.ht2var)
+
+ht2targets['target'] = ht2targets.pufsum * ht2targets.share
+ht2targets['diff'] = ht2targets.target - ht2targets.ht2
+ht2targets['pdiff'] = ht2targets['diff'] / ht2targets.ht2 * 100
+ht2targets['abspdiff'] = np.abs(ht2targets['pdiff'])
+
+
+
 # djb -- got this far
+
+
+
 
 # %% scratch
 

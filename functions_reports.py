@@ -82,43 +82,80 @@ def comp_report(pdiff_df, outfile, title, ipdiff_df=None):
     return #  comp return nothing or return comp?
 
 
-# class Compreport:
-#     """Class with
-#     """
 
-    # def __init__(self, wh, xmat, targets=None, geotargets=None):
-    #     self.wh = wh
-    #     self.xmat = xmat
-    #     self.targets = targets
-    #     self.geotargets = geotargets
-    #     self.targets_init = np.dot(self.xmat.T, self.wh)
-    #     if self.targets is not None:
-    #         self.pdiff_init = self.targets_init / self.targets * 100 - 100
+def ht2puf_report(ht2targets, outfile, title):
 
-    # def reweight(self,
-    #              method='ipopt',
-    #              options=None):
-        # here are the results we want for every method
-        # fields = ('method',
-        #           'elapsed_seconds',
-        #           'sspd',
-        #           'wh_opt',
-        #           'targets_opt',
-        #           'pdiff',
-        #           'g',
-        #           'opts',
-        #           'method_result')
-        # ReweightResult = namedtuple('ReweightResult', fields, defaults=(None,) * len(fields))
+    # comparison report
+    #   pdiff_df, and ipdiff_df if present, are data frames created by rwp.get_pctdiffs
 
-        # rwres = ReweightResult(method=method,
-        #                        elapsed_seconds=method_result.elapsed_seconds,
-        #                        sspd=sspd,
-        #                        wh_opt=method_result.wh_opt,
-        #                        targets_opt=method_result.targets_opt,
-        #                        pdiff=pdiff,
-        #                        g=method_result.g,
-        #                        opts=method_result.opts,
-        #                        method_result=method_result)
+    print(f'Preparing report...')
+    # get list of variables in the pufvar dictionary order (pd.Categorical)
+    df = ht2targets[['pufvar']].drop_duplicates()
+    df['pufvar'] = pd.Categorical(df.pufvar,
+                                    categories=pc.pufirs_fullmap.keys(),
+                                    ordered=True)
+    pufvar_list = df.pufvar.tolist()
 
-        # return rwres
+    # get the bad shares
+    pufsums = ht2targets[['ht2_stub', 'pufvar', 'pufsum']].drop_duplicates()
+    sharesums = ht2targets.groupby(['ht2_stub', 'pufvar', 'ht2var', 'column_description', 'ht2description'])[['ht2', 'share']].sum().reset_index()
 
+    comp = pd.merge(sharesums, pufsums, how='left', on=['ht2_stub', 'pufvar'])
+    comp = pd.merge(comp, pc.ht2stubs.rename(columns={'ht2stub': 'ht2_stub'}), how='left', on='ht2_stub') # bring in ht2range
+    comp['diff'] = comp.ht2 - comp.pufsum
+    comp['pdiff'] = comp['diff'] / comp.pufsum
+    vorder = ['ht2_stub', 'ht2range',  'pufvar', 'ht2var', 'pufsum', 'ht2',
+              'diff', 'pdiff', 'share',
+              'column_description', 'ht2description']
+    comp = comp[vorder]
+    tol = 1e-4
+    badshares = comp.query('share < (1 - @tol) or share > (1 + @tol)')
+
+    print(f'Writing report...')
+    s = comp.copy()
+    s2 = badshares.copy()
+
+    format_mapping = {
+        'pufsum': '{:,.0f}',
+        'ht2': '{:,.0f}',
+        'diff': '{:,.0f}',
+        'pdiff': '{:.1%}',
+        'share': '{:.1%}'}
+
+    for key, value in format_mapping.items():
+        s[key] = s[key].apply(value.format)
+        s2[key] = s2[key].apply(value.format)
+
+    tfile = open(outfile, 'a')
+    tfile.truncate(0)
+    # first write a summary with stub 0 for all variables
+    tfile.write('\n' + title + '\n\n')
+    tfile.write('Comparison of weighted puf values and Historical Table 2 sums for the nation.\n')
+    tfile.write('\nThis report is in 2 sections:\n')
+    tfile.write('  1. Listing of ht2 variables and stubs for which shares do not add to 1. These may need to be dropped.\n')
+    tfile.write('  2. Comparison, by variable, of weighted puf values and Historical Table 2 sums for the nation.\n')
+
+    tfile.write('\nIn the tables that follow:\n')
+    tfile.write('  - pufsum is the sum of puf values using our calculated weights.\n')
+    tfile.write('  - ht2 is sum of state amounts reported in Historical Table 2 for included states.\n')
+    tfile.write('  - diff is ht2 - pufsum\n')
+    tfile.write('  - pdiff is diff as % of pufsum\n')
+    tfile.write('  - share is the sum of the shares across the included states.\n')
+
+    tfile.write('\n1. Bad shares: stub-variable combinations where state shares do not add to 100% (within small tolerance):\n\n')
+    tfile.write(s2.to_string())
+
+    # now write details for each variable
+    tfile.write('\n\n2. Summary by AGI range for each variable:')
+    for var in pufvar_list:
+        tfile.write('\n\n')
+        s2 = s[s.pufvar==var]
+        tfile.write(s2.to_string())
+
+    # finally, write the mapping
+    # tfile.write('\n\n\n3. Detailed report on variable mappings\n\n')
+    # tfile.write(pc.irspuf_target_map.to_string())
+    tfile.close()
+    print("All done.")
+
+    return
