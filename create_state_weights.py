@@ -210,19 +210,27 @@ ht2targets = test.get_pufht2_targets(
     ht2sharespath=HT2_SHARES,
     compstates=compstates)
 
-# report on (a) any HT2 state shares that don't add to 100% and (b) HT2 targets vs. puf targets
+# report on:
+#  (a) any HT2 state shares that don't add to 100%
+#  (b) HT2 targets vs. puf targets
+#  (c) state-stub-pufvar combos with shares different from state-stub-#returns share
 rpt.ht2puf_report(
     ht2targets,
     outfile=OUTTABDIR + 'ht2vspuf_targets_national.txt',
-    title='Comparison of PUF targets, PUF values, and Historical Table 2 values')
+    title='Comparison of PUF targets, PUF values, and Historical Table 2 values',
+    outdir=OUTDATADIR)
+
+rpt.ht2target_report(
+    ht2targets,
+    outfile=OUTTABDIR + 'ht2target_analysis.txt',
+    title='Comparison of Historical Table 2 shares by group to shares for # of returns',
+    outdir=OUTDATADIR)
 
 
-tmp = ht2targets.groupby(['ht2_stub', 'pufvar', 'ht2description'])[['share']].sum().reset_index()
 
-tmp = ht2_collapsed.groupby(['ht2_stub', 'pufvar', 'ht2description'])[['share']].sum().reset_index()
-np.allclose(tmp.share, 1.0)
-badshares = tmp.query('share < 0.999999999 or share > 1.0000001')
-badshares.info()
+def g(df):
+    df['val'] = df.share[df.pufvar=='nret_all'].values[0]
+    return df
 
 
 # %% 6. develop state targets

@@ -64,18 +64,18 @@ def comp_report(pdiff_df, outfile, title, ipdiff_df=None):
     tfile.write('  3. Table that provides details on puf variables and their mappings to irs data\n')
     tfile.write('\n1. Summary report for all variables, summarized over all filers:\n\n')
     s2 = s[s.common_stub==0]
-    tfile.write(s2.to_string())
+    tfile.write(s2.to_string(index=False))
 
     # now write details for each variable
     tfile.write('\n\n2. Detailed report by AGI range for each variable:')
     for var in target_vars:
         tfile.write('\n\n')
         s2 = s[s.pufvar==var]
-        tfile.write(s2.to_string())
+        tfile.write(s2.to_string(index=False))
 
     # finally, write the mapping
     tfile.write('\n\n\n3. Detailed report on variable mappings\n\n')
-    tfile.write(pc.irspuf_target_map.to_string())
+    tfile.write(pc.irspuf_target_map.to_string(index=False))
     tfile.close()
     print("All done.")
 
@@ -83,7 +83,7 @@ def comp_report(pdiff_df, outfile, title, ipdiff_df=None):
 
 
 
-def ht2puf_report(ht2targets, outfile, title):
+def ht2puf_report(ht2targets, outfile, title, outdir):
 
     # comparison report
     #   pdiff_df, and ipdiff_df if present, are data frames created by rwp.get_pctdiffs
@@ -110,6 +110,10 @@ def ht2puf_report(ht2targets, outfile, title):
     comp = comp[vorder]
     tol = 1e-4
     badshares = comp.query('share < (1 - @tol) or share > (1 + @tol)')
+
+    outpath = outdir + 'badshares.csv'
+    print(f'Writing badshares to ', outpath)
+    badshares.to_csv(outpath, index=False)
 
     print(f'Writing report...')
     s = comp.copy()
@@ -143,18 +147,89 @@ def ht2puf_report(ht2targets, outfile, title):
     tfile.write('  - share is the sum of the shares across the included states.\n')
 
     tfile.write('\n1. Bad shares: stub-variable combinations where state shares do not add to 100% (within small tolerance):\n\n')
-    tfile.write(s2.to_string())
+    tfile.write(s2.to_string(index=False))
 
     # now write details for each variable
     tfile.write('\n\n2. Summary by AGI range for each variable:')
     for var in pufvar_list:
         tfile.write('\n\n')
         s2 = s[s.pufvar==var]
-        tfile.write(s2.to_string())
+        tfile.write(s2.to_string(index=False))
 
-    # finally, write the mapping
-    # tfile.write('\n\n\n3. Detailed report on variable mappings\n\n')
-    # tfile.write(pc.irspuf_target_map.to_string())
+    tfile.close()
+    print("All done.")
+
+    return
+
+
+def ht2target_report(ht2targets, outfile, title, outdir):
+    # determine which shares are far from a state's return share for a state, stub, pufvar
+
+    def f(df):
+        # function to be applied within stub-state-variable group to determine which shares are far from
+        # shares for number of returns
+        df['share_returns'] = df.share[df.pufvar=='nret_all'].values[0]
+        df['share_diff'] = df.share - df.share_returns
+        df['abs_diff'] = df['share_diff'].abs()
+        return df
+
+    print(f'Preparing report...')
+    # get list of variables in the pufvar dictionary order (pd.Categorical)
+    df = ht2targets[['pufvar']].drop_duplicates()
+    df['pufvar'] = pd.Categorical(df.pufvar,
+                                    categories=pc.pufirs_fullmap.keys(),
+                                    ordered=True)
+    pufvar_list = df.pufvar.tolist()
+
+    comp = ht2targets.groupby(by=['stgroup', 'ht2_stub']).apply(f).reset_index()
+    comp = pd.merge(comp, pc.ht2stubs.rename(columns={'ht2stub': 'ht2_stub'}), how='left', on='ht2_stub') # bring in ht2range
+    comp['nshare_diff'] = comp.share_diff  # keep a numeric version for sorting
+
+    vorder = ['stgroup', 'ht2_stub', 'ht2range',  'pufvar', 'ht2var',
+                'share_returns', 'share', 'share_diff',
+                'column_description', 'nshare_diff']
+    comp = comp[vorder]
+
+    outpath = outdir + 'ht2share_diffs.csv'
+    print(f'Writing share differences to ', outpath)
+    comp.to_csv(outpath, index=False)
+
+    print(f'Writing report...')
+    s = comp.copy()
+
+    format_mapping = {
+        'share_returns': '{:.1%}',
+        'share': '{:12.1%}',
+        'share_diff': '{:.1%}'}
+
+    for key, value in format_mapping.items():
+        s[key] = s[key].apply(value.format)
+
+    tfile = open(outfile, 'a')
+    tfile.truncate(0)
+    # first write a summary with stub 0 for all variables
+    tfile.write('\n' + title + '\n\n')
+    tfile.write('Comparison of Historical Table 2 shares of the nation, by state, stub, and variable.\n')
+    tfile.write('\nThis report is in 2 sections:\n')
+    tfile.write('  1. Listing the largest differences between return shares and shares for a variable.\n')
+    tfile.write('  2. Comparison, by variable, of weighted puf values and Historical Table 2 sums for the nation.\n')
+
+    tfile.write('\nIn the tables that follow:\n')
+    tfile.write('  - share_returns is the state''s share of national returns for this stub.\n')
+    tfile.write('  - share is the state''s share of the nation for this variable in this stub.\n')
+    tfile.write('  - share_diff is share - share_returns.\n')
+
+    tfile.write('\n\n2. Largest share differences:\n\n')
+    s2 = s.sort_values(by='nshare_diff', ascending=False).drop(columns='nshare_diff').head(25)
+    tfile.write(s2.to_string(index=False))
+
+    # now write details for each variable
+    tfile.write('\n\n2. Largest share differences for each variable:')
+    for var in pufvar_list:
+        tfile.write('\n\n\n')
+        s2 = s[s.pufvar==var].sort_values(by='nshare_diff', ascending=False).drop(columns='nshare_diff').head(10)
+        tfile.write(s2.to_string(index=False))
+
     tfile.close()
     print("All done.")
 
