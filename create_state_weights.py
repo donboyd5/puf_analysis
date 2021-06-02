@@ -213,7 +213,6 @@ ht2targets = test.get_pufht2_targets(
 # report on:
 #  (a) any HT2 state shares that don't add to 100%
 #  (b) HT2 targets vs. puf targets
-#  (c) state-stub-pufvar combos with shares different from state-stub-#returns share
 rpt.ht2puf_report(
     ht2targets,
     outfile=OUTTABDIR + 'ht2vspuf_targets_national.txt',
@@ -225,12 +224,6 @@ rpt.ht2target_report(
     outfile=OUTTABDIR + 'ht2target_analysis.txt',
     title='Comparison of Historical Table 2 shares by group to shares for # of returns',
     outdir=OUTDATADIR)
-
-
-
-def g(df):
-    df['val'] = df.share[df.pufvar=='nret_all'].values[0]
-    return df
 
 
 # %% 6. develop state targets

@@ -85,9 +85,6 @@ def comp_report(pdiff_df, outfile, title, ipdiff_df=None):
 
 def ht2puf_report(ht2targets, outfile, title, outdir):
 
-    # comparison report
-    #   pdiff_df, and ipdiff_df if present, are data frames created by rwp.get_pctdiffs
-
     print(f'Preparing report...')
     # get list of variables in the pufvar dictionary order (pd.Categorical)
     df = ht2targets[['pufvar']].drop_duplicates()
@@ -152,7 +149,7 @@ def ht2puf_report(ht2targets, outfile, title, outdir):
     # now write details for each variable
     tfile.write('\n\n2. Summary by AGI range for each variable:')
     for var in pufvar_list:
-        tfile.write('\n\n')
+        tfile.write('\n\n\n')
         s2 = s[s.pufvar==var]
         tfile.write(s2.to_string(index=False))
 
@@ -180,10 +177,17 @@ def ht2target_report(ht2targets, outfile, title, outdir):
                                     categories=pc.pufirs_fullmap.keys(),
                                     ordered=True)
     pufvar_list = df.pufvar.tolist()
+    stgroup_list = ht2targets.stgroup.drop_duplicates().tolist()
+
+    # determine the bad shares and exclude them
+    badshares = ht2targets.groupby(['ht2_stub', 'pufvar'])[['share']].sum().reset_index().query('share < 0.999').drop(columns='share')
+    badshares['bad'] = 1
 
     comp = ht2targets.groupby(by=['stgroup', 'ht2_stub']).apply(f).reset_index()
+    comp = pd.merge(comp, badshares, how='left', on=['ht2_stub', 'pufvar'])
+    comp = comp[comp.bad != 1].drop(columns='bad')
     comp = pd.merge(comp, pc.ht2stubs.rename(columns={'ht2stub': 'ht2_stub'}), how='left', on='ht2_stub') # bring in ht2range
-    comp['nshare_diff'] = comp.share_diff  # keep a numeric version for sorting
+    comp['nshare_diff'] = comp.abs_diff  # keep a numeric version for sorting
 
     vorder = ['stgroup', 'ht2_stub', 'ht2range',  'pufvar', 'ht2var',
                 'share_returns', 'share', 'share_diff',
@@ -209,25 +213,32 @@ def ht2target_report(ht2targets, outfile, title, outdir):
     tfile.truncate(0)
     # first write a summary with stub 0 for all variables
     tfile.write('\n' + title + '\n\n')
-    tfile.write('Comparison of Historical Table 2 shares of the nation, by state, stub, and variable.\n')
-    tfile.write('\nThis report is in 2 sections:\n')
-    tfile.write('  1. Listing the largest differences between return shares and shares for a variable.\n')
-    tfile.write('  2. Comparison, by variable, of weighted puf values and Historical Table 2 sums for the nation.\n')
+    # tfile.write('Comparison of Historical Table 2 shares of the nation, by state, stub, and variable.\n')
+    tfile.write('\nThis report is in 3 sections:\n')
+    tfile.write('  1. Listing of the largest differences, across all variables and stubs, between return shares and shares for a specific variable.\n')
+    tfile.write('  2. Listing of the largest differences, within each variable, between return shares and shares for a specific variable.\n')
+    tfile.write('  3. Listing of the largest differences, within each state, between return shares and shares for a specific variable.\n')
 
     tfile.write('\nIn the tables that follow:\n')
+    tfile.write('  - records are excluded for stub-variable combinations where national Historical Table 2 value is zero.\n')
     tfile.write('  - share_returns is the state''s share of national returns for this stub.\n')
     tfile.write('  - share is the state''s share of the nation for this variable in this stub.\n')
     tfile.write('  - share_diff is share - share_returns.\n')
 
-    tfile.write('\n\n2. Largest share differences:\n\n')
-    s2 = s.sort_values(by='nshare_diff', ascending=False).drop(columns='nshare_diff').head(25)
+    tfile.write('\n\n1. Largest share differences:\n\n')
+    s2 = s.sort_values(by='nshare_diff', ascending=False).drop(columns='nshare_diff').head(50)
     tfile.write(s2.to_string(index=False))
 
-    # now write details for each variable
-    tfile.write('\n\n2. Largest share differences for each variable:')
+    tfile.write('\n\n\n2. Largest share differences for each variable:')
     for var in pufvar_list:
         tfile.write('\n\n\n')
-        s2 = s[s.pufvar==var].sort_values(by='nshare_diff', ascending=False).drop(columns='nshare_diff').head(10)
+        s2 = s[s.pufvar==var].sort_values(by='nshare_diff', ascending=False).drop(columns='nshare_diff').head(15)
+        tfile.write(s2.to_string(index=False))
+
+    tfile.write('\n\n\n3. Largest share differences for each state:')
+    for st in stgroup_list:
+        tfile.write('\n\n\n')
+        s2 = s[s.stgroup==st].sort_values(by='nshare_diff', ascending=False).drop(columns='nshare_diff').head(10)
         tfile.write(s2.to_string(index=False))
 
     tfile.close()
