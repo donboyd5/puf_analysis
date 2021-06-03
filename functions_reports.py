@@ -82,7 +82,6 @@ def comp_report(pdiff_df, outfile, title, ipdiff_df=None):
     return #  comp return nothing or return comp?
 
 
-
 def ht2puf_report(ht2targets, outfile, title, outdir):
 
     print(f'Preparing report...')
@@ -244,4 +243,4 @@ def ht2target_report(ht2targets, outfile, title, outdir):
     tfile.close()
     print("All done.")
 
-    return
+    return badshares, comp

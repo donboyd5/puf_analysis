@@ -5,7 +5,7 @@ import functions_geoweight_puf as gwp
 import puf_constants as pc
 
 # %% functions
-def get_drops(pdiff_df):
+def get_drops_national(pdiff_df):
     # define any variable-stub combinations to drop via a drops dataframe
     # for definitions see: https://pslmodels.github.io/Tax-Calculator/guide/index.html
 
@@ -39,7 +39,7 @@ def get_drops(pdiff_df):
 
     drops = pdiff_df.query(qx).copy()
     drops = drops.query("common_stub != 0") # we don't need to drop anything in stub 0 because we won't run it
-    drops.sort_values(by=['common_stub', 'pufvar'], inplace=True)
+    drops = drops.sort_values(by=['common_stub', 'pufvar'])
     return drops
 
 def get_wtdsums(pufsub, weightdf, stubvar='common_stub'):
@@ -64,8 +64,9 @@ def get_pufht2_targets(pufsub, weightdf, ht2sharespath, compstates):
     # create targets by state and ht2_stub from pufsums and collapsed shares, keeping intersection
     ht2targets = pd.merge(ht2_collapsed, pufsums_ht2long, how='inner', on=['pufvar', 'ht2_stub'])
     ht2targets = pd.merge(ht2targets, pc.irspuf_target_map[['pufvar', 'column_description']], how='left', on='pufvar')
+    ht2targets['target'] = ht2targets.pufsum * ht2targets.share
     varorder = ['stgroup', 'ht2_stub', 'pufvar', 'ht2var',
-                'pufsum', 'ht2', 'share', 'column_description', 'ht2description']
+                'pufsum', 'ht2', 'share', 'target', 'column_description', 'ht2description']
     return ht2targets[varorder].sort_values(by=['stgroup', 'ht2_stub', 'pufvar'])
 
 

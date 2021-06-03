@@ -141,8 +141,6 @@ PUF_DEFAULT = OUTDATADIR + 'puf2017_default.parquet'
 
 # %% constants
 qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
-compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
-# see pc.STATES, STATES_DCPROA, STATES_DCPROAUS
 
 
 # %% BEGIN
@@ -190,8 +188,9 @@ rpt.comp_report(
 
 
 # %% 4. Reweight national puf to come closer to targets
-drops = test.get_drops(pdiff_init)
-weights_reweight = rwp.puf_reweight(pufsub, weights_initial, ptargets, method='ipopt', drops=drops)
+drops_national = test.get_drops_national(pdiff_init)
+weights_reweight = rwp.puf_reweight(pufsub, weights_initial, ptargets, method='ipopt', drops=drops_national)
+# stub 1 gives some trouble
 
 # report on percent differences
 pdiff_reweighted = rwp.get_pctdiffs(pufsub, weights_reweight, ptargets)
@@ -201,6 +200,14 @@ rpt.comp_report(
     outfile=OUTTABDIR + 'reweighted_national.txt',
     title='Reweighted 2017 puf values versus IRS targets.',
     ipdiff_df=pdiff_init)
+
+# %% BREAK: define which states are of interest - see examples below
+# choose or modify ONE of the following
+compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
+# see pc.STATES, STATES_DCPROA, STATES_DCPROAUS
+compstates= pc.STATES[0:20]
+compstates = pc.STATES
+
 
 # %% 5. Prepare state targets for the states of interest
 # get df with ht2 shares
@@ -219,77 +226,160 @@ rpt.ht2puf_report(
     title='Comparison of PUF targets, PUF values, and Historical Table 2 values',
     outdir=OUTDATADIR)
 
-rpt.ht2target_report(
+badshares, sharediffs = rpt.ht2target_report(
     ht2targets,
     outfile=OUTTABDIR + 'ht2target_analysis.txt',
     title='Comparison of Historical Table 2 shares by group to shares for # of returns',
     outdir=OUTDATADIR)
 
+def get_drops_states(ht2targets, badcombos=None):
+    #  define HT2 targets to drop
+    # create a wide boolean dataframe indicating whether a target will be dropped
+    drops_stubs = ht2_collapsed.query('ht2_stub > 0')[['stgroup', 'ht2_stub', 'pufvar']]
+    drops_stubs['drop'] = False  # everything starts out False
+    # merge in bad recs if there are any -- drop should be True for this
+    # nothing to merge in at the moment
+    drops = drops_stubs
+    return drops
 
-# %% 6. develop state targets
+drops_states = get_drops_states(ht2targets)
+drops_states.info()
 
+qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values because query() doesn't allw
+dropsdf = ht2targets.query(qxnan)[['stgroup', 'ht2_stub', 'pufvar']]
+dropsdf['drop'] = True
+dropsdf_stubs = ht2_collapsed.query('ht2_stub > 0')[['stgroup', 'ht2_stub', 'pufvar']]
+dropsdf_full = pd.merge(dropsdf_stubs, dropsdf, how='left', on=['stgroup', 'ht2_stub', 'pufvar'])
+dropsdf_full.fillna(False, inplace=True)
+dropsdf_wide = dropsdf_full.pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='drop').reset_index()
 
-# get national pufsums with these weights, for ht2 stubs
-# these are the amounts we will share across states
-pufsums_ht2 = rwp.get_wtdsums(pufsub, ptarget_names, weights_national, stubvar='ht2_stub')
-pufsums_ht2long = pd.melt(pufsums_ht2, id_vars='ht2_stub', var_name='pufvar', value_name='pufsum')
-pu.uvals(pufsums_ht2long.pufvar)
-
-
-# check ht2 shares
-
-
-# ht2_collapsed has the following columns:
-    # stgroup -- state abbreviation
-    # pufvar -- puf documentation variable name
-    # ht2var -- Historical Table 2 variable name (or one I created)
-    # ht2description
-    # ht2_stub -- integer 0-10 identifying HT2 AGI group, where 0 is all returns
-    # share -- this state's share (as decimal) of the HT2 US total for this variable-stub
-    # ht2 -- the HT2 reported 2017 value for this state-variable-stub combination
-    #        we will multiply the national puf variable-stub value by this share to construct state target
-st = 'NY'
-var = 'e00900'
-var = 'e26270'  # should be matched with a26270
-ht2_collapsed.query('stgroup == @st & pufvar==@var')
+keepvars = ['stgroup', 'ht2_stub', 'pufvar', 'target']
+ht2wide = ht2targets[keepvars].pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='target').reset_index()
 
 
-pu.uvals(ht2_collapsed.pufvar)
-pu.uvals(ht2_collapsed.ht2var)
+# djb return to this
+#  define HT2 targets to drop
+# create a wide boolean dataframe indicating whether a target will be dropped
+# step through this code to be sure you have the targets you want
+qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values because query() doesn't allw
+dropsdf = ht2targets.query('ht2_stub > 0')[['stgroup', 'ht2_stub', 'pufvar']]
+dropsdf['drop'] = True
+dropsdf_stubs = ht2targets.query('ht2_stub > 0 and share > 0')[['stgroup', 'ht2_stub', 'pufvar']]
+dropsdf_full = pd.merge(dropsdf_stubs, dropsdf, how='left', on=['stgroup', 'ht2_stub', 'pufvar'])
+dropsdf_full.fillna(False, inplace=True)
+dropsdf_wide = dropsdf_full.pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='drop').reset_index()
 
-# create targets by state and ht2_stub from pufsums and collapsed shares
-ht2_collapsed
-ht2targets = pd.merge(ht2_collapsed, pufsums_ht2long, on=['pufvar', 'ht2_stub'])
-ht2targets.info()
-pu.uvals(ht2targets.pufvar)
-pu.uvals(ht2targets.ht2var)
+keepvars = ['stgroup', 'ht2_stub', 'pufvar', 'target']
+ht2wide = ht2targets[keepvars].pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='target').reset_index()
 
-ht2targets['target'] = ht2targets.pufsum * ht2targets.share
-ht2targets['diff'] = ht2targets.target - ht2targets.ht2
-ht2targets['pdiff'] = ht2targets['diff'] / ht2targets.ht2 * 100
-ht2targets['abspdiff'] = np.abs(ht2targets['pdiff'])
+ht2_vars = pu.uvals(ht2_collapsed.pufvar)
+ptarget_names  # possible targets, if in ht2, using pufvar names
+ht2_possible = [var for var in ptarget_names if var in ht2_vars]
 
+pufsub.columns
+# how many records in each HT2 stub? ranges from 5,339 in stub 1 to 41,102 in stub 4
+pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
+
+# targvars are the variables we will target -- must be in ht2_possible
+targvars = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
+            'c00100',   # AGI
+            'e00200', 'e00200_nnz',  # wages
+            'e00300', 'e00300_nnz',  # taxable interest income
+            'e00600', 'e00600_nnz',  # ordinary dividends
+            'e00900',  # business and professional income
+            'e26270',  # partnership/S Corp income
+            'c01000',  # capital gains (tc doc says see .py file, though)
+            # deductions
+            'c17000','c17000_nnz',  # medical expenses deducted
+            'c18300', 'c18300_nnz']  # SALT amount deducted
+['good' for var in targvars if var in ht2_possible]
+
+
+# for testing purposes, here are some useful subsets of targvars
+targvars2 = ['nret_all']
+targvars2 = ['nret_all', 'c00100']
+targvars2 = ['nret_all', 'c00100', 'e00200']
+targvars2 = ['nret_all', 'mars1', 'c00100']
+targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
+targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
 
 
 # djb -- got this far
 
+# %% 6. Construct national weights that are sums of practical state weights
+
+# use qmatrix-ipopt because it seems most robust and is pretty fast
+geomethod = 'qmatrix-ipopt'
+options = {'quiet': True,
+           # xlb, xub: lower and upper bounds on ratio of new state weights to initial state weights
+           'xlb': 0.1,
+           'xub': 100,
+           # crange is desired constraint tolerance
+           # 0.0001 means try to come within 0.0001 x the target
+           # i.e., within 0.01% of the target
+           'crange': .0001,
+           'linear_solver': 'ma57'
+           }
+
+# qmatrix-lsq does not work as robustly as qmatrix-ipopt although it can be faster
+# geomethod = 'qmatrix-lsq'
+# options = {'verbose': 0,
+#            'xlb': 0.2,
+#            'scaling': False,
+#            'method': 'bvls',  # bvls (default) or trf - bvls usually faster, better
+#            'lsmr_tol': 'auto'  # 'auto'  # 'auto' or None
+#            }
+
+# now we are going to iterate through the HT2 agi ranges (grouped.apply)
+#   and within each range iterate through the states  (gwp.get_geo_weights)
+# because we are NOT imposing an adding-up restriction:
+    #  independent=True
+# this will be fairly fast
+# nat_geo_weights will have 1 record per return, with id info plus:
+    # weight: the initial national weight for the record
+    # geoweight_sum: the record's sum of the weights over the solved-for
+    # a column for each solved-for state, with the record's weight for the state
+# while geoweight_sum will not equal weight (our initial national weight), for
+# most records it will be quite close
+a = timer()
+nat_geo_weights = grouped.apply(gwp.get_geo_weights,
+                                weightdf=weights_init,
+                                targvars=targvars,
+                                ht2wide=ht2wide,
+                                dropsdf_wide=dropsdf_wide,
+                                independent=True,
+                                geomethod=geomethod,
+                                options=options)
+b = timer()
+b - a
 
 
+# save just the pid and national weights
+wfname_result = OUTDATADIR + 'weights2017_geo_unrestricted.csv'
+weights_save = nat_geo_weights.copy()
+weights_save = weights_save.loc[:, ['pid', 'geoweight_sum']].rename(columns={'geoweight_sum': 'weight'})
+weights_save['shortname'] = 'geoweight_sum'
+weights_save.to_csv(wfname_result, index=None)
 
-# %% scratch
+# write the full file of state weights to disk
+nat_geo_weights.to_csv(OUTDATADIR + 'allweights2017_geo_unrestricted.csv', index=None)
 
-    # # create a named tuple of items to return
-    # fields = ('elapsed_seconds',
-    #           'whs_opt',
-    #           'geotargets_opt',
-    #           'beta_opt')
-    # Result = namedtuple('Result', fields, defaults=(None,) * len(fields))
+nat_geo_weights.sum()
 
-    # res = Result(elapsed_seconds=b - a,
-    #              whs_opt=whs_opt,
-    #              geotargets_opt=geotargets_opt,
-    #              beta_opt=beta_opt)
+g = nat_geo_weights.geoweight_sum / nat_geo_weights.weight
+np.quantile(g, qtiles)  # 98% of the records had ratio between 0.78 and 1.21
 
+# take a finer look at the extremes
+qtiles2 = (0, 0.0025, 0.005, 0.01,0.02, 0.98, 0.99, 0.995, 0.9975, 1)
+np.quantile(g, qtiles2)
+g.sort_values().head(50)
+g.sort_values(ascending=False).head(50)
+
+
+# %% 7. reweight the national file to come closer to targets
+
+
+# %% 8. construct state weights
 
 
 # %% OLD below here
@@ -650,24 +740,6 @@ ht2targets['abspdiff'] = np.abs(ht2targets['pdiff'])
 # corresponding reported HT2 value - it is a measure of how far off the puf is
 # from reported values and therefore a potential indicator of whether the variable
 # concepts we are matching between puf and HT2 are a good match
-
-
-# %% explore the resulting state-variable-stub targets
-
-check = ht2targets.sort_values(by='abspdiff', axis=0, ascending=False)
-check.info()
-check.describe()
-np.nanquantile(check.abspdiff, qtiles)
-
-# how are various variables by income range?
-# what's true of one state is true of all
-var = "c04800"
-st = "CA"
-tmp = check.query('pufvar == @var & stgroup==@st ').sort_values(by='ht2_stub', axis=0, ascending=True)
-# NY
-# agi looks good in all groups
-# c04800 taxable income pretty good in all but stub 2
-# nret_all bad in stubs 1, 2; otherwise good
 
 
 # %% define HT2 targets to drop
