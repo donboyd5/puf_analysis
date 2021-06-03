@@ -42,6 +42,30 @@ def get_drops_national(pdiff_df):
     drops = drops.sort_values(by=['common_stub', 'pufvar'])
     return drops
 
+
+def get_drops_states(ht2targets, badcombos=None):
+    #  define HT2 targets to drop
+    # create a wide boolean dataframe indicating whether a target will be dropped
+    drops = ht2targets.loc[ht2targets.ht2_stub != 0, ['stgroup', 'ht2_stub', 'pufvar', 'pufsum', 'ht2sum', 'sharesum']]
+    drops['drop'] = False  # everything starts out False
+    # drops.loc[(drops.ht2_stub == 0), 'drop'] = True
+    drops.loc[(drops.pufsum == 0), 'drop'] = True
+    drops.loc[(drops.ht2sum == 0), 'drop'] = True
+    drops.loc[(drops.sharesum < 0.999), 'drop'] = True
+
+    # merge in bad recs if there are any -- drop should be True for this
+
+    drops = drops.pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='drop').reset_index()
+    return drops
+
+
+def get_ht2wide_states(ht2targets):
+    keepvars = ['stgroup', 'ht2_stub', 'pufvar', 'target']
+    # note that we drop stub 0 here
+    ht2wide = ht2targets[keepvars].loc[ht2targets.ht2_stub != 0].pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='target').reset_index()
+    return ht2wide
+
+
 def get_wtdsums(pufsub, weightdf, stubvar='common_stub'):
     idcols = ['pid', 'filer', 'common_stub', 'ht2_stub']
     sumcols = [x for x in pufsub.columns.tolist() if x not in idcols]
@@ -56,17 +80,24 @@ def get_wtdsums(pufsub, weightdf, stubvar='common_stub'):
     dfsums = dfsums.set_index(stubvar, drop=False)
     return dfsums
 
-def get_pufht2_targets(pufsub, weightdf, ht2sharespath, compstates):
+def get_potential_state_targets(pufsub, weightdf, ht2sharespath, compstates):
+    # get puf weighted sums by ht2 income ranges
     pufsums_ht2 = get_wtdsums(pufsub, weightdf, stubvar='ht2_stub')
     pufsums_ht2long = pd.melt(pufsums_ht2, id_vars='ht2_stub', var_name='pufvar', value_name='pufsum')
+
     # collapse ht2 shares to the states we want
     ht2_collapsed = gwp.collapse_ht2(ht2sharespath, compstates)
-    # create targets by state and ht2_stub from pufsums and collapsed shares, keeping intersection
+
+    # create targets by state and ht2_stub from pufsums and collapsed shares, keeping intersection (inner)
     ht2targets = pd.merge(ht2_collapsed, pufsums_ht2long, how='inner', on=['pufvar', 'ht2_stub'])
-    ht2targets = pd.merge(ht2targets, pc.irspuf_target_map[['pufvar', 'column_description']], how='left', on='pufvar')
     ht2targets['target'] = ht2targets.pufsum * ht2targets.share
+
+    # add variable descriptions
+    ht2targets = pd.merge(ht2targets,
+        pc.irspuf_target_map[['pufvar', 'column_description']], how='left', on='pufvar')
+
     varorder = ['stgroup', 'ht2_stub', 'pufvar', 'ht2var',
-                'pufsum', 'ht2', 'share', 'target', 'column_description', 'ht2description']
+                'pufsum', 'ht2sum', 'share', 'sharesum',  'ht2', 'target', 'column_description', 'ht2description']
     return ht2targets[varorder].sort_values(by=['stgroup', 'ht2_stub', 'pufvar'])
 
 
@@ -75,3 +106,5 @@ def get_pufht2_targets(pufsub, weightdf, ht2sharespath, compstates):
 
 
 
+
+# %%

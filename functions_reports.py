@@ -6,7 +6,7 @@ import pandas as pd
 import puf_constants as pc
 import puf_utilities as pu
 
-def comp_report(pdiff_df, outfile, title, ipdiff_df=None):
+def wtdpuf_national_comp_report(pdiff_df, outfile, title, ipdiff_df=None):
 
     # comparison report
     #   pdiff_df, and ipdiff_df if present, are data frames created by rwp.get_pctdiffs
@@ -82,7 +82,7 @@ def comp_report(pdiff_df, outfile, title, ipdiff_df=None):
     return #  comp return nothing or return comp?
 
 
-def ht2puf_report(ht2targets, outfile, title, outdir):
+def ht2_vs_puf_report(ht2targets, outfile, title, outdir):
 
     print(f'Preparing report...')
     # get list of variables in the pufvar dictionary order (pd.Categorical)
@@ -104,12 +104,17 @@ def ht2puf_report(ht2targets, outfile, title, outdir):
               'diff', 'pdiff', 'share',
               'column_description', 'ht2description']
     comp = comp[vorder]
+
+    outpath = outdir + 'ht2_vs_puf.csv'
+    print('saving ht2 vs puf comparisons to: ', outpath)
+    comp.to_csv(outpath, index=False)
+
     tol = 1e-4
     badshares = comp.query('share < (1 - @tol) or share > (1 + @tol)')
 
-    outpath = outdir + 'badshares.csv'
-    print(f'Writing badshares to ', outpath)
-    badshares.to_csv(outpath, index=False)
+    # outpath = outdir + 'badshares.csv'
+    # print(f'Writing badshares to ', outpath)
+    # badshares.to_csv(outpath, index=False)
 
     print(f'Writing report...')
     s = comp.copy()
@@ -128,6 +133,7 @@ def ht2puf_report(ht2targets, outfile, title, outdir):
 
     tfile = open(outfile, 'a')
     tfile.truncate(0)
+
     # first write a summary with stub 0 for all variables
     tfile.write('\n' + title + '\n\n')
     tfile.write('Comparison of weighted puf values and Historical Table 2 sums for the nation.\n')
@@ -158,7 +164,7 @@ def ht2puf_report(ht2targets, outfile, title, outdir):
     return
 
 
-def ht2target_report(ht2targets, outfile, title, outdir):
+def ht2target_report(ht2targets, outfile, title, outpath):
     # determine which shares are far from a state's return share for a state, stub, pufvar
 
     def f(df):
@@ -182,20 +188,20 @@ def ht2target_report(ht2targets, outfile, title, outdir):
     badshares = ht2targets.groupby(['ht2_stub', 'pufvar'])[['share']].sum().reset_index().query('share < 0.999').drop(columns='share')
     badshares['bad'] = 1
 
-    comp = ht2targets.groupby(by=['stgroup', 'ht2_stub']).apply(f).reset_index()
-    comp = pd.merge(comp, badshares, how='left', on=['ht2_stub', 'pufvar'])
-    comp = comp[comp.bad != 1].drop(columns='bad')
-    comp = pd.merge(comp, pc.ht2stubs.rename(columns={'ht2stub': 'ht2_stub'}), how='left', on='ht2_stub') # bring in ht2range
+    allshares = ht2targets.groupby(by=['stgroup', 'ht2_stub']).apply(f).reset_index()
+    allshares = pd.merge(allshares, badshares, how='left', on=['ht2_stub', 'pufvar'])
+    allshares = pd.merge(allshares, pc.ht2stubs.rename(columns={'ht2stub': 'ht2_stub'}), how='left', on='ht2_stub') # bring in ht2range
+    print(f'Writing state share differences to ', outpath)
+    allshares.to_csv(outpath, index=False)
+
+    # prepare to write report
+    comp = allshares[allshares.bad != 1].drop(columns='bad')
     comp['nshare_diff'] = comp.abs_diff  # keep a numeric version for sorting
 
     vorder = ['stgroup', 'ht2_stub', 'ht2range',  'pufvar', 'ht2var',
                 'share_returns', 'share', 'share_diff',
                 'column_description', 'nshare_diff']
     comp = comp[vorder]
-
-    outpath = outdir + 'ht2share_diffs.csv'
-    print(f'Writing share differences to ', outpath)
-    comp.to_csv(outpath, index=False)
 
     print(f'Writing report...')
     s = comp.copy()
@@ -220,8 +226,8 @@ def ht2target_report(ht2targets, outfile, title, outdir):
 
     tfile.write('\nIn the tables that follow:\n')
     tfile.write('  - records are excluded for stub-variable combinations where national Historical Table 2 value is zero.\n')
-    tfile.write('  - share_returns is the state''s share of national returns for this stub.\n')
-    tfile.write('  - share is the state''s share of the nation for this variable in this stub.\n')
+    tfile.write('  - share_returns is the state\'s share of national returns for this stub.\n')
+    tfile.write('  - share is the state\'s share of the nation for this variable in this stub.\n')
     tfile.write('  - share_diff is share - share_returns.\n')
 
     tfile.write('\n\n1. Largest share differences:\n\n')
@@ -243,4 +249,4 @@ def ht2target_report(ht2targets, outfile, title, outdir):
     tfile.close()
     print("All done.")
 
-    return badshares, comp
+    return
