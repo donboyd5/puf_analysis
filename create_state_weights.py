@@ -263,6 +263,16 @@ targvars2 = ['nret_all', 'c00100', 'e00200']
 targvars2 = ['nret_all', 'mars1', 'c00100']
 targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
 targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
+
+targsstub1 = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
+            'c00100',   # AGI
+            'e00200', 'e00200_nnz',  # wages
+            'e00300', 'e00300_nnz',  # taxable interest income
+            'e00600', 'e00600_nnz',  # ordinary dividends
+            'e00900',  # business and professional income
+            'e26270',  # partnership/S Corp income
+            'c01000']
+
 # set targvars = one of the above during test runs
 
 # verify that targvars are in the data
@@ -288,6 +298,7 @@ len(targvars)
 # while geoweight_sum will not equal weight (our initial national weight), for
 # most records it will be quite close
 
+# %% spot
 weights_geosums = gwp.get_geoweight_sums(
     pufsub,
     weightdf=weights_reweight,
@@ -306,6 +317,8 @@ rpt.wtdpuf_national_comp_report(
     outfile=OUTTABDIR + 'geosums_national.txt',
     title='Unrestricted geosum weighted 2017 puf values versus IRS targets.',
     ipdiff_df=pdiff_reweighted)
+
+# temp[['pid', 'filer', 'nret_all', 'mars1', 'c00100']].first()
 
 
 # %% 8. Reweight the national file to come closer to targets
@@ -365,7 +378,7 @@ opts_newt = {
     'max_iter': 20,  # 20 default
     'startup_iter': 8,  # 8 default number of iterations for the startup period
     'startup_p': .25,  # .25 default p, the step multiplier in the startup period
-    'linesearch': False,  # True default
+    'linesearch': True,  # True default
     'quiet': True}
 # opts.update({'stepmethod': 'jvp'})
 
@@ -379,20 +392,25 @@ opts_lsq = {
 opts = opts_newt
 opts = opts_lsq
 
+
+# c17000	c17000_nnz for AR stub 10 are zero
+
+
 tmp = gwp.get_geo_weights_stub(
     pufsub,
     weightdf=weights_georeweight,
-    targvars=targvars2,  # use targvars or a variant
+    targvars=targsstub1,  # use targvars or a variant targsstub1
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
     method='poisson-newton',  # poisson-lsq or poisson-newton
     options=opts,
-    stub=7)
-
+    stub=10)
 # compare results to targets for a single stub
+# 1 is nan microweight.py:215: RuntimeWarning: divide by zero encountered in
+# true_divide pdiff = diff / self.geotargets * 100
 
-targs_used = targvars2
-stub = 7
+targs_used = targsstub1
+stub = 10
 
 df = pufsub.loc[pufsub['ht2_stub'] ==stub, ['pid', 'ht2_stub'] + targs_used]
 htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'stgroup'] + targs_used]
@@ -408,7 +426,10 @@ pdiff = diff / targmat * 100
 sspd = np.square(pdiff).sum()
 sspd
 np.quantile(pdiff, qtiles)
+np.nanquantile(pdiff, qtiles)
 
+
+# %% scratch
 geomethod = 'qmatrix-ipopt'
 opts_q = {'qmax_iter': 50,
            'quiet': True,
@@ -419,7 +440,9 @@ opts_q = {'qmax_iter': 50,
            'linear_solver': 'ma57'
            }
 
-grouped = pufsub.groupby('ht2_stub')
+grouped = pufsub.loc[pufsub['ht2_stub']==3].groupby('ht2_stub')
+grouped = pufsub[(pufsub["ht2_stub"] == 3) | (pufsub["ht2_stub"] == 7)]
+grouped = pufsub.loc[pufsub['ht2_stub'].isin((3, 7))].groupby('ht2_stub')
 
 a = timer()
 final_geo_weights = grouped.apply(gwp.get_geo_weights,

@@ -42,17 +42,14 @@ def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide,
                     options,
                     intermediate_path=None):
 
-    # stub = df.name
-    print(df.info)
-    print(f'\nIncome stub {df.name:3d}')
-    qx = '(ht2_stub == @df.name)'
+    stub = df.name # DON'T EVEN PRINT df.name or all gets messed up
+    print(f'\nIncome stub {stub:3d}')
+    qx = '(ht2_stub == @stub)'
 
     # create local copy of weights with proper names
-    # weightdf.columns = ['pid', 'weight']
     weightdf = pu.idx_rename(weightdf, col_indexes=[0, 1], new_names=['pid', 'weight'])
     weightdf = weightdf.loc[:, ['pid', 'weight']]
 
-    df['ht2_stub'] = df.name
     df = df.drop(columns='weight', errors='ignore')
     df = pd.merge(df, weightdf, how='left', on='pid')
 
@@ -132,7 +129,6 @@ def get_geoweight_sums(pufsub,
             'crange': .0001, # .0001 means within 0.01% of the target
             'linear_solver': 'ma57'
             }
-
 
     if stubs is None:
         grouped = pufsub.groupby('ht2_stub')
@@ -271,27 +267,34 @@ def get_geo_weights_stub(
 
     # stub = df.name
     print(f'\nIncome stub {stub:3d}')
+    df = df.loc[df['ht2_stub']==stub]
+    print(df.shape)
+
     qx = '(ht2_stub == @stub)'
 
     # create local copy of weights with proper names
     weightdf = pu.idx_rename(weightdf, col_indexes=[0, 1], new_names=['pid', 'weight'])
     weightdf = weightdf.loc[:, ['pid', 'weight']]
 
-    df2 = df.copy()
-    df2['ht2_stub'] = stub
-    df2 = df2.drop(columns='weight', errors='ignore')
-    df2 = pd.merge(df2, weightdf, how='left', on='pid')
+    df = df.drop(columns='weight', errors='ignore')
+    df = pd.merge(df, weightdf, how='left', on='pid')
 
-    pufstub = df2[['pid', 'ht2_stub', 'weight'] + targvars]
+    pufstub = df[['pid', 'ht2_stub', 'weight'] + targvars]
 
     wh = pufstub.weight.to_numpy()
     xmat = np.asarray(pufstub[targvars], dtype=float)
 
     # set up targets - keep a dataframe and a matrix even though dataframe
     # is not absolutely necessary
-    targetsdf = ht2wide.copy().query(qx)[['stgroup'] + targvars]
+    targetsdf = ht2wide.query(qx)[['stgroup'] + targvars]
     sts = targetsdf.stgroup.tolist()
     targets = targetsdf[targvars].to_numpy()
+
+    nzvalues = np.count_nonzero(targets)
+    zvalues = targets.size - nzvalues
+    if nzvalues < targets.size:
+        print(f"WARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO! Replacing with 100...")
+        targets[targets==0] = 100
 
     dropsdf_stub = dropsdf_wide.query(qx)[['stgroup'] + targvars]
     drops = np.asarray(dropsdf_stub[targvars], dtype=bool)  # True means we drop
@@ -309,11 +312,11 @@ def get_geo_weights_stub(
     whsdf = pd.DataFrame(gw.whs_opt, columns=sts)
     whsdf['geoweight_sum'] = whsdf.sum(axis=1)
     whsdf = whsdf[['geoweight_sum'] + sts]
-    df3 = pd.concat([pufstub[['pid', 'ht2_stub', 'weight']],
+    df2 = pd.concat([pufstub[['pid', 'ht2_stub', 'weight']],
                       whsdf],
                     axis=1)
 
-    return df3
+    return df2
 
 
 
