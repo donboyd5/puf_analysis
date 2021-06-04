@@ -42,9 +42,10 @@ def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide,
                     options,
                     intermediate_path=None):
 
+    # stub = df.name
+    print(df.info)
     print(f'\nIncome stub {df.name:3d}')
-    stub = df.name
-    qx = '(ht2_stub == @stub)'
+    qx = '(ht2_stub == @df.name)'
 
     # create local copy of weights with proper names
     # weightdf.columns = ['pid', 'weight']
@@ -121,7 +122,7 @@ def get_geoweight_sums(pufsub,
                        ht2wide,
                        dropsdf_wide,
                        outpath,
-                       stubs='all'):
+                       stubs=None):
     a = timer()
     geomethod = 'qmatrix-ipopt'
     options = {'quiet': True,
@@ -133,7 +134,7 @@ def get_geoweight_sums(pufsub,
             }
 
 
-    if stubs == 'all':
+    if stubs is None:
         grouped = pufsub.groupby('ht2_stub')
     else:
         grouped = pufsub.loc[pufsub.ht2_stub.isin(stubs)].groupby('ht2_stub')
@@ -150,9 +151,10 @@ def get_geoweight_sums(pufsub,
     print("Done with loop through stubs.")
     print("Saving all geoweights (sums and state weights)...")
     weights_geosums = weights_geosums.droplevel(0).reset_index()
+    weights_geosums = weights_geosums.sort_values(by='pid')
     weights_geosums.to_csv(outpath, index=None)
     b = timer()
-    print("Elapsed seconds: ", b - a)
+    print("\nElapsed seconds: ", b - a)
     return weights_geosums.loc[:, ['pid', 'geoweight_sum']].rename(columns={'geoweight_sum': 'weight'})
 
 
@@ -165,3 +167,153 @@ def get_geoweight_sums(pufsub,
 #            'method': 'bvls',  # bvls (default) or trf - bvls usually faster, better
 #            'lsmr_tol': 'auto'  # 'auto'  # 'auto' or None
 #            }
+
+
+def get_geoweight_sums_direct(pufsub,
+                       weightdf,
+                       targvars,
+                       ht2wide,
+                       dropsdf_wide,
+                       outpath,
+                       stubs='all'):
+    a = timer()
+
+    if stubs == 'all':
+        grouped = pufsub.groupby('ht2_stub')
+    else:
+        grouped = pufsub.loc[pufsub.ht2_stub.isin(stubs)].groupby('ht2_stub')
+
+    print("Starting loop through stubs...")
+    weights_geosums = grouped.apply(get_geo_weights_direct,
+                                    weightdf=weightdf,
+                                    targvars=targvars,
+                                    ht2wide=ht2wide,
+                                    dropsdf_wide=dropsdf_wide)
+    print("Done with loop through stubs.")
+    print("Saving all geoweights (sums and state weights)...")
+    weights_geosums = weights_geosums.droplevel(0).reset_index()
+    weights_geosums.to_csv(outpath, index=None)
+    b = timer()
+    print("Elapsed seconds: ", b - a)
+    return weights_geosums.loc[:, ['pid', 'geoweight_sum']].rename(columns={'geoweight_sum': 'weight'})
+
+
+
+def get_geo_weights_direct(
+    df,
+    weightdf,
+    targvars,
+    ht2wide,
+    dropsdf_wide):
+
+    print(f'\nIncome stub {df.name:3d}')
+    stub = df.name
+    qx = '(ht2_stub == @stub)'
+
+    options = {
+        'xlb': .1, 'xub': 10.,  # default 0.1, 10.0
+        'crange': 0.0,  # default 0.0
+        # 'print_level': 0,
+        'file_print_level': 5,
+        # 'scaling': True,
+        # 'scale_goal': 1e3,
+        'ccgoal': 10,
+        'addup': False,  # default is false
+        'output_file': '/home/donboyd/Documents/test_sparse.out',
+        'max_iter': 100,
+        'linear_solver': 'ma57',  # ma27, ma77, ma57, ma86 work, not ma97
+        'quiet': False}
+
+    # create local copy of weights with proper names
+    weightdf = pu.idx_rename(weightdf, col_indexes=[0, 1], new_names=['pid', 'weight'])
+    weightdf = weightdf.loc[:, ['pid', 'weight']]
+
+    df['ht2_stub'] = df.name
+    df = df.drop(columns='weight', errors='ignore')
+    df = pd.merge(df, weightdf, how='left', on='pid')
+
+    pufstub = df[['pid', 'ht2_stub', 'weight'] + targvars]
+
+    wh = pufstub.weight.to_numpy()
+    xmat = np.asarray(pufstub[targvars], dtype=float)
+
+    # set up targets - keep a dataframe and a matrix even though dataframe
+    # is not absolutely necessary
+    targetsdf = ht2wide.query(qx)[['stgroup'] + targvars]
+    sts = targetsdf.stgroup.tolist()
+    targets = targetsdf[targvars].to_numpy()
+
+    dropsdf_stub = dropsdf_wide.query(qx)[['stgroup'] + targvars]
+    drops = np.asarray(dropsdf_stub[targvars], dtype=bool)  # True means we drop
+
+    stub_prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targets)
+
+    # call the solver
+    gw = stub_prob.geoweight(method='direct_ipopt', options=options)
+
+    whsdf = pd.DataFrame(gw.whs_opt, columns=sts)
+    whsdf['geoweight_sum'] = whsdf.sum(axis=1)
+    whsdf = whsdf[['geoweight_sum'] + sts]
+    df2 = pd.concat([pufstub[['pid', 'ht2_stub', 'weight']],
+                      whsdf],
+                    axis=1)
+    return df2
+
+def get_geo_weights_stub(
+    df,
+    weightdf,
+    targvars,
+    ht2wide,
+    dropsdf_wide,
+    method,
+    options,
+    stub):
+
+    # stub = df.name
+    print(f'\nIncome stub {stub:3d}')
+    qx = '(ht2_stub == @stub)'
+
+    # create local copy of weights with proper names
+    weightdf = pu.idx_rename(weightdf, col_indexes=[0, 1], new_names=['pid', 'weight'])
+    weightdf = weightdf.loc[:, ['pid', 'weight']]
+
+    df2 = df.copy()
+    df2['ht2_stub'] = stub
+    df2 = df2.drop(columns='weight', errors='ignore')
+    df2 = pd.merge(df2, weightdf, how='left', on='pid')
+
+    pufstub = df2[['pid', 'ht2_stub', 'weight'] + targvars]
+
+    wh = pufstub.weight.to_numpy()
+    xmat = np.asarray(pufstub[targvars], dtype=float)
+
+    # set up targets - keep a dataframe and a matrix even though dataframe
+    # is not absolutely necessary
+    targetsdf = ht2wide.copy().query(qx)[['stgroup'] + targvars]
+    sts = targetsdf.stgroup.tolist()
+    targets = targetsdf[targvars].to_numpy()
+
+    dropsdf_stub = dropsdf_wide.query(qx)[['stgroup'] + targvars]
+    drops = np.asarray(dropsdf_stub[targvars], dtype=bool)  # True means we drop
+
+    stub_prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targets)
+
+    # call the solver
+    # options_defaults = {'drops': drops, 'independent': independent, 'qmax_iter': 20}
+    # options_all = options_defaults.copy()
+    # options_all.update(options)
+
+    # gw = stub_prob.geoweight(method='poisson-newton', options=options)
+    gw = stub_prob.geoweight(method=method, options=options)
+
+    whsdf = pd.DataFrame(gw.whs_opt, columns=sts)
+    whsdf['geoweight_sum'] = whsdf.sum(axis=1)
+    whsdf = whsdf[['geoweight_sum'] + sts]
+    df3 = pd.concat([pufstub[['pid', 'ht2_stub', 'weight']],
+                      whsdf],
+                    axis=1)
+
+    return df3
+
+
+

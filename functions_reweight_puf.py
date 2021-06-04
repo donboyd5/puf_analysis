@@ -273,6 +273,7 @@ def puf_reweight(pufsub, init_weights, targets, method='lsq', drops=None):
     grouped = pufsub.groupby('common_stub')
 
     new_weights = grouped.apply(stub_opt, targets, method=method, drops=drops)  # method lsq or ipopt
+    new_weights = new_weights.sort_values(by='pid')
     b = timer()
     print('Elapsed seconds: ', b - a)
 

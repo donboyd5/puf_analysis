@@ -82,7 +82,7 @@ def wtdpuf_national_comp_report(pdiff_df, outfile, title, ipdiff_df=None):
     return #  comp return nothing or return comp?
 
 
-def ht2_vs_puf_report(ht2targets, outfile, title, outdir):
+def ht2_vs_puf_report(ht2targets, outfile, title, outpath):
 
     print(f'Preparing report...')
     # get list of variables in the pufvar dictionary order (pd.Categorical)
@@ -105,7 +105,7 @@ def ht2_vs_puf_report(ht2targets, outfile, title, outdir):
               'column_description', 'ht2description']
     comp = comp[vorder]
 
-    outpath = outdir + 'ht2_vs_puf.csv'
+    # outpath = outdir + 'ht2_vs_puf.csv'
     print('saving ht2 vs puf comparisons to: ', outpath)
     comp.to_csv(outpath, index=False)
 
