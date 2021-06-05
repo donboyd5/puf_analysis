@@ -293,8 +293,9 @@ def get_geo_weights_stub(
     nzvalues = np.count_nonzero(targets)
     zvalues = targets.size - nzvalues
     if nzvalues < targets.size:
-        print(f"WARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO! Replacing with 100...")
-        targets[targets==0] = 100
+        zreplace = 1000
+        print(f"WARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO! Replacing with {zreplace}...")
+        targets[targets==0] = zreplace
 
     dropsdf_stub = dropsdf_wide.query(qx)[['stgroup'] + targvars]
     drops = np.asarray(dropsdf_stub[targvars], dtype=bool)  # True means we drop

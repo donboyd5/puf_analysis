@@ -207,7 +207,7 @@ rpt.wtdpuf_national_comp_report(
 # choose or modify ONE of the following
 compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
 # see pc.STATES, STATES_DCPROA, STATES_DCPROAUS
-compstates= pc.STATES[0:20]
+compstates= pc.STATES[0:40]
 compstates = pc.STATES
 
 
@@ -298,7 +298,6 @@ len(targvars)
 # while geoweight_sum will not equal weight (our initial national weight), for
 # most records it will be quite close
 
-# %% spot
 weights_geosums = gwp.get_geoweight_sums(
     pufsub,
     weightdf=weights_reweight,
@@ -376,40 +375,85 @@ opts_newt = {
     'init_p': 0.75, # 0.75 default,
     # 'maxp_tol': 0.01, # max pct diff tolerance .01 is 1/100 percent
     'max_iter': 20,  # 20 default
+    'startup_imaxpdiff': 1e6,  # if initial maxpdiff is greater than this go into startup mode
     'startup_iter': 8,  # 8 default number of iterations for the startup period
     'startup_p': .25,  # .25 default p, the step multiplier in the startup period
     'linesearch': True,  # True default
     'quiet': True}
 # opts.update({'stepmethod': 'jvp'})
+opts_newt.update({'max_iter': 100})
+opts_newt.update({'init_p': .40})
+opts_newt.update({'startup_p': .10})
+opts_newt.update({'startup_imaxpdiff': 1.})
+opts_newt.update({'stepmethod': 'jvp'}) # more robust than jac on large problem, oddly
+opts_newt.update({'stepmethod': 'jac'})
+# opts_newt.update({'linesearch': False})
+# opts_newt.update({'scale_goal': 1e6})
+
 
 opts_lsq = {
     'scaling': True,
     'scale_goal': 1e1,
     'init_beta': 0.5,
     'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
+    'max_nfev': 400,  # 100 default
     'quiet': True}
 
-opts = opts_newt
-opts = opts_lsq
+opts = opts_newt; method='poisson-newton'
+
+# opts_lsq.update({'init_beta': 1.})
+opts_lsq.update({'max_nfev': 1000})
+opts = opts_lsq; method = 'poisson-lsq'
 
 
 # c17000	c17000_nnz for AR stub 10 are zero
 
+opts = {
+    'scaling': True,
+    'scale_goal': 10.0,  # this is an important parameter!!
+    'init_beta': 0.5,
+    'max_iter': 20,
+    'maxp_tol': .01,  # .01 is 1/100 of 1% for the max % difference from target
+
+    'base_p': 0.75,  # less than 1 seems important
+    'base_stepmethod': 'jac',  # jvp or jac, jac seems to work better
+    'linesearch': True, # should we do simple line search if objective worsens?
+
+    'startup_period': 8,  # # of iterations in startup period (0 means no startup period)
+    'startup_stepmethod': 'jvp',  # jac or jvp
+    'startup_p': .25,  # p, the step multiplier in the startup period
+    'quiet': True}
+
+opts.update({'max_iter': 100})
+opts.update({'scale_goal': 1e-1})
+
+# opts.update({'base_stepmethod': 'jac'})
+opts.update({'base_stepmethod': 'jvp'})
+opts.update({'base_p': .95})
+opts.update({'startup_period': 0})
+
+opts.update({'startup_period': 20})
+# opts.update({'startup_stepmethod': 'jac'})
+opts.update({'startup_stepmethod': 'jvp'})
+opts.update({'startup_p': .35})
+
+
+opts
 
 tmp = gwp.get_geo_weights_stub(
     pufsub,
     weightdf=weights_georeweight,
-    targvars=targsstub1,  # use targvars or a variant targsstub1
+    targvars=targsstub1,  # use targvars or a variant targsstub1 targvars2
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
-    method='poisson-newton',  # poisson-lsq or poisson-newton
+    method=method,  # poisson-lsq or poisson-newton
     options=opts,
     stub=10)
 # compare results to targets for a single stub
 # 1 is nan microweight.py:215: RuntimeWarning: divide by zero encountered in
 # true_divide pdiff = diff / self.geotargets * 100
 
-targs_used = targsstub1
+targs_used = targvars  # targsstub1 targvars2 targvars
 stub = 10
 
 df = pufsub.loc[pufsub['ht2_stub'] ==stub, ['pid', 'ht2_stub'] + targs_used]
@@ -418,6 +462,8 @@ htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'st
 sts = htstub.stgroup.tolist()  # be sure that target rows and whs columns are in sts order
 xmat = np.asarray(df[targs_used], dtype=float)
 targmat = np.asarray(htstub.loc[:, targs_used])
+targmat.size
+np.count_nonzero(targmat)
 whs = np.asarray(tmp.loc[tmp['ht2_stub']==stub, sts], dtype=float)
 
 targopt = np.dot(whs.T, xmat)
