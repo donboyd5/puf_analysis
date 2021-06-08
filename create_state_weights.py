@@ -58,6 +58,7 @@ from pathlib import Path
 from collections import namedtuple
 import os
 import pickle
+from collections import OrderedDict
 
 import taxcalc as tc
 import pandas as pd
@@ -413,48 +414,58 @@ opts = {
     'scale_goal': 10.0,  # this is an important parameter!!
     'init_beta': 0.5,
     'max_iter': 20,
+    'search_iter': 5,
     'maxp_tol': .01,  # .01 is 1/100 of 1% for the max % difference from target
 
-    'base_p': 0.75,  # less than 1 seems important
     'base_stepmethod': 'jac',  # jvp or jac, jac seems to work better
-    'linesearch': True, # should we do simple line search if objective worsens?
-
-    'startup_period': 8,  # # of iterations in startup period (0 means no startup period)
     'startup_stepmethod': 'jvp',  # jac or jvp
-    'startup_p': .25,  # p, the step multiplier in the startup period
+    'startup_period': 8,  # # of iterations in startup period (0 means no startup period)
+    'jvp_reset_steps': 5,
     'quiet': True}
 
-opts.update({'max_iter': 100})
+opts.update({'max_iter': 300})
+opts.update({'search_iter': 10})
 opts.update({'scale_goal': 1e-1})
 
 # opts.update({'base_stepmethod': 'jac'})
 opts.update({'base_stepmethod': 'jvp'})
-opts.update({'base_p': .95})
-opts.update({'startup_period': 0})
 
-opts.update({'startup_period': 20})
+opts.update({'startup_period': 2})
+opts.update({'startup_period': 8})
 # opts.update({'startup_stepmethod': 'jac'})
 opts.update({'startup_stepmethod': 'jvp'})
-opts.update({'startup_p': .35})
+
+OrderedDict(sorted(opts.items()))
 
 
 opts
 
+# %% tmp
 tmp = gwp.get_geo_weights_stub(
     pufsub,
     weightdf=weights_georeweight,
-    targvars=targsstub1,  # use targvars or a variant targsstub1 targvars2
+    targvars=targvars,  # use targvars or a variant targsstub1 targvars2
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
     method=method,  # poisson-lsq or poisson-newton
     options=opts,
-    stub=10)
+    stub=2)
 # compare results to targets for a single stub
-# 1 is nan microweight.py:215: RuntimeWarning: divide by zero encountered in
-# true_divide pdiff = diff / self.geotargets * 100
+
+# stub 1 needs targsstub1 then good jvp 5 then jac
+# stub 2 don't use jac, 19,107
+# stub 3 good jvp 5 then jac
+# stub 4 good jvp 5 then jac
+# stub 5 good jvp 5 then jac
+# stub 6 good jvp 5 then jac
+# stub 7 good jvp 5 then jac
+# stub 8 good jvp 5 then jac
+# stub 9 good jvp 5 then jac 12,504
+# stub 10 has 40 of 867 targets are zero; jvp5/jac works but bad results
+
 
 targs_used = targvars  # targsstub1 targvars2 targvars
-stub = 10
+stub = 2
 
 df = pufsub.loc[pufsub['ht2_stub'] ==stub, ['pid', 'ht2_stub'] + targs_used]
 htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'stgroup'] + targs_used]
