@@ -212,7 +212,7 @@ compstates= pc.STATES[0:40]
 compstates = pc.STATES
 
 
-# %% 5. Prepare state targets and drop combinatoins for the states of interest
+# %% 5. Prepare state targets and drop combinations for the states of interest
 # get df with ht2 shares
 ht2targets = test.get_potential_state_targets(
     pufsub,
@@ -397,7 +397,7 @@ opts_lsq = {
     'scale_goal': 1e1,
     'init_beta': 0.5,
     'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
-    'max_nfev': 400,  # 100 default
+    'max_nfev': 200,  # 100 default
     'quiet': True}
 
 opts = opts_newt; method='poisson-newton'
@@ -423,40 +423,48 @@ opts = {
     'jvp_reset_steps': 5,
     'quiet': True}
 
-opts.update({'max_iter': 300})
+opts.update({'max_iter': 100})
+opts.update({'max_iter': 50})
 opts.update({'search_iter': 10})
 opts.update({'scale_goal': 1e-1})
 
 # opts.update({'base_stepmethod': 'jac'})
 opts.update({'base_stepmethod': 'jvp'})
 
-opts.update({'startup_period': 2})
+opts.update({'startup_period': 0})
 opts.update({'startup_period': 8})
 # opts.update({'startup_stepmethod': 'jac'})
 opts.update({'startup_stepmethod': 'jvp'})
 
+opts.update({'init_beta': beta_save4.flatten()})
+opts.update({'init_beta': 0.0})
+
 OrderedDict(sorted(opts.items()))
 
-
+method='poisson-newton'
+method='poisson-newton-sep'
 opts
 
+opts.update({'p': .2})
+
 # %% tmp
-tmp = gwp.get_geo_weights_stub(
+tmp, beta = gwp.get_geo_weights_stub(
     pufsub,
     weightdf=weights_georeweight,
     targvars=targvars,  # use targvars or a variant targsstub1 targvars2
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
-    method=method,  # poisson-lsq or poisson-newton
+    method=method,  # poisson-lsq, poisson-newton, poisson-lsq
     options=opts,
     stub=2)
 # compare results to targets for a single stub
+beta_save4 = beta.copy()
 
 # stub 1 needs targsstub1 then good jvp 5 then jac
 # stub 2 don't use jac, 19,107
-# stub 3 good jvp 5 then jac
+# stub 3 good jvp 5 then jac  35,021
 # stub 4 good jvp 5 then jac
-# stub 5 good jvp 5 then jac
+# stub 5 good jvp 5 then jac  25,992
 # stub 6 good jvp 5 then jac
 # stub 7 good jvp 5 then jac
 # stub 8 good jvp 5 then jac
@@ -482,7 +490,7 @@ diff = targopt - targmat
 pdiff = diff / targmat * 100
 sspd = np.square(pdiff).sum()
 sspd
-np.quantile(pdiff, qtiles)
+np.round(np.quantile(pdiff, qtiles), 2)
 np.nanquantile(pdiff, qtiles)
 
 

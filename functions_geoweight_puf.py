@@ -317,7 +317,7 @@ def get_geo_weights_stub(
                       whsdf],
                     axis=1)
 
-    return df2
+    return df2, gw.method_result.beta_opt
 
 
 
