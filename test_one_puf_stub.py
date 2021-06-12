@@ -61,47 +61,51 @@ reload(mw)
 
 # %%  locations
 # machine = 'windows'
-machine = 'linux'
+# machine = 'linux'
 
-if machine == 'windows':
-    DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
-    DATADIR = r'C:\programs_python\puf_analysis\data/'
-    # the following locations store files not saved in git
-    IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
-elif machine == 'linux':
-    # /home/donboyd/Dropbox/PUF files/files_based_on_puf2011
-    DIR_FOR_OFFICIAL_PUF = r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/'
-    DATADIR = '/media/don/ignore/data/'
-    IGNOREDIR = '/media/don/ignore/' # /media/don
+# if machine == 'windows':
+#     DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
+#     DATADIR = r'C:\programs_python\puf_analysis\data/'
+#     # the following locations store files not saved in git
+#     IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
+# elif machine == 'linux':
+#     # /home/donboyd/Dropbox/PUF files/files_based_on_puf2011
+#     DIR_FOR_OFFICIAL_PUF = r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/'
+#     DATADIR = '/media/don/ignore/data/'
+#     IGNOREDIR = '/media/don/ignore/' # /media/don
 
-PUFDIR = IGNOREDIR + 'puf_versions/'
-TCOUTDIR = PUFDIR + 'taxcalc_output/'
-WEIGHTDIR = PUFDIR + 'weights/'
+# PUFDIR = IGNOREDIR + 'puf_versions/'
+# TCOUTDIR = PUFDIR + 'taxcalc_output/'
+# WEIGHTDIR = PUFDIR + 'weights/'
 
-TABDIR = IGNOREDIR + 'result_tables/'
+# TABDIR = IGNOREDIR + 'result_tables/'
 
-TEMPDIR = IGNOREDIR + 'intermediate_results/'
+# TEMPDIR = IGNOREDIR + 'intermediate_results/'
 
+# %% New directories
+SCRATCHDIR = '/media/don/scratch/'
+OUTDIR = '/media/don/pufanalysis_output/'
+OUTDATADIR = OUTDIR + 'data/'
 
 # %% paths to specific already existing files
-LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'
+# LATEST_OFFICIAL_PUF = DIR_FOR_OFFICIAL_PUF + 'puf.csv'
 
-# growfactors
-GF_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'growfactors.csv'
-# GF_CUSTOM = DATADIR + 'growfactors_custom.csv'  # selected growfactors reflect IRS growth between 2011 and 2017
-GF_CUSTOM = DATADIR + 'growfactors_custom_busincloss.csv'  # now also includes business income and loss items
-GF_ONES = DATADIR + 'growfactors_ones.csv'
+# # growfactors
+# GF_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'growfactors.csv'
+# # GF_CUSTOM = DATADIR + 'growfactors_custom.csv'  # selected growfactors reflect IRS growth between 2011 and 2017
+# GF_CUSTOM = DATADIR + 'growfactors_custom_busincloss.csv'  # now also includes business income and loss items
+# GF_ONES = DATADIR + 'growfactors_ones.csv'
 
-WEIGHTS_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'puf_weights.csv'
+# WEIGHTS_OFFICIAL = DIR_FOR_OFFICIAL_PUF + 'puf_weights.csv'
 
-POSSIBLE_TARGETS = DATADIR + 'targets2017_possible.csv'
+# POSSIBLE_TARGETS = DATADIR + 'targets2017_possible.csv'
 
-HT2_SHARES = DATADIR + 'ht2_shares.csv'
+# HT2_SHARES = DATADIR + 'ht2_shares.csv'
 
 # %% functions
-def wtdsums(df, vars, weight):
+# def wtdsums(df, vars, weight):
 
-    return wtdsums
+#     return wtdsums
 
 
 
@@ -111,7 +115,7 @@ compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
 
 
 # %% retrieve puf and targets info
-pkl_name = IGNOREDIR + 'pickle.pkl'
+pkl_name = SCRATCHDIR + 'pickle.pkl'
 open_file = open(pkl_name, "rb")
 pkl = pickle.load(open_file)
 open_file.close()
@@ -120,10 +124,10 @@ targvars, ht2wide, pufsub, dropsdf_wide = pkl
 
 
 # %% prep
-wfname_national = WEIGHTDIR + 'weights2017_georwt1.csv'
+wfname_national = OUTDATADIR + 'weights2017_georwt1.csv'
 wfname_national
 final_national_weights = pd.read_csv(wfname_national)
-# final_national_weights.head(20)
+final_national_weights.head(20)
 
 # %% counts by stub
 # pufsub

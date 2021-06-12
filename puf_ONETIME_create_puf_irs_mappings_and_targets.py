@@ -5,6 +5,19 @@ Created on Fri Nov  6 04:24:19 2020
 @author: donbo
 """
 
+# %% what this program does
+#   - From a large set of 2017 IRS summary data (targets2017_collapsed.csv)
+#   - construct a group of possible targets based on variables we have defined
+#     in the dict pufirs_map
+#   - construct puf variable names that correspond to the variable names,
+#     including names with suffixes for
+#         - number of returns (nret), and
+#         - number of nonzero returns (nnz)
+#   - write the subset of targets enhanced with puf variable names to a
+#     file (targets2017_possible.csv)
+#   - write a mapping with information on the variables (target_mappings.csv)
+
+
 # %% target notes
 # puf counts generally are my definition of filers
 # in addition to the obvious items
@@ -82,7 +95,9 @@ import puf_utilities as pu
 
 
 # %% locations and file names
-DATADIR = r'C:\programs_python\puf_analysis\data/'
+# DATADIR = r'C:\programs_python\puf_analysis\data/'
+DATADIR = '/media/don/pufanalysis_output/data/'
+
 IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 PUFDIR = IGNOREDIR + 'puf_versions/'
 TCOUTDIR = PUFDIR + 'taxcalc_output/'
@@ -105,6 +120,11 @@ def get_nnz(puf, pufvars_to_nnz):
 # this mapping will help us define the nnz and sum variables we need to create
 # in the puf
 # and the related full mappings to create
+
+
+# %% define pufirs and irspuf one-to-one mappings of variable names
+# puf variable names are those in the puf, or taxcalc output, or names based on them
+# irs variable names are names I created for elements of IRS spreadsheets of summary data
 pufirs_map = {
     # number of returns and marital status indicators
     'nret_all': 'nret_all',
@@ -157,7 +177,10 @@ pufirs_map = {
 # CAUTION: reverse xwalk relies on having only one keyword per value
 irspuf_map = {val: kw for kw, val in pufirs_map.items()}
 
-# define the variables we will transform by creating nnz versions
+
+# %% define transformations
+
+# define the variables for which we will create nnz versions
 puf_vars = pufirs_map.keys()
 irs_vars = pufirs_map.values()
 # puf_default[puf_vars]
@@ -177,8 +200,9 @@ for p, i in zip(puf_vars, irs_vars):
     if p in pufvars_to_nnz:
         plist.append(p + '_nnz')
         ilist.append('nret_' + i)
-
 len(plist) == len(ilist)
+
+# %% define and save full mapping of variables
 pufirs_fullmap = {plist[i]: ilist[i] for i in range(len(plist))}
 
 # CAUTION: reverse xwalk relies on having only one keyword per value
@@ -190,7 +214,7 @@ check = json.load(open(DATADIR + 'pufirs_fullmap.json'))
 
 
 # %% ONETIME: define and save possible targets
-IRSDAT = DATADIR + 'targets2017_collapsed.csv'
+IRSDAT = DATADIR + 'targets2017_collapsed.csv'  # I copied to here -- will need to recreate it eventually
 irstot = pd.read_csv(IRSDAT)
 irstot
 irstot.info()
@@ -214,8 +238,12 @@ targets_possible = targets_possible.sort_values(by=['common_stub', 'pufvar'], ax
 targets_possible.to_csv(DATADIR + 'targets2017_possible.csv', index=False)
 
 check = targets_possible[['irsvar', 'pufvar']].drop_duplicates()
-check  # 50 items
-# np.setdiff1d(list(irspuf_fullmap.values()), check.pufvar.tolist())  # elements in first list NOT in second
+check  # 50 items  # djb 5/27/2021  51 items
+check.info()
+# dropped_vars = np.setdiff1d(list(irspuf_fullmap.values()), check.pufvar.tolist())  # elements in first list NOT in second
+# for key, value in irspuf_fullmap.items():
+#     if value in dropped_vars:
+#         print(value, ":  ", key)
 
 target_mappings = targets_possible.drop(labels=['common_stub', 'incrange', 'irs'], axis=1).drop_duplicates()
 target_mappings.to_csv(DATADIR + 'target_mappings.csv', index=False)

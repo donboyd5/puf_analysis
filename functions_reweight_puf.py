@@ -17,6 +17,8 @@ sys.path.append(str(weighting_dir))  # needed
 
 import src.microweight as mw
 
+from timeit import default_timer as timer
+
 
 # %% functions
 
@@ -118,7 +120,12 @@ def get_pctdiffs(pufsub, weightdf, targets):
     dfmerge['diff'] = dfmerge.puf - dfmerge.target
     dfmerge['pdiff'] = dfmerge['diff'] / dfmerge.target * 100
     dfmerge['abspdiff'] = np.abs(dfmerge.pdiff)
+
+    # bring in useful information about vars and stubs
+    dfmerge = pd.merge(dfmerge, pc.irspuf_target_map[['pufvar', 'column_description']], how='left', on='pufvar')
+    dfmerge = pd.merge(dfmerge, pc.irsstubs, how='left', on='common_stub')
     dfmerge = dfmerge.sort_values(by='abspdiff', ascending=False)
+
     return dfmerge
 
 
@@ -254,6 +261,8 @@ def prep_puf(puf, targets):
 
 
 def puf_reweight(pufsub, init_weights, targets, method='lsq', drops=None):
+
+    a = timer()
     # create local copy of init_weights with columns pid, weight
     init_weights = pu.idx_rename(init_weights, col_indexes=[0, 1], new_names=['pid', 'weight'])
 
@@ -264,6 +273,10 @@ def puf_reweight(pufsub, init_weights, targets, method='lsq', drops=None):
     grouped = pufsub.groupby('common_stub')
 
     new_weights = grouped.apply(stub_opt, targets, method=method, drops=drops)  # method lsq or ipopt
+    new_weights = new_weights.sort_values(by='pid')
+    b = timer()
+    print('Elapsed seconds: ', b - a)
+
     return new_weights
 
 
@@ -305,11 +318,6 @@ def stub_opt(df, targets, method, drops=None):
         drop_vars = drops[drops.common_stub==stub].pufvar.tolist()
 
     targets_use = [pufvar for pufvar in target_names if pufvar not in drop_vars]
-    # print(targets_use)
-
-    # targets_use = target_names[0:24]
-    # targets_use = targets_use[0:27]
-    # targets_use[23]
 
     df = df[['pid', 'weight'] + targets_use]
     wh = np.asarray(df.weight)
@@ -326,22 +334,25 @@ def stub_opt(df, targets, method, drops=None):
                 'scaling': False,
                 'max_iter': 50}  # bvls or trf
         # opts = {'xlb': 0.001, 'xub': 1000, 'tol': 1e-7, 'method': 'trf', 'max_iter': 500}
-    elif method == 'ipopt':
+    elif method == 'ipopt' or method == 'ipopt_sparse':
         # opts = {'crange': 0.001, 'quiet': False}
-        opts = {'crange': 0.001, 'xlb': 0.1, 'xub': 100, 'quiet': False}
+        opts = {'crange': 0.001, 'xlb': 0.1, 'xub': 100, 'quiet': True, 'ccgoal': 1}
 
     # print(opts)
     rw = prob.reweight(method=method, options=opts)
-    # np.quantile(rw.g, qtiles)
-    # rw.pdiff
 
-    df['reweight'] = df.weight * rw.g
-    return df[['pid', 'weight', 'reweight']]
+    # print()  # get ipopt solver message -- via microweight
+    qtiles = (0, .01, .1, .25, .5, .75, .9, .99, 1)
+    print('Quantiles for % differences from targets: ', qtiles)
+    print(np.quantile(rw.pdiff, qtiles), '\n')
 
+    new_weights = df[['pid', 'weight']].rename(columns={'weight': 'weight_init'})
+    new_weights['weight'] = new_weights.weight_init * rw.g
+    return new_weights[['pid', 'weight', 'weight_init']]
 
 
 def ulist(thelist):
-    # return unique list with out changing order of original list
+    # return unique list without changing order of original list
     ulist = []
     for x in thelist:
         if x not in ulist:
