@@ -291,13 +291,24 @@ def get_geo_weights_stub(
     targets = targetsdf[targvars].to_numpy()
 
     # once we have a numpy array we can fix zeros
-
     nzvalues = np.count_nonzero(targets)
     zvalues = targets.size - nzvalues
     if nzvalues < targets.size:
-        zreplace = 1000
-        print(f"WARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO! Replacing with {zreplace}...")
-        targets[targets==0] = zreplace
+        print(f"WARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO! Replacing with values based on state with smallest per-return average...")
+        # this relies on column zero having the number of returns for each state
+        # we compute the per-return value for each target, by state
+        # and find the smallest nonzero per-return value for each target
+        # we then assign that smallest nonzero value to the zero-valued items
+        state_avgs = np.divide(targets, targets[:,0].reshape((-1, 1)))
+        smallest_nz_stateavg = np.ma.masked_equal(state_avgs, 0.0, copy=False).min(axis=0)
+        # find indices of values we need to replace
+        inds = np.where(targets==0)
+        # place smallest values in locations defined by the indices; align the arrays using take
+        # ztargets= targets.copy()
+        state_avgs[inds] = np.take(smallest_nz_stateavg, inds[1])
+        targets = state_avgs * targets[:,0].reshape((-1, 1))
+        # print(ztargets)
+        # print(targets)
 
     dropsdf_stub = dropsdf_wide.query(qx)[['stgroup'] + targvars]
     drops = np.asarray(dropsdf_stub[targvars], dtype=bool)  # True means we drop

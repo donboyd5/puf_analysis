@@ -486,24 +486,24 @@ tmp, beta = gwp.get_geo_weights_stub(
     dropsdf_wide=drops_states_updated,
     method=method,  # poisson-lsq, poisson-newton, poisson-lsq
     options=opts,
-    stub=7)
+    stub=10)
 # compare results to targets for a single stub
 beta_save4 = beta.copy()
 
-# stub 1   5,340; needs targstub1; jvp 6 then jac
-# stub 2  19,107; use jvp for all, not jac
-# stub 3  35,021; good jvp 5 then jac
-# stub 4  40,940; good jvp 5 then jac
-# stub 5  25,992; good jvp 5 then jac
-# stub 6  18,036; good jvp 5 then jac
-# stub 7  30,369; good jvp 5 then jac
+# stub 1    5,340; needs targstub1; jvp 6 then jac
+# stub 2   19,107; use jvp for all, not jac
+# stub 3   35,021; good jvp 5 then jac
+# stub 4   40,940; good jvp 5 then jac
+# stub 5   25,992; good jvp 5 then jac
+# stub 6   18,036; good jvp 5 then jac
+# stub 7   30,369; good jvp 5 then jac
 # stub 8 good jvp 5 then jac
-# stub 9  12,504; good jvp 5 then jac
-# stub 10  28,433; 40 of 867 targets are zero; jvp5/jac works but bad results
+# stub 9   12,504; good jvp 5 then jac
+# stub 10  28,433; good jac; note 40 of 867 targets are zero
 
 
-targs_used = targstub1  # targsstub1 targvars2 targvars
-stub = 1
+targs_used = targvars  # targsstub1 targvars2 targvars
+stub = 10
 
 df = pufsub.loc[pufsub['ht2_stub'] ==stub, ['pid', 'ht2_stub'] + targs_used]
 htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'stgroup'] + targs_used]
@@ -522,7 +522,7 @@ pdiff = diff / targmat * 100
 sspd = np.square(pdiff).sum()
 sspd
 np.round(np.quantile(pdiff, qtiles), 2)
-np.nanquantile(pdiff, qtiles)
+np.round(np.nanquantile(pdiff, qtiles), 2)
 
 
 # %% scratch
