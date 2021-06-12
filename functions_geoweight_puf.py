@@ -290,6 +290,8 @@ def get_geo_weights_stub(
     sts = targetsdf.stgroup.tolist()
     targets = targetsdf[targvars].to_numpy()
 
+    # once we have a numpy array we can fix zeros
+
     nzvalues = np.count_nonzero(targets)
     zvalues = targets.size - nzvalues
     if nzvalues < targets.size:
