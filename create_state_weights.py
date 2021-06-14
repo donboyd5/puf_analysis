@@ -66,6 +66,7 @@ import numpy as np
 from datetime import date
 
 import functions_advance_puf as adv
+import functions_puf_analysis as fpa
 import functions_reports as rpt
 import functions_reweight_puf as rwp
 import functions_geoweight_puf as gwp
@@ -75,7 +76,7 @@ import functions_state_weights as fsw
 import puf_constants as pc
 import puf_utilities as pu
 
-import test
+
 
 # microweight - apparently we have to tell python where to find this
 # sys.path.append('c:/programs_python/weighting/')  # needed
@@ -90,12 +91,12 @@ from timeit import default_timer as timer
 # %% reimports
 reload(adv)
 reload(fsw)
+reload(fpa)
 reload(gwp)
 reload(mw)
 reload(pc)
 reload(rpt)
 reload(rwp)
-reload(test)
 # reload(gwp)
 
 
@@ -190,7 +191,7 @@ rpt.wtdpuf_national_comp_report(
 
 
 # %% 4. Reweight national puf to come closer to targets
-drops_national = test.get_drops_national(pdiff_init)
+drops_national = fpa.get_drops_national(pdiff_init)
 weights_reweight = rwp.puf_reweight(pufsub, weights_initial, ptargets, method='ipopt', drops=drops_national)
 # stub 1 gives some trouble
 
@@ -214,7 +215,7 @@ compstates = pc.STATES
 
 # %% 5. Prepare state targets and drop combinations for the states of interest
 # get df with ht2 shares
-ht2targets = test.get_potential_state_targets(
+ht2targets = fpa.get_potential_state_targets(
     pufsub,
     weightdf=weights_reweight,
     ht2sharespath=HT2_SHARES,  # currently this is from the old Windows run, need to update
@@ -238,8 +239,8 @@ rpt.ht2target_report(
     title='Comparison of Historical Table 2 shares by group to shares for # of returns',
     outpath=OUTDATADIR + 'state_shares.csv')
 
-drops_states = test.get_drops_states(ht2targets)
-ht2wide = test.get_ht2wide_states(ht2targets)
+drops_states = fpa.get_drops_states(ht2targets)
+ht2wide = fpa.get_ht2wide_states(ht2targets)
 
 
 # %% 6. WORK AREA to define target variables
@@ -265,7 +266,7 @@ targvars2 = ['nret_all', 'mars1', 'c00100']
 targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
 targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
 
-targsstub1 = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
+targstub1 = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
             'c00100',   # AGI
             'e00200', 'e00200_nnz',  # wages
             'e00300', 'e00300_nnz',  # taxable interest income
@@ -299,6 +300,10 @@ len(targvars)
 # while geoweight_sum will not equal weight (our initial national weight), for
 # most records it will be quite close
 
+
+# NOTE: this next statement takes about 11 minutes
+# weights_geosums only has the sum-of-states weight for each record
+# the 50 state weights for each record are in the allweights... csv file
 weights_geosums = gwp.get_geoweight_sums(
     pufsub,
     weightdf=weights_reweight,
@@ -308,6 +313,9 @@ weights_geosums = gwp.get_geoweight_sums(
     outpath=OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv',
     stubs = None)  # None, or list or tuple of stubs
 
+# To get weights_geosums from the file, run the following 2 lines
+# weights_geosums = pd.read_csv(OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv')
+# weights_geosums = weights_geosums.loc[:,['pid', 'geoweight_sum']].rename(columns={'geoweight_sum': 'weight'})
 
 pdiff_geosums = rwp.get_pctdiffs(pufsub, weights_geosums, ptargets)
 np.round(np.nanquantile(pdiff_geosums.abspdiff, qtiles), 2)
@@ -318,11 +326,9 @@ rpt.wtdpuf_national_comp_report(
     title='Unrestricted geosum weighted 2017 puf values versus IRS targets.',
     ipdiff_df=pdiff_reweighted)
 
-# temp[['pid', 'filer', 'nret_all', 'mars1', 'c00100']].first()
-
 
 # %% 8. Reweight the national file to come closer to targets
-drops_national_geo = test.get_drops_national(pdiff_geosums)
+drops_national_geo = fpa.get_drops_national(pdiff_geosums)
 weights_georeweight = rwp.puf_reweight(pufsub, weights_geosums, ptargets, method='ipopt', drops=drops_national_geo)
 
 # report on percent differences
@@ -339,7 +345,7 @@ rpt.wtdpuf_national_comp_report(
 # %% 9. Update state-stub targets to reflect new slightly-revised pufsums
 # remember that new pufsums won't be exactly like old so we should recalibrate
 # state targets
-ht2targets_updated = test.get_potential_state_targets(
+ht2targets_updated = fpa.get_potential_state_targets(
     pufsub,
     weightdf=weights_georeweight,
     ht2sharespath=HT2_SHARES,  # currently this is from the old Windows run, need to update
@@ -363,8 +369,29 @@ rpt.ht2target_report(
     title='Comparison of Historical Table 2 shares by group to shares for # of returns',
     outpath=OUTDATADIR + 'state_shares_updated.csv')
 
-drops_states_updated = test.get_drops_states(ht2targets_updated)
-ht2wide_updated = test.get_ht2wide_states(ht2targets_updated)
+drops_states_updated = fpa.get_drops_states(ht2targets_updated)
+ht2wide_updated = fpa.get_ht2wide_states(ht2targets_updated)
+
+
+# %% BREAK: pickle everything needed to create state weights
+# to avoid running all of the code above each time we test state weighting,
+# pickle the data needed for state weighting once and retrieve when needed
+save_list = [pufsub, weights_georeweight, targvars, targstub1,
+             ht2wide_updated, drops_states_updated]
+save_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
+
+open_file = open(save_name, "wb")
+pickle.dump(save_list, open_file)
+open_file.close()
+
+
+# %% BREAK: retrieve pickled data for state weighting
+save_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
+open_file = open(save_name, "rb")
+pkl = pickle.load(open_file)
+open_file.close()
+pufsub, weights_georeweight, targvars, targstub1, ht2wide_updated, drops_states_updated = pkl
+del(pkl)
 
 
 # %% 10. Get state weights
@@ -412,7 +439,7 @@ opts = opts_lsq; method = 'poisson-lsq'
 opts = {
     'scaling': True,
     'scale_goal': 10.0,  # this is an important parameter!!
-    'init_beta': 0.5,
+    'init_beta': 0.0,
     'max_iter': 20,
     'search_iter': 5,
     'maxp_tol': .01,  # .01 is 1/100 of 1% for the max % difference from target
@@ -426,18 +453,21 @@ opts = {
 opts.update({'max_iter': 100})
 opts.update({'max_iter': 50})
 opts.update({'search_iter': 10})
-opts.update({'scale_goal': 1e-1})
+opts.update({'scale_goal': 10}) # 10
 
 # opts.update({'base_stepmethod': 'jac'})
 opts.update({'base_stepmethod': 'jvp'})
 
-opts.update({'startup_period': 0})
-opts.update({'startup_period': 8})
+opts.update({'startup_period': 5})
+opts.update({'startup_period': 100})
 # opts.update({'startup_stepmethod': 'jac'})
 opts.update({'startup_stepmethod': 'jvp'})
 
 opts.update({'init_beta': beta_save4.flatten()})
 opts.update({'init_beta': 0.0})
+
+opts.update({'step_fixed': .4})
+opts.update({'step_fixed': False})
 
 OrderedDict(sorted(opts.items()))
 
@@ -446,30 +476,41 @@ method='poisson-newton-sep'
 opts
 
 opts.update({'p': .2})
+opts.update({'lgmres_maxiter': 20})
+
+opts.update({'stepmethod': 'auto'})
+opts.update({'jac_threshold': 20e3})
+
+# in terminal:
+#    export OMP_NUM_THREADS=10
+#    export NUMBA_NUM_THREADS=10
+#
 
 # %% tmp
 tmp, beta = gwp.get_geo_weights_stub(
     pufsub,
     weightdf=weights_georeweight,
-    targvars=targvars,  # use targvars or a variant targsstub1 targvars2
+    targvars=targstub1,  # use targvars or a variant targstub1 targvars2
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
     method=method,  # poisson-lsq, poisson-newton, poisson-lsq
     options=opts,
-    stub=2)
+    stub=1)
 # compare results to targets for a single stub
 beta_save4 = beta.copy()
 
-# stub 1 needs targsstub1 then good jvp 5 then jac
-# stub 2 don't use jac, 19,107
-# stub 3 good jvp 5 then jac  35,021
-# stub 4 good jvp 5 then jac
-# stub 5 good jvp 5 then jac  25,992
-# stub 6 good jvp 5 then jac
-# stub 7 good jvp 5 then jac
-# stub 8 good jvp 5 then jac
-# stub 9 good jvp 5 then jac 12,504
-# stub 10 has 40 of 867 targets are zero; jvp5/jac works but bad results
+# lgmres_maxiter = 8 seems good
+
+# stub 1    5,340; jac, jvp good; NOTE: needs targstub1; jvp 6 then jac
+# stub 2   19,107; jac auto works, cannot reach zero
+# stub 3   35,021; jac(9), jvp(50+) good, jvp much slower
+# stub 4   40,940; jac, jvp(-10) good
+# stub 5   25,992; jac, jvp(24) good
+# stub 6   18,036; jac, jvp(28) good
+# stub 7   30,369; jac, jvp(7) good
+# stub 8   17,768; jac, jvp(7) good
+# stub 9   12,504; jac, jvp(7) good
+# stub 10  28,433; jac (14 stops improving), jvp(29 stops improving) good; note 40 of 867 targets are zero
 
 
 targs_used = targvars  # targsstub1 targvars2 targvars
@@ -484,6 +525,7 @@ targmat = np.asarray(htstub.loc[:, targs_used])
 targmat.size
 np.count_nonzero(targmat)
 whs = np.asarray(tmp.loc[tmp['ht2_stub']==stub, sts], dtype=float)
+np.quantile(whs, qtiles)
 
 targopt = np.dot(whs.T, xmat)
 diff = targopt - targmat
@@ -491,7 +533,7 @@ pdiff = diff / targmat * 100
 sspd = np.square(pdiff).sum()
 sspd
 np.round(np.quantile(pdiff, qtiles), 2)
-np.nanquantile(pdiff, qtiles)
+np.round(np.nanquantile(pdiff, qtiles), 2)
 
 
 # %% scratch
