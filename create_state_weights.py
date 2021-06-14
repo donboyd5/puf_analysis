@@ -77,7 +77,6 @@ import puf_constants as pc
 import puf_utilities as pu
 
 
-
 # microweight - apparently we have to tell python where to find this
 # sys.path.append('c:/programs_python/weighting/')  # needed
 weighting_dir = Path.home() / 'Documents/python_projects/weighting'
@@ -281,6 +280,19 @@ targstub1 = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing st
 
 len(targvars)
 ['good' for var in targvars if var in ht2wide.columns]
+
+# %% how to identify all-zero variables
+sub = ht2wide.loc[ht2wide.ht2_stub==1, :]
+good = sub.loc[:, (sub.sum(axis=0) != 0)]
+# dropcols = sub.columns.difference(good.columns).tolist()
+dropcols = [var for var in targvars if not var in good.columns]
+keepcols = [var for var in targvars if var in good.columns]
+keepcols
+print('WARNING: dropping the following columns where ht2 sum is ZERO: ', dropcols)
+
+
+
+
 
 
 # %% 7. Construct national weights as sums of unrestricted state weights
@@ -502,12 +514,12 @@ opts.update({'jac_threshold': 1e9})
 tmp, beta = gwp.get_geo_weights_stub(
     pufsub,
     weightdf=weights_georeweight,
-    targvars=targstub1,  # use targvars or a variant targstub1 targvars2
+    targvars=targvars,  # use targvars or a variant targstub1 targvars2
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
     method=method,  # poisson-lsq, poisson-newton, poisson-lsq
     options=opts,
-    stub=1)
+    stub=10)
 # compare results to targets for a single stub
 beta_save = beta.copy()
 

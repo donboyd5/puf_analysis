@@ -270,6 +270,14 @@ def get_geo_weights_stub(
     df = df.loc[df['ht2_stub']==stub]
     print(df.shape)
 
+    sub = ht2wide.loc[ht2wide.ht2_stub==stub, :]
+    good = sub.loc[:, (sub.sum(axis=0) != 0)]
+
+    if good.shape[1] < sub.shape[1]:
+        dropcols = [var for var in targvars if not var in good.columns]
+        print('\nWARNING: dropping the following columns where ht2 sum is ZERO:\n', dropcols, '\n')
+        targvars = [var for var in targvars if var in good.columns]
+
     qx = '(ht2_stub == @stub)'
 
     # create local copy of weights with proper names
@@ -294,7 +302,8 @@ def get_geo_weights_stub(
     nzvalues = np.count_nonzero(targets)
     zvalues = targets.size - nzvalues
     if nzvalues < targets.size:
-        print(f"WARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO! Replacing with values based on state with smallest per-return average...")
+        print(f"\nWARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO!")
+        print('Replacing zeros with targets calculated using per-return value for the state that had smallest nonzero value for corresponding target...\n')
         # https://stackoverflow.com/questions/18689235/numpy-array-replace-nan-values-with-average-of-columns
         # this relies on column zero having the number of returns for each state
         # we compute the per-return value for each target, by state
