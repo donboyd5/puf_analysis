@@ -295,6 +295,7 @@ def get_geo_weights_stub(
     zvalues = targets.size - nzvalues
     if nzvalues < targets.size:
         print(f"WARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO! Replacing with values based on state with smallest per-return average...")
+        # https://stackoverflow.com/questions/18689235/numpy-array-replace-nan-values-with-average-of-columns
         # this relies on column zero having the number of returns for each state
         # we compute the per-return value for each target, by state
         # and find the smallest nonzero per-return value for each target

@@ -453,13 +453,13 @@ opts = {
 opts.update({'max_iter': 100})
 opts.update({'max_iter': 50})
 opts.update({'search_iter': 10})
-opts.update({'scale_goal': 1e5})
+opts.update({'scale_goal': 10}) # 10
 
 # opts.update({'base_stepmethod': 'jac'})
 opts.update({'base_stepmethod': 'jvp'})
 
 opts.update({'startup_period': 5})
-opts.update({'startup_period': 25})
+opts.update({'startup_period': 100})
 # opts.update({'startup_stepmethod': 'jac'})
 opts.update({'startup_stepmethod': 'jvp'})
 
@@ -476,34 +476,45 @@ method='poisson-newton-sep'
 opts
 
 opts.update({'p': .2})
+opts.update({'lgmres_maxiter': 20})
+
+opts.update({'stepmethod': 'auto'})
+opts.update({'jac_threshold': 20e3})
+
+# in terminal:
+#    export OMP_NUM_THREADS=10
+#    export NUMBA_NUM_THREADS=10
+#
 
 # %% tmp
 tmp, beta = gwp.get_geo_weights_stub(
     pufsub,
     weightdf=weights_georeweight,
-    targvars=targvars,  # use targvars or a variant targstub1 targvars2
+    targvars=targstub1,  # use targvars or a variant targstub1 targvars2
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
     method=method,  # poisson-lsq, poisson-newton, poisson-lsq
     options=opts,
-    stub=10)
+    stub=1)
 # compare results to targets for a single stub
 beta_save4 = beta.copy()
 
-# stub 1    5,340; needs targstub1; jvp 6 then jac
-# stub 2   19,107; use jvp for all, not jac
-# stub 3   35,021; good jvp 5 then jac
-# stub 4   40,940; good jvp 5 then jac
-# stub 5   25,992; good jvp 5 then jac
-# stub 6   18,036; good jvp 5 then jac
-# stub 7   30,369; good jvp 5 then jac
-# stub 8 good jvp 5 then jac
-# stub 9   12,504; good jvp 5 then jac
-# stub 10  28,433; good jac; note 40 of 867 targets are zero
+# lgmres_maxiter = 8 seems good
+
+# stub 1    5,340; jac, jvp good; NOTE: needs targstub1; jvp 6 then jac
+# stub 2   19,107; jac auto works, cannot reach zero
+# stub 3   35,021; jac(9), jvp(50+) good, jvp much slower
+# stub 4   40,940; jac, jvp(-10) good
+# stub 5   25,992; jac, jvp(24) good
+# stub 6   18,036; jac, jvp(28) good
+# stub 7   30,369; jac, jvp(7) good
+# stub 8   17,768; jac, jvp(7) good
+# stub 9   12,504; jac, jvp(7) good
+# stub 10  28,433; jac (14 stops improving), jvp(29 stops improving) good; note 40 of 867 targets are zero
 
 
 targs_used = targvars  # targsstub1 targvars2 targvars
-stub = 10
+stub = 2
 
 df = pufsub.loc[pufsub['ht2_stub'] ==stub, ['pid', 'ht2_stub'] + targs_used]
 htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'stgroup'] + targs_used]
