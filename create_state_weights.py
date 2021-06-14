@@ -463,8 +463,9 @@ opts.update({'startup_period': 100})
 # opts.update({'startup_stepmethod': 'jac'})
 opts.update({'startup_stepmethod': 'jvp'})
 
-opts.update({'init_beta': beta_save4.flatten()})
+opts.update({'init_beta': betalsq.flatten()})
 opts.update({'init_beta': 0.0})
+opts.update({'init_beta': 0.5})
 
 opts.update({'step_fixed': .4})
 opts.update({'step_fixed': False})
@@ -476,10 +477,21 @@ method='poisson-newton-sep'
 opts
 
 opts.update({'p': .2})
-opts.update({'lgmres_maxiter': 20})
 
+
+method='poisson-newton'
+opts.update({'lgmres_maxiter': 20})
+opts.update({'search_iter': 20})
+opts.update({'max_iter': 40})
 opts.update({'stepmethod': 'auto'})
 opts.update({'jac_threshold': 20e3})
+opts.update({'no_improvement_proportion': 1e-3})
+opts.update({'jac_min_improvement': 0.10})
+
+
+# opts.update({'jac_threshold': 20e3})
+opts.update({'jac_threshold': 1e9})
+
 
 # in terminal:
 #    export OMP_NUM_THREADS=10
@@ -497,7 +509,25 @@ tmp, beta = gwp.get_geo_weights_stub(
     options=opts,
     stub=1)
 # compare results to targets for a single stub
-beta_save4 = beta.copy()
+beta_save = beta.copy()
+
+# note that stubs 2 and 10 don't solve to zero, but the others do
+
+
+
+method = 'poisson-lsq'
+opts = opts_lsq
+opts.update({'init_beta': beta_save.flatten()})
+tmplsq, betalsq = gwp.get_geo_weights_stub(
+    pufsub,
+    weightdf=weights_georeweight,
+    targvars=targvars,  # use targvars or a variant targstub1 targvars2
+    ht2wide=ht2wide_updated,
+    dropsdf_wide=drops_states_updated,
+    method=method,  # poisson-lsq, poisson-newton, poisson-lsq
+    options=opts,
+    stub=2)
+
 
 # lgmres_maxiter = 8 seems good
 
