@@ -496,13 +496,10 @@ opts.update({'lgmres_maxiter': 20})
 opts.update({'search_iter': 20})
 opts.update({'max_iter': 40})
 opts.update({'stepmethod': 'auto'})
-opts.update({'jac_threshold': 20e3})
+opts.update({'jac_threshold': 1e9})
 opts.update({'no_improvement_proportion': 1e-3})
 opts.update({'jac_min_improvement': 0.10})
-
-
-# opts.update({'jac_threshold': 20e3})
-opts.update({'jac_threshold': 1e9})
+opts.update({'jvp_reset_steps': 4})
 
 
 # in terminal:
@@ -510,50 +507,44 @@ opts.update({'jac_threshold': 1e9})
 #    export NUMBA_NUM_THREADS=10
 #
 
-# %% tmp
+# %% ...10a. Verify that individual stubs can run
 tmp, beta = gwp.get_geo_weights_stub(
     pufsub,
     weightdf=weights_georeweight,
     targvars=targvars,  # use targvars or a variant targstub1 targvars2
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
-    method=method,  # poisson-lsq, poisson-newton, poisson-lsq
+    method=method,  # poisson-lsq, poisson-newton, poisson-newton-sep
     options=opts,
     stub=10)
 # compare results to targets for a single stub
 beta_save = beta.copy()
 
+# stub 1    5,340; drops 4 zero HT2 sum variables
+# stub 2   19,107; cannot reach zero
+# stub 3   35,021;
+# stub 4   40,940;
+# stub 5   25,992;
+# stub 6   18,036;
+# stub 7   30,369;
+# stub 8   17,768;
+# stub 9   12,504;
+# stub 10  28,433; cannot reach zero; replaces 40 of 867 targets that are zero
+
 # note that stubs 2 and 10 don't solve to zero, but the others do
 
-
-
-method = 'poisson-lsq'
-opts = opts_lsq
-opts.update({'init_beta': beta_save.flatten()})
-tmplsq, betalsq = gwp.get_geo_weights_stub(
-    pufsub,
-    weightdf=weights_georeweight,
-    targvars=targvars,  # use targvars or a variant targstub1 targvars2
-    ht2wide=ht2wide_updated,
-    dropsdf_wide=drops_states_updated,
-    method=method,  # poisson-lsq, poisson-newton, poisson-lsq
-    options=opts,
-    stub=2)
-
-
-# lgmres_maxiter = 8 seems good
-
-# stub 1    5,340; jac, jvp good; NOTE: needs targstub1; jvp 6 then jac
-# stub 2   19,107; jac auto works, cannot reach zero
-# stub 3   35,021; jac(9), jvp(50+) good, jvp much slower
-# stub 4   40,940; jac, jvp(-10) good
-# stub 5   25,992; jac, jvp(24) good
-# stub 6   18,036; jac, jvp(28) good
-# stub 7   30,369; jac, jvp(7) good
-# stub 8   17,768; jac, jvp(7) good
-# stub 9   12,504; jac, jvp(7) good
-# stub 10  28,433; jac (14 stops improving), jvp(29 stops improving) good; note 40 of 867 targets are zero
-
+# method = 'poisson-lsq'
+# opts = opts_lsq
+# opts.update({'init_beta': beta_save.flatten()})
+# tmplsq, betalsq = gwp.get_geo_weights_stub(
+#     pufsub,
+#     weightdf=weights_georeweight,
+#     targvars=targvars,  # use targvars or a variant targstub1 targvars2
+#     ht2wide=ht2wide_updated,
+#     dropsdf_wide=drops_states_updated,
+#     method=method,  # poisson-lsq, poisson-newton, poisson-lsq
+#     options=opts,
+#     stub=2)
 
 targs_used = targvars  # targsstub1 targvars2 targvars
 stub = 2
@@ -576,6 +567,22 @@ sspd = np.square(pdiff).sum()
 sspd
 np.round(np.quantile(pdiff, qtiles), 2)
 np.round(np.nanquantile(pdiff, qtiles), 2)
+
+# %% ...10b. Loop through all stubs and save results
+# def get_geo_weights_stub(
+    # df,
+    # weightdf,
+    # targvars,
+    # ht2wide,
+    # dropsdf_wide,
+    # method,
+    # options,
+    # stub)
+
+
+def runstubs():
+    return
+
 
 
 # %% scratch
