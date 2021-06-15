@@ -516,7 +516,7 @@ tmp, beta = gwp.get_geo_weights_stub(
     dropsdf_wide=drops_states_updated,
     method=method,  # poisson-lsq, poisson-newton, poisson-newton-sep
     options=opts,
-    stub=10)
+    stub=1)
 # compare results to targets for a single stub
 beta_save = beta.copy()
 
@@ -580,8 +580,37 @@ np.round(np.nanquantile(pdiff, qtiles), 2)
     # stub)
 
 
-def runstubs():
-    return
+def runstubs(pufsub, stubs):
+    grouped = pufsub.loc[pufsub['ht2_stub'].isin(stubs)].groupby('ht2_stub')
+    #print(grouped.groups)
+    # print(grouped.count())
+    def callstub(df, weightdf, targvars, ht2wide, dropsdf_wide, method, options, stub):
+        print(df.name)
+        gwp.get_geo_weights_stub(
+            df,
+            weightdf,
+            targvars,
+            ht2wide,
+            dropsdf_wide,
+            method,
+            options,
+            stub)
+        return  'done with stub'
+    # grouped.apply(f)
+    a = timer()
+    grouped.apply(
+        callstub,
+        weightdf=weights_georeweight,
+        targvars=targvars,
+        ht2wide=ht2wide_updated,
+        dropsdf_wide=drops_states_updated,
+        method='poisson-newton',
+        options=opts,
+        stub=None)
+    b = timer()
+    return 'all good'
+
+runstubs(pufsub, stubs=(1,10))
 
 
 

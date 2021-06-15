@@ -36,11 +36,16 @@ def collapse_ht2(ht2_path, compstates):
     return ht2_collapsed
 
 
-def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide,
-                    independent,
-                    geomethod,
-                    options,
-                    intermediate_path=None):
+def get_geo_weights(
+    df,
+    weightdf,
+    targvars,
+    ht2wide,
+    dropsdf_wide,
+    independent,
+    geomethod,
+    options,
+    intermediate_path=None):
 
     stub = df.name # DON'T EVEN PRINT df.name or all gets messed up
     print(f'\nIncome stub {stub:3d}')
@@ -266,9 +271,16 @@ def get_geo_weights_stub(
     stub):
 
     # stub = df.name
+    if stub is None:
+        # we have grouped apply so get the stub
+        stub = df.name # DON'T EVEN PRINT df.name or all gets messed up
+
+    # print(f'\nIncome stub {stub:3d}')
+    # qx = '(ht2_stub == @stub)'
+
     print(f'\nIncome stub {stub:3d}')
     df = df.loc[df['ht2_stub']==stub]
-    print(df.shape)
+    print(f'Solving geo weights for {df.shape[0]} records...')
 
     sub = ht2wide.loc[ht2wide.ht2_stub==stub, :]
     good = sub.loc[:, (sub.sum(axis=0) != 0)]
