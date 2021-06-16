@@ -259,21 +259,21 @@ targvars = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing sta
             'c18300', 'c18300_nnz']  # SALT amount deducted
 
 # for testing purposes, here are some useful subsets of targvars
-targvars2 = ['nret_all']
-targvars2 = ['nret_all', 'c00100']
-targvars2 = ['nret_all', 'c00100', 'e00200']
-targvars2 = ['nret_all', 'mars1', 'c00100']
-targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
-targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
+# targvars2 = ['nret_all']
+# targvars2 = ['nret_all', 'c00100']
+# targvars2 = ['nret_all', 'c00100', 'e00200']
+# targvars2 = ['nret_all', 'mars1', 'c00100']
+# targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
+# targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
 
-targstub1 = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
-            'c00100',   # AGI
-            'e00200', 'e00200_nnz',  # wages
-            'e00300', 'e00300_nnz',  # taxable interest income
-            'e00600', 'e00600_nnz',  # ordinary dividends
-            'e00900',  # business and professional income
-            'e26270',  # partnership/S Corp income
-            'c01000']
+# targstub1 = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
+#             'c00100',   # AGI
+#             'e00200', 'e00200_nnz',  # wages
+#             'e00300', 'e00300_nnz',  # taxable interest income
+#             'e00600', 'e00600_nnz',  # ordinary dividends
+#             'e00900',  # business and professional income
+#             'e26270',  # partnership/S Corp income
+#             'c01000']
 
 # set targvars = one of the above during test runs
 
@@ -431,32 +431,32 @@ opts = {
     'jvp_reset_steps': 5,
     'quiet': True}
 
-opts.update({'max_iter': 100})
-opts.update({'max_iter': 50})
-opts.update({'search_iter': 10})
-opts.update({'scale_goal': 10}) # 10
+# opts.update({'max_iter': 100})
+# opts.update({'max_iter': 50})
+# opts.update({'search_iter': 10})
+# opts.update({'scale_goal': 10}) # 10
 
-# opts.update({'base_stepmethod': 'jac'})
-opts.update({'base_stepmethod': 'jvp'})
+# # opts.update({'base_stepmethod': 'jac'})
+# opts.update({'base_stepmethod': 'jvp'})
 
-opts.update({'startup_period': 5})
-opts.update({'startup_period': 100})
-# opts.update({'startup_stepmethod': 'jac'})
-opts.update({'startup_stepmethod': 'jvp'})
+# opts.update({'startup_period': 5})
+# opts.update({'startup_period': 100})
+# # opts.update({'startup_stepmethod': 'jac'})
+# opts.update({'startup_stepmethod': 'jvp'})
 
-opts.update({'init_beta': betalsq.flatten()})
-opts.update({'init_beta': 0.0})
-opts.update({'init_beta': 0.5})
+# opts.update({'init_beta': betalsq.flatten()})
+# opts.update({'init_beta': 0.0})
+# opts.update({'init_beta': 0.5})
 
-opts.update({'step_fixed': .4})
-opts.update({'step_fixed': False})
+# opts.update({'step_fixed': .4})
+# opts.update({'step_fixed': False})
 
 
-method='poisson-newton'
-method='poisson-newton-sep'
-opts
+# method='poisson-newton'
+# method='poisson-newton-sep'
+# opts
 
-opts.update({'p': .2})
+# opts.update({'p': .2})
 
 
 method='poisson-newton'
@@ -478,21 +478,21 @@ OrderedDict(sorted(opts.items()))
 #
 
 # %% ...10a. Verify that individual stubs can run
-res = gwp.get_geo_weights_stub(
-    pufsub,
-    weightdf=weights_georeweight,
-    targvars=targvars,  # use targvars or a variant targstub1 targvars2
-    ht2wide=ht2wide_updated,
-    dropsdf_wide=drops_states_updated,
-    method=method,  # poisson-lsq, poisson-newton, poisson-newton-sep
-    options=opts,
-    stub=1)
-res._fields
-res.elapsed_seconds
-res.whsdf
-res.beta_opt
-# compare results to targets for a single stub
-beta_save = res.beta_opt
+# res = gwp.get_geo_weights_stub(
+#     pufsub,
+#     weightdf=weights_georeweight,
+#     targvars=targvars,  # use targvars or a variant targstub1 targvars2
+#     ht2wide=ht2wide_updated,
+#     dropsdf_wide=drops_states_updated,
+#     method=method,  # poisson-lsq, poisson-newton, poisson-newton-sep
+#     options=opts,
+#     stub=1)
+# res._fields
+# res.elapsed_seconds
+# res.whsdf
+# res.beta_opt
+# # compare results to targets for a single stub
+# beta_save = res.beta_opt
 
 # stub 1    5,340; drops 4 zero HT2 sum variables
 # stub 2   19,107; cannot reach zero
@@ -507,27 +507,27 @@ beta_save = res.beta_opt
 
 # note that stubs 2 and 10 don't solve to zero, but the others do
 
-targs_used = targvars  # targsstub1 targvars2 targvars
-stub = 1
+# targs_used = targvars  # targsstub1 targvars2 targvars
+# stub = 1
 
-df = pufsub.loc[pufsub['ht2_stub']==stub, ['pid', 'ht2_stub'] + targs_used]
-htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'stgroup'] + targs_used]
+# df = pufsub.loc[pufsub['ht2_stub']==stub, ['pid', 'ht2_stub'] + targs_used]
+# htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'stgroup'] + targs_used]
 
-sts = htstub.stgroup.tolist()  # be sure that target rows and whs columns are in sts order
-xmat = np.asarray(df[targs_used], dtype=float)
-targmat = np.asarray(htstub.loc[:, targs_used])
-targmat.size
-np.count_nonzero(targmat)
-whs = np.asarray(res.whsdf.loc[res.df['ht2_stub']==stub, sts], dtype=float)
-np.quantile(whs, qtiles)
+# sts = htstub.stgroup.tolist()  # be sure that target rows and whs columns are in sts order
+# xmat = np.asarray(df[targs_used], dtype=float)
+# targmat = np.asarray(htstub.loc[:, targs_used])
+# targmat.size
+# np.count_nonzero(targmat)
+# whs = np.asarray(res.whsdf.loc[res.df['ht2_stub']==stub, sts], dtype=float)
+# np.quantile(whs, qtiles)
 
-targopt = np.dot(whs.T, xmat)
-diff = targopt - targmat
-pdiff = diff / targmat * 100
-sspd = np.square(pdiff).sum()
-sspd
-np.round(np.quantile(pdiff, qtiles), 2)
-np.round(np.nanquantile(pdiff, qtiles), 2)
+# targopt = np.dot(whs.T, xmat)
+# diff = targopt - targmat
+# pdiff = diff / targmat * 100
+# sspd = np.square(pdiff).sum()
+# sspd
+# np.round(np.quantile(pdiff, qtiles), 2)
+# np.round(np.nanquantile(pdiff, qtiles), 2)
 
 # %% ...10b. Loop through all stubs and save results
 
@@ -543,11 +543,21 @@ gwp.runstubs(stubs, pufsub,
     method='poisson-newton',
     options=opts,
     outdir=OUTSTUBDIR,
-    write_logfile=True,  # boolean
+    write_logfile=False,  # boolean
     parallel=False)  # boolean
 
 
 # %% 11. Assemble file of weights from individual stubs
+def f(stub):
+    fname = OUTSTUBDIR + 'stub' + str(stub).zfill(2) + '_whs.csv'
+    df = pd.read_csv(fname)
+    return df
+frames = [f(stub) for stub in range(1, 11)]
+
+allweights2017_geo_restricted = pd.concat(frames).sort_values(by='pid')
+allweights2017_geo_restricted
+
+allweights2017_geo_restricted.to_csv(OUTWEIGHTDIR + 'allweights2017_geo_restricted.csv', index=False)
 
 
 # %% 12. Report on state results
