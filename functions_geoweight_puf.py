@@ -5,11 +5,16 @@ Created on Mon Nov 16 11:58:25 2020
 @author: donbo
 """
 
+# %% imports
 import sys
 import numpy as np
 import pandas as pd
+import dask.dataframe as dd
 from pathlib import Path
 from timeit import default_timer as timer
+import pickle
+
+from collections import namedtuple
 
 import puf_utilities as pu
 
@@ -17,8 +22,10 @@ import puf_utilities as pu
 weighting_dir = Path.home() / 'Documents/python_projects/weighting'
 sys.path.append(str(weighting_dir))  # needed
 import src.microweight as mw
+import src.utilities as ut
 
 
+# %% functions
 def collapse_ht2(ht2_path, compstates):
     ht2_shares = pd.read_csv(ht2_path)
 
@@ -36,11 +43,16 @@ def collapse_ht2(ht2_path, compstates):
     return ht2_collapsed
 
 
-def get_geo_weights(df, weightdf, targvars, ht2wide, dropsdf_wide,
-                    independent,
-                    geomethod,
-                    options,
-                    intermediate_path=None):
+def get_geo_weights(
+    df,
+    weightdf,
+    targvars,
+    ht2wide,
+    dropsdf_wide,
+    independent,
+    geomethod,
+    options,
+    intermediate_path=None):
 
     stub = df.name # DON'T EVEN PRINT df.name or all gets messed up
     print(f'\nIncome stub {stub:3d}')
@@ -255,6 +267,8 @@ def get_geo_weights_direct(
                     axis=1)
     return df2
 
+
+# %% one stub
 def get_geo_weights_stub(
     df,
     weightdf,
@@ -263,12 +277,30 @@ def get_geo_weights_stub(
     dropsdf_wide,
     method,
     options,
-    stub):
+    stub,
+    outdir,
+    write_logfile):
 
-    # stub = df.name
-    print(f'\nIncome stub {stub:3d}')
+    a = timer()
+
+    if write_logfile:
+        logpath = outdir + 'stub' + str(stub).zfill(2) + '_log.txt'
+        f = open(logpath, 'w', buffering=1)
+        original_stdout = sys.stdout # Save a reference to the original standard output
+    else:
+        f = sys.stdout
+
+    print(f'\nIncome stub {stub:3d}', file=f)
     df = df.loc[df['ht2_stub']==stub]
-    print(df.shape)
+    print(f'Solving geo weights for {df.shape[0]} records...', file=f)
+
+    sub = ht2wide.loc[ht2wide.ht2_stub==stub, :]
+    good = sub.loc[:, (sub.sum(axis=0) != 0)]
+
+    if good.shape[1] < sub.shape[1]:
+        dropcols = [var for var in targvars if not var in good.columns]
+        print('\nWARNING: dropping the following targets where ht2 sum is ZERO:\n', dropcols, '\n', file=f)
+        targvars = [var for var in targvars if var in good.columns]
 
     qx = '(ht2_stub == @stub)'
 
@@ -294,7 +326,9 @@ def get_geo_weights_stub(
     nzvalues = np.count_nonzero(targets)
     zvalues = targets.size - nzvalues
     if nzvalues < targets.size:
-        print(f"WARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO! Replacing with values based on state with smallest per-return average...")
+        print(f"\nWARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO!", file=f)
+        print('Replacing zeros with targets calculated using per-return value', file=f)
+        print('for geo area with smallest nonzero per-return value target...\n', file=f)
         # https://stackoverflow.com/questions/18689235/numpy-array-replace-nan-values-with-average-of-columns
         # this relies on column zero having the number of returns for each state
         # we compute the per-return value for each target, by state
@@ -305,11 +339,8 @@ def get_geo_weights_stub(
         # find indices of values we need to replace
         inds = np.where(targets==0)
         # place smallest values in locations defined by the indices; align the arrays using take
-        # ztargets= targets.copy()
         state_avgs[inds] = np.take(smallest_nz_stateavg, inds[1])
         targets = state_avgs * targets[:,0].reshape((-1, 1))
-        # print(ztargets)
-        # print(targets)
 
     dropsdf_stub = dropsdf_wide.query(qx)[['stgroup'] + targvars]
     drops = np.asarray(dropsdf_stub[targvars], dtype=bool)  # True means we drop
@@ -317,21 +348,100 @@ def get_geo_weights_stub(
     stub_prob = mw.Microweight(wh=wh, xmat=xmat, geotargets=targets)
 
     # call the solver
-    # options_defaults = {'drops': drops, 'independent': independent, 'qmax_iter': 20}
-    # options_all = options_defaults.copy()
-    # options_all.update(options)
-
-    # gw = stub_prob.geoweight(method='poisson-newton', options=options)
-    gw = stub_prob.geoweight(method=method, options=options)
+    gw = stub_prob.geoweight(method=method, options=options, logfile=f)
 
     whsdf = pd.DataFrame(gw.whs_opt, columns=sts)
     whsdf['geoweight_sum'] = whsdf.sum(axis=1)
     whsdf = whsdf[['geoweight_sum'] + sts]
-    df2 = pd.concat([pufstub[['pid', 'ht2_stub', 'weight']],
+    # put stubs on the file
+    whsdf = pd.concat([pufstub[['pid', 'ht2_stub', 'weight']],
                       whsdf],
                     axis=1)
 
-    return df2, gw.method_result.beta_opt
+    b = timer()
+    # create a named tuple of items to return
+    fields = ('elapsed_seconds',
+              'whsdf',
+              # 'geotargets_opt',
+              'beta_opt')
+    Result = namedtuple('Result', fields, defaults=(None,) * len(fields))
+
+    result = Result(elapsed_seconds=b - a,
+                    whsdf=whsdf,
+                    # geotargets_opt=geotargets_opt,
+                    beta_opt=gw.method_result.beta_opt)
+
+    if write_logfile:
+        # restore stdout and clean up
+        sys.stdout = original_stdout
+        f.close()
+
+    return result
 
 
+def callstub(stub, df, weightdf, targvars, ht2wide, dropsdf_wide,
+             method, options, outdir, write_logfile):
+    a = timer()
+    gw = get_geo_weights_stub(
+        df,
+        weightdf,
+        targvars,
+        ht2wide,
+        dropsdf_wide,
+        method,
+        options,
+        stub,  # stub=None tells get_geo_weights_stub to get the stub number from df.name
+        outdir,
+        write_logfile)
+    gw.whsdf.to_csv(outdir + 'stub' + str(stub).zfill(2) + '_whs.csv', index=False)
+
+    open_file = open(outdir + 'stub' + str(stub).zfill(2) + '_betaopt.pkl', "wb")
+    pickle.dump(gw.beta_opt, open_file)  # maybe find a better format?
+    open_file.close()
+
+    b = timer()
+    return  b - a
+
+
+def runstubs(
+    stubs,
+    pufsub,
+    weightdf,
+    targvars,
+    ht2wide,
+    dropsdf_wide,
+    method,
+    options,
+    outdir,
+    write_logfile,
+    parallel=False):
+    if parallel:
+        func = dask.delayed(callstub)
+    else:
+        func = callstub
+
+    a = timer()
+    output = []
+    for stub in stubs:
+        res = func\
+            (stub,
+            pufsub,
+            weightdf,
+            targvars,
+            ht2wide,
+            dropsdf_wide,
+            method,
+            options,
+            outdir,
+            write_logfile)
+        output.append(res)
+    if parallel:
+        total = dask.delayed()(output)
+        total.compute(scheduler='threads')
+
+    b = timer()
+
+    elapsed_minutes = (b - a    ) / 60
+    print('Elapsed minutes: ', np.round(elapsed_minutes, 2))
+    return
 
