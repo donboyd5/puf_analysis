@@ -117,6 +117,7 @@ WEIGHTDIR = DIR_FOR_OFFICIAL_PUFCSV
 OUTDATADIR = OUTDIR + 'data/'
 OUTTABDIR = OUTDIR + 'result_tables/'
 OUTWEIGHTDIR = OUTDIR + 'weights/'
+OUTSTUBDIR = OUTDIR + 'stub_output/'
 
 
 # %% paths to specific already existing files
@@ -407,46 +408,16 @@ del(pkl)
 
 
 # %% 10. Get state weights
-opts_newt = {
-    'scaling': True,
-    'scale_goal': 10.0,  # this is an important parameter!
-    'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
-    'init_beta': 0.5,
-    'init_p': 0.75, # 0.75 default,
-    # 'maxp_tol': 0.01, # max pct diff tolerance .01 is 1/100 percent
-    'max_iter': 20,  # 20 default
-    'startup_imaxpdiff': 1e6,  # if initial maxpdiff is greater than this go into startup mode
-    'startup_iter': 8,  # 8 default number of iterations for the startup period
-    'startup_p': .25,  # .25 default p, the step multiplier in the startup period
-    'linesearch': True,  # True default
-    'quiet': True}
-# opts.update({'stepmethod': 'jvp'})
-opts_newt.update({'max_iter': 100})
-opts_newt.update({'init_p': .40})
-opts_newt.update({'startup_p': .10})
-opts_newt.update({'startup_imaxpdiff': 1.})
-opts_newt.update({'stepmethod': 'jvp'}) # more robust than jac on large problem, oddly
-opts_newt.update({'stepmethod': 'jac'})
-# opts_newt.update({'linesearch': False})
-# opts_newt.update({'scale_goal': 1e6})
 
-
-opts_lsq = {
-    'scaling': True,
-    'scale_goal': 1e1,
-    'init_beta': 0.5,
-    'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
-    'max_nfev': 200,  # 100 default
-    'quiet': True}
-
-opts = opts_newt; method='poisson-newton'
-
-# opts_lsq.update({'init_beta': 1.})
-opts_lsq.update({'max_nfev': 1000})
-opts = opts_lsq; method = 'poisson-lsq'
-
-
-# c17000	c17000_nnz for AR stub 10 are zero
+# opts_lsq = {
+#     'scaling': True,
+#     'scale_goal': 1e1,
+#     'init_beta': 0.5,
+#     'stepmethod': 'jac',  # jac or jvp for newton; also vjp, findiff if lsq
+#     'max_nfev': 200,  # 100 default
+#     'quiet': True}
+# opts_lsq.update({'max_nfev': 1000})
+# opts = opts_lsq; method = 'poisson-lsq'
 
 opts = {
     'scaling': True,
@@ -457,8 +428,6 @@ opts = {
     'maxp_tol': .01,  # .01 is 1/100 of 1% for the max % difference from target
 
     'base_stepmethod': 'jac',  # jvp or jac, jac seems to work better
-    'startup_stepmethod': 'jvp',  # jac or jvp
-    'startup_period': 8,  # # of iterations in startup period (0 means no startup period)
     'jvp_reset_steps': 5,
     'quiet': True}
 
@@ -482,7 +451,6 @@ opts.update({'init_beta': 0.5})
 opts.update({'step_fixed': .4})
 opts.update({'step_fixed': False})
 
-OrderedDict(sorted(opts.items()))
 
 method='poisson-newton'
 method='poisson-newton-sep'
@@ -502,13 +470,15 @@ opts.update({'jac_min_improvement': 0.10})
 opts.update({'jvp_reset_steps': 4})
 
 
+OrderedDict(sorted(opts.items()))
+
 # in terminal:
 #    export OMP_NUM_THREADS=10
 #    export NUMBA_NUM_THREADS=10
 #
 
 # %% ...10a. Verify that individual stubs can run
-tmp, beta = gwp.get_geo_weights_stub(
+res = gwp.get_geo_weights_stub(
     pufsub,
     weightdf=weights_georeweight,
     targvars=targvars,  # use targvars or a variant targstub1 targvars2
@@ -517,8 +487,12 @@ tmp, beta = gwp.get_geo_weights_stub(
     method=method,  # poisson-lsq, poisson-newton, poisson-newton-sep
     options=opts,
     stub=1)
+res._fields
+res.elapsed_seconds
+res.whsdf
+res.beta_opt
 # compare results to targets for a single stub
-beta_save = beta.copy()
+beta_save = res.beta_opt
 
 # stub 1    5,340; drops 4 zero HT2 sum variables
 # stub 2   19,107; cannot reach zero
@@ -533,23 +507,10 @@ beta_save = beta.copy()
 
 # note that stubs 2 and 10 don't solve to zero, but the others do
 
-# method = 'poisson-lsq'
-# opts = opts_lsq
-# opts.update({'init_beta': beta_save.flatten()})
-# tmplsq, betalsq = gwp.get_geo_weights_stub(
-#     pufsub,
-#     weightdf=weights_georeweight,
-#     targvars=targvars,  # use targvars or a variant targstub1 targvars2
-#     ht2wide=ht2wide_updated,
-#     dropsdf_wide=drops_states_updated,
-#     method=method,  # poisson-lsq, poisson-newton, poisson-lsq
-#     options=opts,
-#     stub=2)
-
 targs_used = targvars  # targsstub1 targvars2 targvars
-stub = 2
+stub = 1
 
-df = pufsub.loc[pufsub['ht2_stub'] ==stub, ['pid', 'ht2_stub'] + targs_used]
+df = pufsub.loc[pufsub['ht2_stub']==stub, ['pid', 'ht2_stub'] + targs_used]
 htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'stgroup'] + targs_used]
 
 sts = htstub.stgroup.tolist()  # be sure that target rows and whs columns are in sts order
@@ -557,7 +518,7 @@ xmat = np.asarray(df[targs_used], dtype=float)
 targmat = np.asarray(htstub.loc[:, targs_used])
 targmat.size
 np.count_nonzero(targmat)
-whs = np.asarray(tmp.loc[tmp['ht2_stub']==stub, sts], dtype=float)
+whs = np.asarray(res.whsdf.loc[res.df['ht2_stub']==stub, sts], dtype=float)
 np.quantile(whs, qtiles)
 
 targopt = np.dot(whs.T, xmat)
@@ -569,50 +530,30 @@ np.round(np.quantile(pdiff, qtiles), 2)
 np.round(np.nanquantile(pdiff, qtiles), 2)
 
 # %% ...10b. Loop through all stubs and save results
-# def get_geo_weights_stub(
-    # df,
-    # weightdf,
-    # targvars,
-    # ht2wide,
-    # dropsdf_wide,
-    # method,
-    # options,
-    # stub)
+
+stubs = (1,)
+stubs = (10,)
+stubs = tuple(range(1, 11))
+
+gwp.runstubs(stubs, pufsub,
+    weightdf=weights_georeweight,
+    targvars=targvars,
+    ht2wide=ht2wide_updated,
+    dropsdf_wide=drops_states_updated,
+    method='poisson-newton',
+    options=opts,
+    outdir=OUTSTUBDIR,
+    write_logfile=True,  # boolean
+    parallel=False)  # boolean
 
 
-def runstubs(pufsub, stubs):
-    grouped = pufsub.loc[pufsub['ht2_stub'].isin(stubs)].groupby('ht2_stub')
-    #print(grouped.groups)
-    # print(grouped.count())
-    def callstub(df, weightdf, targvars, ht2wide, dropsdf_wide, method, options, stub):
-        print(df.name)
-        gwp.get_geo_weights_stub(
-            df,
-            weightdf,
-            targvars,
-            ht2wide,
-            dropsdf_wide,
-            method,
-            options,
-            stub)
-        return  'done with stub'
-    # grouped.apply(f)
-    a = timer()
-    grouped.apply(
-        callstub,
-        weightdf=weights_georeweight,
-        targvars=targvars,
-        ht2wide=ht2wide_updated,
-        dropsdf_wide=drops_states_updated,
-        method='poisson-newton',
-        options=opts,
-        stub=None)
-    b = timer()
-    return 'all good'
-
-runstubs(pufsub, stubs=(1,10))
+# %% 11. Assemble file of weights from individual stubs
 
 
+# %% 12. Report on state results
+
+
+# %% 13. Advance file to 2018 (Discuss with Matt)
 
 # %% scratch
 geomethod = 'qmatrix-ipopt'
