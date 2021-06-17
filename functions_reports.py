@@ -250,3 +250,184 @@ def ht2target_report(ht2targets, outfile, title, outpath):
     print("All done.")
 
     return
+
+
+def calc_save_statesums(
+    pufsub,
+    state_weights,
+    pufvars,
+    outfile):
+
+    idvars = ['pid', 'filer', 'ht2_stub']
+
+    # get names of the states
+    geos = state_weights.columns.tolist()
+    nonstates = ['pid', 'ht2_stub', 'weight']  # keep geoweight_sum
+    geos = [s for s in geos if s not in nonstates]
+
+    # make a long puf file
+    puflong = pufsub.loc[:, idvars + pufvars] \
+        .melt(id_vars=idvars, var_name='pufvar', value_name='pufvalue')
+
+    puflong = pd.merge(puflong, state_weights.drop(columns='weight'), on=['pid', 'ht2_stub'], how='left')
+
+    # multiply all geoweight_sum and state weight columns by the pufvalue column
+    puflong.loc[:, geos] = puflong.loc[:, geos].mul(puflong.pufvalue, axis=0)
+
+    # collapse by ht2_stub
+    calcsums = puflong.groupby(['ht2_stub', 'pufvar'])[geos].sum().reset_index()
+    calcsums.to_csv(outfile, index=False)
+
+    return
+
+
+def state_puf_vs_targets_report(
+    state_targets,
+    state_sums,
+    title,
+    reportfile):
+
+    # get the calculated sums and add an hstub zero
+    compsums = pd.read_csv(state_sums)
+    # compsums = compsums.fillna(0)
+    # set it up so that we easily get US totals, by renaming geoweight_sum to US
+    compsums.rename(columns={"geoweight_sum": "US"}, inplace=True)
+    idvars = ['ht2_stub', 'pufvar']
+    compsums = compsums.melt(id_vars=idvars, var_name='stgroup', value_name='calcsum')
+    comptotals = compsums.drop(columns='ht2_stub').groupby(['pufvar', 'stgroup']).sum().reset_index()
+    # comptotals = comptotals.fillna(0)
+    comptotals['ht2_stub'] = 0
+    comptotals = pd.concat((compsums, comptotals), axis=0).sort_values(by=['ht2_stub', 'pufvar'])
+
+    # Calculate US sums for the state targets file
+    # 		pufvar		pufsum	ht2sum	share	sharesum	ht2	target
+    groupvars = ['ht2_stub', 'pufvar', 'ht2var', 'column_description', 'ht2description']
+    targtotals = state_targets.drop(columns='stgroup').groupby(groupvars).sum().reset_index()
+    targtotals['stgroup'] = 'US'
+    targtotals = pd.concat((state_targets, targtotals), axis=0).sort_values(by=['ht2_stub', 'pufvar'])
+
+
+    mrgvars = ['ht2_stub', 'stgroup', 'pufvar']
+    # targtotals = targtotals.fillna(0)
+    comp = pd.merge(targtotals, comptotals, on=mrgvars, how='left')
+    comp = pd.merge(comp, pc.ht2stubs.rename(columns={'ht2stub': 'ht2_stub'}), how='left', on='ht2_stub') # bring in ht2range
+    # print(comp.loc[comp.stgroup=='US'])
+    # comp = comp.fillna(0)  # CAUTION ???
+    # print(comp.info())
+    # print(comp.iloc[:10, :])
+
+    comp['d_ht2'] = comp['calcsum'] - comp['ht2']
+    comp['pd_ht2'] = comp['d_ht2'] / comp['ht2']
+
+    comp['d_target'] = comp['calcsum'] - comp['target']
+    comp['pd_target'] = comp['d_target'] / comp['target']
+    comp['apd_target'] = comp['pd_target'].abs()  # keep a numeric version for sorting
+
+    # 'ht2range'
+    vorder = ['stgroup', 'ht2_stub', 'ht2range',
+               'pufvar', 'ht2var',
+               # 'pufsum', 'htwsum', # national??
+               'ht2', 'target', 'calcsum',
+               'd_ht2', 'pd_ht2',
+               'd_target', 'pd_target',
+               'column_description',
+               'apd_target']
+    comp = comp[vorder]
+    # print(comp)
+
+    print(f'Writing report...')
+    pufvar_list = comp.pufvar.unique().tolist()
+    stub_list = comp.ht2_stub.unique().tolist()
+    state_list = comp.stgroup.unique().tolist()
+    # comp = comp.sort_values(by=['apd_target'], ascending=False)
+
+    s = comp.copy()
+
+    format_mapping = {
+        'ht2': '{:,.0f}',
+        'target': '{:,.0f}',
+        'calcsum': '{:,.0f}',
+        'd_ht2': '{:,.0f}',
+        'pd_ht2': '{:.1%}',
+        'd_target': '{:,.0f}',
+        'pd_target': '{:.1%}',}
+
+    for key, value in format_mapping.items():
+        s[key] = s[key].apply(value.format)
+
+    tfile = open(reportfile, 'a')
+    tfile.truncate(0)
+
+    # first write a summary with stub 0 for all variables
+    tfile.write('\n' + title + '\n\n')
+    # tfile.write('Comparison of Historical Table 2 shares of the nation, by state, stub, and variable.\n')
+
+    tfile.write('\nThis report is in sections:\n')
+    tfile.write('  1. Differences for US totals, by income stub, in pufvar order.\n')
+    tfile.write('  2. 20 largest absolute % differences for each stub-pufvar combination.\n')
+    tfile.write('  3. Differences within state, pufvar, stub.\n')
+
+    # d_ht2 pd_ht2 d_target pd_target
+    tfile.write('\nIn the tables, we have columns d_ht2, pd_ht2, d_target, and pd_target:\n')
+    tfile.write('  The d_ prefix means the difference between a calculated amount and the value defined by the suffix.\n')
+    tfile.write('  The pd_ prefix means the percentage difference between a calculated amount and the value defined by the suffix.\n')
+    tfile.write('  The ht2 suffix means the comparison value is from Historical Table 2, as published.\n')
+    tfile.write('  The target suffix means the comparison value is a target we developed based on totals computed from the puf.\n\n')
+
+    tfile.write('  The ht2 and target values may differ for several reasons:\n')
+    tfile.write('    For example, the HT2 variable may not defined the same as the puf variable is defined.\n')
+    tfile.write('    Or the puf value may differe because the puf data simply are not consistent with the HT values.\n\n')
+    tfile.write('  The ht2 comparisons tell us what other people might see if they compare to Historical Table 2 published amounts.\n')
+    tfile.write('  The target comparisons tell us how well we did hitting targets that we think are most appropriate.\n')
+
+    # U.S. differences
+    tfile.write('\n\n1. Differences for US totals, by income stub, in pufvar order:\n')
+    s = s.sort_values(by=['pufvar'])
+    for stub in stub_list:
+        tfile.write('\n\n')
+        # s2 = s.loc[(s['pufvar'] == var) & (s['ht2_stub'] == stub) & (s['stgroup'] == 'US')].drop(columns='apd_target')
+        s2 = s.loc[(s['ht2_stub'] == stub) & (s['stgroup'] == 'US')].drop(columns='apd_target')
+        tfile.write(s2.to_string(index=False))
+
+    # Largest differences
+    tfile.write('\n\n2. 20 largest absolute % differences for each stub-pufvar combination:\n')
+    s = s.sort_values(by=['apd_target'], ascending=False)
+    for stub in stub_list:
+        for var in pufvar_list:
+            tfile.write('\n\n')
+            s2 = s.loc[(s['pufvar'] == var) & (s['ht2_stub'] == stub)].iloc[:20, ].drop(columns='apd_target')
+            # s2 = s[s.pufvar==var].iloc[:20, ].drop(columns='apd_target')
+            tfile.write(s2.to_string(index=False))
+
+    # Differences by state
+    tfile.write('\n\n3. Differences within state, pufvar, stub:\n')
+    s = s.sort_values(by=['stgroup', 'pufvar', 'ht2_stub'])
+    for state in state_list:
+        for var in pufvar_list:
+            tfile.write('\n\n')
+            s2 = s.loc[(s['stgroup'] == state) & (s['pufvar'] == var)].drop(columns='apd_target')
+            tfile.write(s2.to_string(index=False))
+
+    tfile.close()
+    print("All done.")
+
+
+
+
+    return
+
+#  0   stgroup             15147 non-null  object
+#  1   ht2_stub            15147 non-null  int64
+#  2   pufvar              15147 non-null  object
+#  3   ht2var              15147 non-null  object
+#  4   pufsum              15147 non-null  float64
+#  5   ht2sum              15147 non-null  float64
+#  6   share               15147 non-null  float64
+#  7   sharesum            15147 non-null  float64
+#  8   ht2                 15147 non-null  float64
+#  9   target              15147 non-null  float64
+#  10  column_description  15147 non-null  object
+#  11  ht2description      15147 non-null  object
+
+# geoweight_sum
+# calcsum
