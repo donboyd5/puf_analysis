@@ -259,21 +259,21 @@ targvars = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing sta
             'c18300', 'c18300_nnz']  # SALT amount deducted
 
 # for testing purposes, here are some useful subsets of targvars
-targvars2 = ['nret_all']
-targvars2 = ['nret_all', 'c00100']
-targvars2 = ['nret_all', 'c00100', 'e00200']
-targvars2 = ['nret_all', 'mars1', 'c00100']
-targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
-targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
+# targvars2 = ['nret_all']
+# targvars2 = ['nret_all', 'c00100']
+# targvars2 = ['nret_all', 'c00100', 'e00200']
+# targvars2 = ['nret_all', 'mars1', 'c00100']
+# targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
+# targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
 
-targstub1 = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
-            'c00100',   # AGI
-            'e00200', 'e00200_nnz',  # wages
-            'e00300', 'e00300_nnz',  # taxable interest income
-            'e00600', 'e00600_nnz',  # ordinary dividends
-            'e00900',  # business and professional income
-            'e26270',  # partnership/S Corp income
-            'c01000']
+# targstub1 = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
+#             'c00100',   # AGI
+#             'e00200', 'e00200_nnz',  # wages
+#             'e00300', 'e00300_nnz',  # taxable interest income
+#             'e00600', 'e00600_nnz',  # ordinary dividends
+#             'e00900',  # business and professional income
+#             'e26270',  # partnership/S Corp income
+#             'c01000']
 
 # set targvars = one of the above during test runs
 
@@ -340,6 +340,29 @@ rpt.wtdpuf_national_comp_report(
     ipdiff_df=pdiff_reweighted)
 
 
+# %% 7a. Prepare data for report on initial state weights
+
+allweights2017_geo_unrestricted = pd.read_csv(OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv')
+
+a = timer()
+vars = pufsub.columns.to_list()
+calcvars = [x for x in vars if x not in ['pid', 'filer', 'common_stub', 'ht2_stub']]
+rpt.calc_save_statesums(
+    pufsub,
+    state_weights=allweights2017_geo_unrestricted,
+    pufvars=calcvars,
+    outfile=OUTDATADIR + 'state_sums_wunrestricted.csv')
+b = timer()
+b - a #  ~ 4 mins
+
+# %% 7b. Report on initial state weights
+rpt.state_puf_vs_targets_report(
+    state_targets=ht2targets,
+    state_sums=OUTDATADIR + 'state_sums_wunrestricted.csv',
+    title='State calculated values vs. state targets',
+    reportfile=OUTTABDIR + 'state_comparison_wunrestricted.txt'
+    )
+
 # %% 8. Reweight the national file to come closer to targets
 drops_national_geo = fpa.get_drops_national(pdiff_geosums)
 weights_georeweight = rwp.puf_reweight(pufsub, weights_geosums, ptargets, method='ipopt', drops=drops_national_geo)
@@ -389,8 +412,16 @@ ht2wide_updated = fpa.get_ht2wide_states(ht2targets_updated)
 # %% BREAK: pickle everything needed to create state weights
 # to avoid running all of the code above each time we test state weighting,
 # pickle the data needed for state weighting once and retrieve when needed
-save_list = [pufsub, weights_georeweight, targvars, targstub1,
-             ht2wide_updated, drops_states_updated]
+save_list = [
+    pufsub,
+    ptargets, ht2targets, ht2targets_updated,
+    ht2wide, ht2wide_updated,
+    # national weights
+    weights_initial, weights_reweight, weights_georeweight,
+    weights_geosums,
+    compstates,
+    targvars,
+    drops_states_updated]
 save_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
 
 open_file = open(save_name, "wb")
@@ -403,7 +434,11 @@ save_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
 open_file = open(save_name, "rb")
 pkl = pickle.load(open_file)
 open_file.close()
-pufsub, weights_georeweight, targvars, targstub1, ht2wide_updated, drops_states_updated = pkl
+
+pufsub, ptargets, ht2targets, ht2targets_updated, \
+    ht2wide, ht2wide_updated, \
+    weights_initial, weights_reweight, weights_georeweight, weights_geosums, \
+    compstates, targvars, drops_states_updated = pkl
 del(pkl)
 
 
@@ -431,32 +466,32 @@ opts = {
     'jvp_reset_steps': 5,
     'quiet': True}
 
-opts.update({'max_iter': 100})
-opts.update({'max_iter': 50})
-opts.update({'search_iter': 10})
-opts.update({'scale_goal': 10}) # 10
+# opts.update({'max_iter': 100})
+# opts.update({'max_iter': 50})
+# opts.update({'search_iter': 10})
+# opts.update({'scale_goal': 10}) # 10
 
-# opts.update({'base_stepmethod': 'jac'})
-opts.update({'base_stepmethod': 'jvp'})
+# # opts.update({'base_stepmethod': 'jac'})
+# opts.update({'base_stepmethod': 'jvp'})
 
-opts.update({'startup_period': 5})
-opts.update({'startup_period': 100})
-# opts.update({'startup_stepmethod': 'jac'})
-opts.update({'startup_stepmethod': 'jvp'})
+# opts.update({'startup_period': 5})
+# opts.update({'startup_period': 100})
+# # opts.update({'startup_stepmethod': 'jac'})
+# opts.update({'startup_stepmethod': 'jvp'})
 
-opts.update({'init_beta': betalsq.flatten()})
-opts.update({'init_beta': 0.0})
-opts.update({'init_beta': 0.5})
+# opts.update({'init_beta': betalsq.flatten()})
+# opts.update({'init_beta': 0.0})
+# opts.update({'init_beta': 0.5})
 
-opts.update({'step_fixed': .4})
-opts.update({'step_fixed': False})
+# opts.update({'step_fixed': .4})
+# opts.update({'step_fixed': False})
 
 
-method='poisson-newton'
-method='poisson-newton-sep'
-opts
+# method='poisson-newton'
+# method='poisson-newton-sep'
+# opts
 
-opts.update({'p': .2})
+# opts.update({'p': .2})
 
 
 method='poisson-newton'
@@ -478,21 +513,21 @@ OrderedDict(sorted(opts.items()))
 #
 
 # %% ...10a. Verify that individual stubs can run
-res = gwp.get_geo_weights_stub(
-    pufsub,
-    weightdf=weights_georeweight,
-    targvars=targvars,  # use targvars or a variant targstub1 targvars2
-    ht2wide=ht2wide_updated,
-    dropsdf_wide=drops_states_updated,
-    method=method,  # poisson-lsq, poisson-newton, poisson-newton-sep
-    options=opts,
-    stub=1)
-res._fields
-res.elapsed_seconds
-res.whsdf
-res.beta_opt
-# compare results to targets for a single stub
-beta_save = res.beta_opt
+# res = gwp.get_geo_weights_stub(
+#     pufsub,
+#     weightdf=weights_georeweight,
+#     targvars=targvars,  # use targvars or a variant targstub1 targvars2
+#     ht2wide=ht2wide_updated,
+#     dropsdf_wide=drops_states_updated,
+#     method=method,  # poisson-lsq, poisson-newton, poisson-newton-sep
+#     options=opts,
+#     stub=1)
+# res._fields
+# res.elapsed_seconds
+# res.whsdf
+# res.beta_opt
+# # compare results to targets for a single stub
+# beta_save = res.beta_opt
 
 # stub 1    5,340; drops 4 zero HT2 sum variables
 # stub 2   19,107; cannot reach zero
@@ -507,27 +542,27 @@ beta_save = res.beta_opt
 
 # note that stubs 2 and 10 don't solve to zero, but the others do
 
-targs_used = targvars  # targsstub1 targvars2 targvars
-stub = 1
+# targs_used = targvars  # targsstub1 targvars2 targvars
+# stub = 1
 
-df = pufsub.loc[pufsub['ht2_stub']==stub, ['pid', 'ht2_stub'] + targs_used]
-htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'stgroup'] + targs_used]
+# df = pufsub.loc[pufsub['ht2_stub']==stub, ['pid', 'ht2_stub'] + targs_used]
+# htstub = ht2wide_updated.loc[ht2wide_updated['ht2_stub']==stub, ['ht2_stub', 'stgroup'] + targs_used]
 
-sts = htstub.stgroup.tolist()  # be sure that target rows and whs columns are in sts order
-xmat = np.asarray(df[targs_used], dtype=float)
-targmat = np.asarray(htstub.loc[:, targs_used])
-targmat.size
-np.count_nonzero(targmat)
-whs = np.asarray(res.whsdf.loc[res.df['ht2_stub']==stub, sts], dtype=float)
-np.quantile(whs, qtiles)
+# sts = htstub.stgroup.tolist()  # be sure that target rows and whs columns are in sts order
+# xmat = np.asarray(df[targs_used], dtype=float)
+# targmat = np.asarray(htstub.loc[:, targs_used])
+# targmat.size
+# np.count_nonzero(targmat)
+# whs = np.asarray(res.whsdf.loc[res.df['ht2_stub']==stub, sts], dtype=float)
+# np.quantile(whs, qtiles)
 
-targopt = np.dot(whs.T, xmat)
-diff = targopt - targmat
-pdiff = diff / targmat * 100
-sspd = np.square(pdiff).sum()
-sspd
-np.round(np.quantile(pdiff, qtiles), 2)
-np.round(np.nanquantile(pdiff, qtiles), 2)
+# targopt = np.dot(whs.T, xmat)
+# diff = targopt - targmat
+# pdiff = diff / targmat * 100
+# sspd = np.square(pdiff).sum()
+# sspd
+# np.round(np.quantile(pdiff, qtiles), 2)
+# np.round(np.nanquantile(pdiff, qtiles), 2)
 
 # %% ...10b. Loop through all stubs and save results
 
@@ -543,14 +578,87 @@ gwp.runstubs(stubs, pufsub,
     method='poisson-newton',
     options=opts,
     outdir=OUTSTUBDIR,
-    write_logfile=True,  # boolean
+    write_logfile=False,  # boolean
     parallel=False)  # boolean
 
 
 # %% 11. Assemble file of weights from individual stubs
+def f(stub):
+    fname = OUTSTUBDIR + 'stub' + str(stub).zfill(2) + '_whs.csv'
+    df = pd.read_csv(fname)
+    return df
+frames = [f(stub) for stub in range(1, 11)]
+
+allweights2017_geo_restricted = pd.concat(frames).sort_values(by='pid')
+allweights2017_geo_restricted
+
+allweights2017_geo_restricted.to_csv(OUTWEIGHTDIR + 'allweights2017_geo_restricted.csv', index=False)
+del(frames)
 
 
 # %% 12. Report on state results
+# %% 12a. Summarize puf by state and ht2_stub and save
+# pufsub, ht2wide_updated, allweights2017_geo_restricted
+# ht2targets  15147 x 12 stub, 2 vars, 2 sums, share, sharesum, ht2, target coldescription, ht2description
+# ht2targets_updated same
+# ht2wide 510 x 29 (14.8k) pufvar , stgroup, each var; cells are $
+# ht2wide_updated
+
+    # m_single_lt65 = puf.MARS.eq(1) \
+    #     & puf.age_head.lt(65) \
+    #     & gross_income.ge(s_inc_lt65)
+
+reload(rpt)
+
+a = timer()
+vars = pufsub.columns.to_list()
+calcvars = [x for x in vars if x not in ['pid', 'filer', 'common_stub', 'ht2_stub']]
+rpt.calc_save_statesums(
+    pufsub,
+    state_weights=allweights2017_geo_restricted,
+    pufvars=calcvars,
+    outfile=OUTDATADIR + 'state_sums_wrestricted.csv')
+b = timer()
+b - a #  ~ 4 mins
+
+
+# %% 12b. Report
+
+reload(rpt)
+rpt.state_puf_vs_targets_report(
+    state_targets=ht2targets_updated,
+    state_sums=OUTDATADIR + 'state_sums_wrestricted.csv',
+    title='State calculated values vs. state targets',
+    reportfile=OUTTABDIR + 'state_comparison_wrestricted.txt'
+    )
+
+
+# %% end
+gapminder.rename(columns={'pop':'population',
+                          'lifeExp':'life_exp',
+                          'gdpPercap':'gdp_per_cap'},
+                 inplace=True)
+
+df = pd.DataFrame([[0, 1, -2, -1], [1, 1, 1, 1]]) # 2 rows
+dcnames = {0: 'A', 1: 'B', 2: 'C', 3: 'D'}
+df.rename(columns=dcnames, inplace=True)
+
+s = pd.Series([1, 1, 2, 1]) # 1 column
+df
+s
+df.shape
+s.shape
+df.dot(s) # sum of each multiplied
+other = pd.DataFrame([[0, 1], [1, 2], [-1, -1], [2, 0]])
+other # 3 rows, 2 cols
+df.dot(other)
+
+
+rpt.ht2target_report(
+    ht2targets,
+    outfile=OUTTABDIR + 'ht2target_analysis.txt',
+    title='Comparison of Historical Table 2 shares by group to shares for # of returns',
+    outpath=OUTDATADIR + 'state_shares.csv')
 
 
 # %% 13. Advance file to 2018 (Discuss with Matt)
