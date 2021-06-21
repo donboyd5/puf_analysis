@@ -564,6 +564,24 @@ OrderedDict(sorted(opts.items()))
 # np.round(np.quantile(pdiff, qtiles), 2)
 # np.round(np.nanquantile(pdiff, qtiles), 2)
 
+# %% setup df-sane
+# opts = {
+#     'scaling': True,
+#     'scale_goal': 1e1,
+#     'init_beta': 0.5,
+#     'quiet': True}
+# opts
+
+# # opts.update({'solver': 'lm', 'jac': 'jac'})
+# opts.update({'solver': 'df-sane', 'jac': None})  # None or jac
+# opts.update({'solver_opts': None})
+# opts.update({'solver_opts': {'disp': True}})
+
+# opts
+# gwpr = prob.geoweight(method='poisson-root', options=opts)
+# gwpr.elapsed_seconds
+
+
 # %% ...10b. Loop through all stubs and save results
 
 stubs = (1,)
@@ -575,7 +593,7 @@ gwp.runstubs(stubs, pufsub,
     targvars=targvars,
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
-    method='poisson-newton',
+    method='poisson-newton',  # poisson-newton poisson-root
     options=opts,
     outdir=OUTSTUBDIR,
     write_logfile=False,  # boolean
@@ -1081,3 +1099,7 @@ qx
 
 drops_lsq = pdiff_init.query(qx).copy()
 drops_lsq
+
+
+# %% scratch
+tmp = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', engine='pyarrow')
