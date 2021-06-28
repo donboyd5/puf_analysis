@@ -258,6 +258,7 @@ def get_geo_weights_direct(
 
     # call the solver
     gw = stub_prob.geoweight(method='direct_ipopt', options=options)
+    print("sspd: ", gw.sspd)
 
     whsdf = pd.DataFrame(gw.whs_opt, columns=sts)
     whsdf['geoweight_sum'] = whsdf.sum(axis=1)
@@ -349,6 +350,7 @@ def get_geo_weights_stub(
 
     # call the solver
     gw = stub_prob.geoweight(method=method, options=options, logfile=f)
+    print("sspd: ", gw.sspd)
 
     whsdf = pd.DataFrame(gw.whs_opt, columns=sts)
     whsdf['geoweight_sum'] = whsdf.sum(axis=1)
