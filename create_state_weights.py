@@ -25,6 +25,11 @@
 # then:
 # python setup.py install
 
+# in terminal:
+#    export OMP_NUM_THREADS=10
+#    export NUMBA_NUM_THREADS=10
+#
+
 
 # %% about this program
 
@@ -456,44 +461,44 @@ del(pkl)
 
 # %% ..10a. Setup options for poisson-newton
 
-method='poisson-newton'
+# method='poisson-newton'
 
-opts = {
-    'base_stepmethod': 'jac',  # jac default, or jvp, jac faster/better but less robust
-    'init_beta': 0.0,  # 0.0 default, can be scalar or vector
-    'jac_min_improvement': 0.10,  # .10 default, min proportionate improvement in l2norm to continue with jac
-    'jac_threshold': 5,  # default 5.0; try to use jac when rmse is below this
-    'jvp_reset_steps': 5,  # 5 default, num of jvp steps to do before retrying jac step
-    'lgmres_maxiter': 20, # 20 default, maxiter for solving for jvp step
-    'max_iter': 20,  # 20 default
-    'maxp_tol': .01,  # .01 default, 1/100 of 1% max % difference from target
-    'scaling': True,  # True default
-    'scale_goal': 10.0,  # 10.0 default, goal for sum of each scaled column of xmat
-    'search_iter': 20,  # 20 default steps for linesearch optimization
-    'stepmethod': 'auto',
-    'quiet': True}
+# opts = {
+#     'base_stepmethod': 'jac',  # jac default, or jvp, jac faster/better but less robust
+#     'init_beta': 0.0,  # 0.0 default, can be scalar or vector
+#     'jac_min_improvement': 0.10,  # .10 default, min proportionate improvement in l2norm to continue with jac
+#     'jac_threshold': 5,  # default 5.0; try to use jac when rmse is below this
+#     'jvp_reset_steps': 5,  # 5 default, num of jvp steps to do before retrying jac step
+#     'lgmres_maxiter': 20, # 20 default, maxiter for solving for jvp step
+#     'max_iter': 20,  # 20 default
+#     'maxp_tol': .01,  # .01 default, 1/100 of 1% max % difference from target
+#     'scaling': True,  # True default
+#     'scale_goal': 10.0,  # 10.0 default, goal for sum of each scaled column of xmat
+#     'search_iter': 20,  # 20 default steps for linesearch optimization
+#     'stepmethod': 'auto',
+#     'quiet': True}
 
-# work area for modifying options
-opts.update({'jac_threshold': 1e9})
-opts.update({'jac_min_improvement': 0.10})
-opts.update({'jvp_reset_steps': 4})
-opts.update({'lgmres_maxiter': 30})
-opts.update({'max_iter': 40})
-opts.update({'no_improvement_proportion': 1e-3})
-opts.update({'search_iter': 20})
-opts.update({'stepmethod': 'auto'})
+# # work area for modifying options
+# # best options
+# opts.update({'jac_threshold': 1e9})
+# opts.update({'jac_min_improvement': 0.10})
+# opts.update({'jvp_reset_steps': 4})
+# opts.update({'lgmres_maxiter': 30})
+# opts.update({'max_iter': 40})
+# opts.update({'no_improvement_proportion': 1e-3})
+# opts.update({'search_iter': 20})
+# opts.update({'stepmethod': 'auto'})
 
-OrderedDict(sorted(opts.items()))
+# OrderedDict(sorted(opts.items()))
 
-opts.update({'jac_min_improvement': 0.03})
-opts.update({'max_iter': 30})
-opts.update({'lgmres_maxiter': 80})
-opts.update({'search_iter': 30})
+# opts.update({'jac_min_improvement': 0.03})
+# opts.update({'max_iter': 30})
+# opts.update({'lgmres_maxiter': 20})
+# opts.update({'search_iter': 50})
 
-# in terminal:
-#    export OMP_NUM_THREADS=10
-#    export NUMBA_NUM_THREADS=10
-#
+
+
+
 
 # %% ..10a. Verify that individual stubs can run
 # res = gwp.get_geo_weights_stub(
@@ -548,70 +553,150 @@ opts.update({'search_iter': 30})
 # np.round(np.nanquantile(pdiff, qtiles), 2)
 
 # %% ..10c. ALT setup df-sane
-opts = {
+# opts = {
+#     'scaling': True,
+#     'scale_goal': 1e1,
+#     'init_beta': 0.0,
+#     'quiet': True}
+# opts
+
+
+opts_andy = {
+    'method': 'poisson-root',
     'scaling': True,
     'scale_goal': 1e1,
     'init_beta': 0.0,
-    'quiet': True}
-opts
-
-# opts.update({'solver': 'lm', 'jac': 'jac'})
-opts.update({'solver': 'df-sane', 'jac': None})  # None or jac
-opts.update({'solver': 'lm', 'jac': 'jac'})  # None or jac
-opts.update({'solver_opts': None})  # for lm
-opts.update({'solver_opts': {'disp': True}}) # for df.sane
-
-opts.update({'solver': 'lm', 'jac': 'jac',
-  'solver_opts': {
-      'maxiter': 100,  #  100*(N+1)
-      'factor': 50,  # 100  5 mins, 10 is 3 mins, 1 is 2.5 mins
-      'xtol': 1e-10,  # 1.49e-8
-      'col_deriv': False  # 0
-      }})
-
-
-opts.update({'solver': 'hybr', 'jac': 'jac',
-  'solver_opts': {
-      'factor': 50,  # 100  5 mins, 10 is 3 mins, 1 is 2.5 mins
-      'maxfev': 1000, # 100*(N+1)
-      'xtol': 1e-10,  # 1.49e-8
-      'col_deriv': False  # 0
-      }})
+    'quiet': True,
+    'solver': 'anderson',
+    'jac': None,
+    'callback': callback,
+     'solver_opts': {
+         'disp': False,
+         'maxiter': 2000,
+         'line_search': 'wolfe',  # armijo, wolfe, None
+         'jac_options': {
+             #  'alpha': 1e6,
+             'M': 50,  # 5
+             'w0': .75
+                        }
+     }
+     }
+opts_andy
 
 
-opts.update({'solver': 'krylov', 'jac': None,
-  'solver_opts': {
-      'disp': True,
-      'maxiter': 400,
-      'fatol': 1e-6,  # 6e-6
-      'line_search': 'wolfe'  # armijo, wolfe, None
-      }})
+opts_b2 = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'solver': 'broyden2',
+    'jac': None,
+    'callback': callback,
+     'solver_opts': {
+         # 'disp': True,  # |F(x)| is max abs diff
+         'maxiter': 200,
+         'line_search': 'wolfe',  # armijo, wolfe, None
+         'jac_options': {
+             'reduction_method': 'svd',  # restart, simple, svd
+             'max_rank': 100,  # infinity
+          }
+       }
+     }
+opts_b2
 
-opts.update({'solver': 'krylov', 'jac': None,
-  'solver_opts': {
-      'disp': True,
-      'maxiter': 400,
-      'fatol': 1e-4,  # 6e-6
-      'jac_options': {
-          # 'inner_M': 'kjac',
+opts_dfs = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'solver': 'df-sane',
+    'jac': None,
+    'callback': callback,
+     'solver_opts': {
+         'disp': False,  # boolean
+         'maxfev': 6000,  # `1000
+         'sigma_eps': .00001,  # 1e-10, 5 best but doesn't make sense
+         'sigma_0': -1.0,   # 1.0
+         'M': 30,  # 10
+         'line_search': 'cruz'  # cruz, cheng
+        }
+     }
+opts_dfs
+
+opts_kry = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'solver': 'krylov',
+    'jac': None,
+    'callback': callback,
+     'solver_opts': {
+         # 'disp': True,
+         'maxiter': 300,
+         'fatol': 1e-3,  # 6e-6
+         'xatol': 1e-2,
+         'line_search': 'wolfe',  # armijo, wolfe, None
+         'jac_options': {
+             # 'inner_M': 'kjac',
           'rdiff': 1e-5,
-          'inner_maxiter': 80,
-          'method': 'lgmres'},  # lgmres
-      'line_search': 'wolfe'  # armijo, wolfe, None
-      }})
+          'inner_maxiter': 100,  # 30
+          'method': 'lgmres'
+            }
+        }
+     }
+opts_kry
 
-opts.update({'solver': 'anderson', 'jac': None,
-  'solver_opts': {
-      'disp': True,
-      'maxiter': 300,
-      'fatol': 1e-4,  # 6e-6
-      'jac_options': {
-          # 'inner_M': 'kjac',
-          'alpha': 1e6,
-          'M': 5,
-          'w0': .1},  # lgmres
-      'line_search': 'wolfe'  # armijo, wolfe, None
-      }})
+opts_lm = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'solver': 'lm',
+    'jac': 'jac',  # False, jac
+    'callback': None, # lm cannot use callback function
+    'solver_opts': {
+         'maxiter': 500,  #  100*(N+1)
+         'factor': 50,  # 100  5 mins, 10 is 3 mins, 1 is 2.5 mins
+         # 'ftol': 1e-6,  # relative error desired in the sum of squares
+         # 'xtol': 1e-10,  # 1.49e-8 relative error desired in the approximate solution
+         # 'eps': 1e-10,
+         # 'epsfcn': 1e-1, # suitable step length forward diff
+         'col_deriv': False
+        }
+     }
+opts_lm
+
+
+# %% newton options
+opts_newt = {
+    'method': 'poisson-newton',
+    'max_iter': 40,  # 20 default
+    'maxp_tol': .01,  # .01 default, 1/100 of 1% max % difference from target
+    'init_beta': 0.0,  # 0.0 default, can be scalar or vector
+    'scaling': True,  # True default
+    'scale_goal': 10.0,  # 10.0 default, goal for sum of each scaled column of xmat
+    'stepmethod': 'auto',
+    'search_iter': 30,  # 20 default steps for linesearch optimization
+    'base_stepmethod': 'jac',  # jac default, or jvp, jac faster/better but less robust
+    'jac_min_improvement': 0.05,  # .10 default, min proportionate improvement in l2norm to continue with jac
+    'jac_threshold': 1e9,  # default 5.0; try to use jac when rmse is below this
+    'jvp_reset_steps': 4,  # 5 default, num of jvp steps to do before retrying jac step
+    'lgmres_maxiter': 30, # 20 default, maxiter for solving for jvp step
+    'no_improvement_proportion': 1e-3,
+    'notes': False
+    }
+opts_newt
+
+# best options
+opts_newt.update({'jac_threshold': 1e9})
+opts_newt.update({'jac_min_improvement': 0.10})
+opts_newt.update({'jvp_reset_steps': 4})
+opts_newt.update({'lgmres_maxiter': 30})
+opts_newt.update({'max_iter': 40})
+opts_newt.update({'no_improvement_proportion': 1e-3})
+opts_newt.update({'search_iter': 20})
+opts_newt.update({'stepmethod': 'auto'})
 
 
 # GOOD!:
@@ -631,36 +716,53 @@ opts.update({'solver': 'anderson', 'jac': None,
 #       }})
 
 
-opts.update({'solver': 'df-sane', 'jac': None,
-  'solver_opts': {
-      'disp': True,
-      'maxfev': 2000,  # `1000
-      'sigma_eps': .2,  # 1e-10, 5 best but doesn't make sense
-      'sigma_0': 0,   # 1.0
-      'M': 30,  # 10
-      'line_search': 'cruz'  # cruz, cheng
-      }}) # for df.sane
-
-opts
-# gwpr = prob.geoweight(method='poisson-root', options=opts)
-# gwpr.elapsed_seconds
+# %% callback function
+def callback(x, f):
+    # x is solution
+    # f are residuals
+    # set niter = 0 outside this function, before running optimization
+    global niter
+    l2norm = np.linalg.norm(f, 2)
+    maxpdiff = np.max(np.abs(f))
+    print(f'iter: {niter: 5};  l2norm: {l2norm: 9.2f};  max abs diff: {maxpdiff: 9.3f}')
+    niter += 1
+    return
 
 
 # %% ..10d. Loop through all stubs and save results
 
+opts = opts_andy
+opts = opts_b2
+opts = opts_dfs
+opts = opts_kry
+opts = opts_lm
+opts = opts_newt
+
+opts
+
 stubs = (1,)
 stubs = (2,)
+stubs = (3,)
 stubs = (4,)
+stubs = (5,)
 stubs = (6,)
+stubs = (7,)
+stubs = (8,)
+stubs = (9,)
 stubs = (10,)
 stubs = tuple(range(1, 11))
 
-gwp.runstubs(stubs, pufsub,
+
+niter = 0
+
+gwp.runstubs(
+    stubs,
+    pufsub,
     weightdf=weights_georeweight,
     targvars=targvars,
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
-    method='poisson-root',  # poisson-newton poisson-root
+    method=opts['method'],  # poisson-newton poisson-root
     options=opts,
     outdir=OUTSTUBDIR,  # OUTSTUBDIR SCRATCHDIR
     write_logfile=False,  # boolean
