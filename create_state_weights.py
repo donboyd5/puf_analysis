@@ -107,6 +107,8 @@ reload(rwp)
 # %% physical locations
 WINDATADIR = '/media/don/ignore/data/' # files that were created in Windows version of this
 DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
+DIR_FOR_BOYD_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'
+
 
 # working storage
 SCRATCHDIR = '/media/don/scratch/'
@@ -115,8 +117,11 @@ OUTDIR = '/media/don/pufanalysis_output/'
 # %%  relative locations to use
 
 # input locations
-PUFDIR = DIR_FOR_OFFICIAL_PUFCSV
-WEIGHTDIR = DIR_FOR_OFFICIAL_PUFCSV
+# PUFDIR = DIR_FOR_OFFICIAL_PUFCSV
+# WEIGHTDIR = DIR_FOR_OFFICIAL_PUFCSV
+
+PUFDIR = DIR_FOR_BOYD_PUFCSV
+WEIGHTDIR = DIR_FOR_BOYD_PUFCSV
 
 # output locations
 OUTDATADIR = OUTDIR + 'data/'
@@ -297,10 +302,6 @@ keepcols
 print('WARNING: dropping the following columns where ht2 sum is ZERO: ', dropcols)
 
 
-
-
-
-
 # %% 7. Construct national weights as sums of unrestricted state weights
 
 # how many records in each HT2 stub? ranges from 5,339 in stub 1 to 41,102 in stub 4
@@ -449,6 +450,23 @@ del(pkl)
 
 # %% 10. Get state weights
 
+
+# %% callback function
+def callback(x, f):
+    # x is solution
+    # f are residuals
+    # set niter = 0 outside this function, before running optimization
+    global niter, beta_best, l2norm_best
+    l2norm = np.linalg.norm(f, 2)
+    if l2norm < l2norm_best:
+        l2norm_best = l2norm
+        beta_best = x
+    maxpdiff = np.max(np.abs(f))
+    print(f'iter: {niter: 5};  l2norm: {l2norm: 9.2f};  max abs diff: {maxpdiff: 9.3f}')
+    niter += 1
+    return
+
+
 # opts_lsq = {
 #     'scaling': True,
 #     'scale_goal': 1e1,
@@ -594,7 +612,7 @@ opts_b2 = {
     'callback': callback,
      'solver_opts': {
          # 'disp': True,  # |F(x)| is max abs diff
-         'maxiter': 200,
+         'maxiter': 2000,
          'line_search': 'wolfe',  # armijo, wolfe, None
          'jac_options': {
              'reduction_method': 'svd',  # restart, simple, svd
@@ -623,23 +641,38 @@ opts_dfs = {
      }
 opts_dfs
 
+# %% opts_jfnk
+opts_jfnk = {
+    'method': 'poisson-jfnk',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'callback': callback,
+    'maxiter': 200,
+    'line_search': 'armijo', # armijo, wolfe, None
+    'verbose': True
+     }
+opts_jfnk
+
+
+# %% opts_kry
 opts_kry = {
     'method': 'poisson-root',
     'scaling': True,
     'scale_goal': 1e1,
-    'init_beta': 0.0,
+    'init_beta': 0.0, # 0.0,
     'solver': 'krylov',
     'jac': None,
     'callback': callback,
      'solver_opts': {
          # 'disp': True,
-         'maxiter': 300,
-         'fatol': 1e-3,  # 6e-6
+         'maxiter': 4000,
+         'fatol': 1e-2,  # 6e-6
          'xatol': 1e-2,
          'line_search': 'wolfe',  # armijo, wolfe, None
          'jac_options': {
              # 'inner_M': 'kjac',
-          'rdiff': 1e-5,
+          'rdiff': 1e-8,  # not sure default
           'inner_maxiter': 100,  # 30
           'method': 'lgmres'
             }
@@ -647,17 +680,18 @@ opts_kry = {
      }
 opts_kry
 
+# %% opts_lm
 opts_lm = {
     'method': 'poisson-root',
     'scaling': True,
     'scale_goal': 1e1,
-    'init_beta': 0.0,
+    'init_beta': ibeta,  # 0.0,
     'solver': 'lm',
     'jac': 'jac',  # False, jac
     'callback': None, # lm cannot use callback function
     'solver_opts': {
-         'maxiter': 500,  #  100*(N+1)
-         'factor': 50,  # 100  5 mins, 10 is 3 mins, 1 is 2.5 mins
+         'maxiter': 10,  #  100*(N+1)
+         'factor': 10,  # 100  5 mins, 10 is 3 mins, 1 is 2.5 mins
          # 'ftol': 1e-6,  # relative error desired in the sum of squares
          # 'xtol': 1e-10,  # 1.49e-8 relative error desired in the approximate solution
          # 'eps': 1e-10,
@@ -667,21 +701,36 @@ opts_lm = {
      }
 opts_lm
 
+opts_lm2 = {
+    'method': 'poisson-lsq',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'jac': 'jac',  # False, jac
+    'stepmethod': 'jac',  # vjp, jvp, full, finite-diff
+    'max_nfev': 30,
+    'gtol': 1e-2,
+    'x_scale': 'jac',
+    'callback': None, # lm cannot use callback function
+     }
+opts_lm2
 
-# %% newton options
+
+# %% opts_newt
 opts_newt = {
     'method': 'poisson-newton',
     'max_iter': 40,  # 20 default
     'maxp_tol': .01,  # .01 default, 1/100 of 1% max % difference from target
-    'init_beta': 0.0,  # 0.0 default, can be scalar or vector
+    'init_beta': 0.0,  # 0.0,  # 0.0 default, can be scalar or vector
     'scaling': True,  # True default
     'scale_goal': 10.0,  # 10.0 default, goal for sum of each scaled column of xmat
     'stepmethod': 'auto',
     'search_iter': 30,  # 20 default steps for linesearch optimization
     'base_stepmethod': 'jac',  # jac default, or jvp, jac faster/better but less robust
     'jac_min_improvement': 0.05,  # .10 default, min proportionate improvement in l2norm to continue with jac
-    'jac_threshold': 1e9,  # default 5.0; try to use jac when rmse is below this
+    'jvp_precondition': False,
     'jvp_reset_steps': 4,  # 5 default, num of jvp steps to do before retrying jac step
+    'jac_threshold': 1e9,  # default 5.0; try to use jac when rmse is below this
     'lgmres_maxiter': 30, # 20 default, maxiter for solving for jvp step
     'no_improvement_proportion': 1e-3,
     'notes': False
@@ -689,15 +738,26 @@ opts_newt = {
 opts_newt
 
 # best options
-opts_newt.update({'jac_threshold': 1e9})
-opts_newt.update({'jac_min_improvement': 0.10})
+opts_newt.update({'base_stepmethod': 'jvp'})
+opts_newt.update({'jac_threshold': 0})
+opts_newt.update({'jac_min_improvement': 100.25})
 opts_newt.update({'jvp_reset_steps': 4})
-opts_newt.update({'lgmres_maxiter': 30})
+opts_newt.update({'jvp_precondition': False})
+opts_newt.update({'lgmres_maxiter': 60})
 opts_newt.update({'max_iter': 40})
 opts_newt.update({'no_improvement_proportion': 1e-3})
-opts_newt.update({'search_iter': 20})
+opts_newt.update({'search_iter': 30})
 opts_newt.update({'stepmethod': 'auto'})
 
+
+# test options
+opts_newt.update({'base_stepmethod': 'jvp'})
+opts_newt.update({'jac_threshold': 0})
+opts_newt.update({'jac_min_improvement': 100.0})
+opts_newt.update({'jvp_precondition': False})
+opts_newt.update({'jvp_reset_steps': 2})
+opts_newt.update({'notes': True})
+opts_newt.update({'init_beta': 0.5})
 
 # GOOD!:
 # stub2 26.5319 sspd:  1189.6837829245314
@@ -716,29 +776,20 @@ opts_newt.update({'stepmethod': 'auto'})
 #       }})
 
 
-# %% callback function
-def callback(x, f):
-    # x is solution
-    # f are residuals
-    # set niter = 0 outside this function, before running optimization
-    global niter
-    l2norm = np.linalg.norm(f, 2)
-    maxpdiff = np.max(np.abs(f))
-    print(f'iter: {niter: 5};  l2norm: {l2norm: 9.2f};  max abs diff: {maxpdiff: 9.3f}')
-    niter += 1
-    return
-
-
 # %% ..10d. Loop through all stubs and save results
-
+# %% opts-set
 opts = opts_andy
 opts = opts_b2
 opts = opts_dfs
+opts = opts_jfnk
 opts = opts_kry
 opts = opts_lm
+opts = opts_lm2
 opts = opts_newt
 
 opts
+
+# %% stubs
 
 stubs = (1,)
 stubs = (2,)
@@ -753,7 +804,18 @@ stubs = (10,)
 stubs = tuple(range(1, 11))
 
 
+opts.update({'init_beta': 0.0})
+opts.update({'init_beta': ibeta})
+opts.update({'jac_min_improvement': 0.0005,})
+
+# opts.update({'line_search': 'wolfe'})  # armijo
+# opts.update({'line_search': 'armijo'})  # armijo
+
+
+# %% run
 niter = 0
+l2norm_best = 1e99
+beta_best = 0.0
 
 gwp.runstubs(
     stubs,
@@ -768,6 +830,10 @@ gwp.runstubs(
     write_logfile=False,  # boolean
     parallel=False)  # boolean
 
+# ibeta = np.load(OUTSTUBDIR + 'stub02_betaopt.npy').flatten()
+# ibeta.shape
+# ibeta = beta_best.copy()
+# l2b = l2norm_best.copy()
 
 # %% 11. Assemble file of weights from individual stubs
 def f(stub):

@@ -350,7 +350,6 @@ def get_geo_weights_stub(
 
     # call the solver
     gw = stub_prob.geoweight(method=method, options=options, logfile=f)
-    print("sspd: ", gw.sspd)
 
     whsdf = pd.DataFrame(gw.whs_opt, columns=sts)
     whsdf['geoweight_sum'] = whsdf.sum(axis=1)
@@ -361,6 +360,10 @@ def get_geo_weights_stub(
                     axis=1)
 
     b = timer()
+
+    # print summary info to stdout no matter what
+    print(f'stub: {stub: 4d};  sspd: {gw.sspd: 11.3f};  seconds: {b - a: 8.2f}')
+
     # create a named tuple of items to return
     fields = ('elapsed_seconds',
               'whsdf',
@@ -396,6 +399,7 @@ def callstub(stub, df, weightdf, targvars, ht2wide, dropsdf_wide,
         outdir,
         write_logfile)
     gw.whsdf.to_csv(outdir + 'stub' + str(stub).zfill(2) + '_whs.csv', index=False)
+    # np.save(outdir + 'stub' + str(stub).zfill(2) + '_betaopt.npy', gw.beta_opt)
 
     open_file = open(outdir + 'stub' + str(stub).zfill(2) + '_betaopt.pkl', "wb")
     pickle.dump(gw.beta_opt, open_file)  # maybe find a better format?
