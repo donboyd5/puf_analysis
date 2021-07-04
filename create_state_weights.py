@@ -25,6 +25,11 @@
 # then:
 # python setup.py install
 
+# in terminal:
+#    export OMP_NUM_THREADS=10
+#    export NUMBA_NUM_THREADS=10
+#
+
 
 # %% about this program
 
@@ -102,6 +107,8 @@ reload(rwp)
 # %% physical locations
 WINDATADIR = '/media/don/ignore/data/' # files that were created in Windows version of this
 DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
+DIR_FOR_BOYD_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'
+
 
 # working storage
 SCRATCHDIR = '/media/don/scratch/'
@@ -110,8 +117,11 @@ OUTDIR = '/media/don/pufanalysis_output/'
 # %%  relative locations to use
 
 # input locations
-PUFDIR = DIR_FOR_OFFICIAL_PUFCSV
-WEIGHTDIR = DIR_FOR_OFFICIAL_PUFCSV
+# PUFDIR = DIR_FOR_OFFICIAL_PUFCSV
+# WEIGHTDIR = DIR_FOR_OFFICIAL_PUFCSV
+
+PUFDIR = DIR_FOR_BOYD_PUFCSV
+WEIGHTDIR = DIR_FOR_BOYD_PUFCSV
 
 # output locations
 OUTDATADIR = OUTDIR + 'data/'
@@ -292,10 +302,6 @@ keepcols
 print('WARNING: dropping the following columns where ht2 sum is ZERO: ', dropcols)
 
 
-
-
-
-
 # %% 7. Construct national weights as sums of unrestricted state weights
 
 # how many records in each HT2 stub? ranges from 5,339 in stub 1 to 41,102 in stub 4
@@ -340,7 +346,7 @@ rpt.wtdpuf_national_comp_report(
     ipdiff_df=pdiff_reweighted)
 
 
-# %% 7a. Prepare data for report on initial state weights
+# %% ..7a. Prepare data for report on initial state weights
 
 allweights2017_geo_unrestricted = pd.read_csv(OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv')
 
@@ -355,7 +361,7 @@ rpt.calc_save_statesums(
 b = timer()
 b - a #  ~ 4 mins
 
-# %% 7b. Report on initial state weights
+# %% ..7b. Report on initial state weights
 rpt.state_puf_vs_targets_report(
     state_targets=ht2targets,
     state_sums=OUTDATADIR + 'state_sums_wunrestricted.csv',
@@ -444,6 +450,23 @@ del(pkl)
 
 # %% 10. Get state weights
 
+
+# %% callback function
+def callback(x, f):
+    # x is solution
+    # f are residuals
+    # set niter = 0 outside this function, before running optimization
+    global niter, beta_best, l2norm_best
+    l2norm = np.linalg.norm(f, 2)
+    if l2norm < l2norm_best:
+        l2norm_best = l2norm
+        beta_best = x
+    maxpdiff = np.max(np.abs(f))
+    print(f'iter: {niter: 5};  l2norm: {l2norm: 9.2f};  max abs diff: {maxpdiff: 9.3f}')
+    niter += 1
+    return
+
+
 # opts_lsq = {
 #     'scaling': True,
 #     'scale_goal': 1e1,
@@ -454,65 +477,48 @@ del(pkl)
 # opts_lsq.update({'max_nfev': 1000})
 # opts = opts_lsq; method = 'poisson-lsq'
 
-opts = {
-    'scaling': True,
-    'scale_goal': 10.0,  # this is an important parameter!!
-    'init_beta': 0.0,
-    'max_iter': 20,
-    'search_iter': 5,
-    'maxp_tol': .01,  # .01 is 1/100 of 1% for the max % difference from target
-
-    'base_stepmethod': 'jac',  # jvp or jac, jac seems to work better
-    'jvp_reset_steps': 5,
-    'quiet': True}
-
-# opts.update({'max_iter': 100})
-# opts.update({'max_iter': 50})
-# opts.update({'search_iter': 10})
-# opts.update({'scale_goal': 10}) # 10
-
-# # opts.update({'base_stepmethod': 'jac'})
-# opts.update({'base_stepmethod': 'jvp'})
-
-# opts.update({'startup_period': 5})
-# opts.update({'startup_period': 100})
-# # opts.update({'startup_stepmethod': 'jac'})
-# opts.update({'startup_stepmethod': 'jvp'})
-
-# opts.update({'init_beta': betalsq.flatten()})
-# opts.update({'init_beta': 0.0})
-# opts.update({'init_beta': 0.5})
-
-# opts.update({'step_fixed': .4})
-# opts.update({'step_fixed': False})
-
+# %% ..10a. Setup options for poisson-newton
 
 # method='poisson-newton'
-# method='poisson-newton-sep'
-# opts
 
-# opts.update({'p': .2})
+# opts = {
+#     'base_stepmethod': 'jac',  # jac default, or jvp, jac faster/better but less robust
+#     'init_beta': 0.0,  # 0.0 default, can be scalar or vector
+#     'jac_min_improvement': 0.10,  # .10 default, min proportionate improvement in l2norm to continue with jac
+#     'jac_threshold': 5,  # default 5.0; try to use jac when rmse is below this
+#     'jvp_reset_steps': 5,  # 5 default, num of jvp steps to do before retrying jac step
+#     'lgmres_maxiter': 20, # 20 default, maxiter for solving for jvp step
+#     'max_iter': 20,  # 20 default
+#     'maxp_tol': .01,  # .01 default, 1/100 of 1% max % difference from target
+#     'scaling': True,  # True default
+#     'scale_goal': 10.0,  # 10.0 default, goal for sum of each scaled column of xmat
+#     'search_iter': 20,  # 20 default steps for linesearch optimization
+#     'stepmethod': 'auto',
+#     'quiet': True}
+
+# # work area for modifying options
+# # best options
+# opts.update({'jac_threshold': 1e9})
+# opts.update({'jac_min_improvement': 0.10})
+# opts.update({'jvp_reset_steps': 4})
+# opts.update({'lgmres_maxiter': 30})
+# opts.update({'max_iter': 40})
+# opts.update({'no_improvement_proportion': 1e-3})
+# opts.update({'search_iter': 20})
+# opts.update({'stepmethod': 'auto'})
+
+# OrderedDict(sorted(opts.items()))
+
+# opts.update({'jac_min_improvement': 0.03})
+# opts.update({'max_iter': 30})
+# opts.update({'lgmres_maxiter': 20})
+# opts.update({'search_iter': 50})
 
 
-method='poisson-newton'
-opts.update({'lgmres_maxiter': 20})
-opts.update({'search_iter': 20})
-opts.update({'max_iter': 40})
-opts.update({'stepmethod': 'auto'})
-opts.update({'jac_threshold': 1e9})
-opts.update({'no_improvement_proportion': 1e-3})
-opts.update({'jac_min_improvement': 0.10})
-opts.update({'jvp_reset_steps': 4})
 
 
-OrderedDict(sorted(opts.items()))
 
-# in terminal:
-#    export OMP_NUM_THREADS=10
-#    export NUMBA_NUM_THREADS=10
-#
-
-# %% ...10a. Verify that individual stubs can run
+# %% ..10a. Verify that individual stubs can run
 # res = gwp.get_geo_weights_stub(
 #     pufsub,
 #     weightdf=weights_georeweight,
@@ -564,23 +570,270 @@ OrderedDict(sorted(opts.items()))
 # np.round(np.quantile(pdiff, qtiles), 2)
 # np.round(np.nanquantile(pdiff, qtiles), 2)
 
-# %% ...10b. Loop through all stubs and save results
+# %% ..10c. ALT setup df-sane
+# opts = {
+#     'scaling': True,
+#     'scale_goal': 1e1,
+#     'init_beta': 0.0,
+#     'quiet': True}
+# opts
+
+
+opts_andy = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'quiet': True,
+    'solver': 'anderson',
+    'jac': None,
+    'callback': callback,
+     'solver_opts': {
+         'disp': False,
+         'maxiter': 2000,
+         'line_search': 'wolfe',  # armijo, wolfe, None
+         'jac_options': {
+             #  'alpha': 1e6,
+             'M': 50,  # 5
+             'w0': .75
+                        }
+     }
+     }
+opts_andy
+
+
+opts_b2 = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'solver': 'broyden2',
+    'jac': None,
+    'callback': callback,
+     'solver_opts': {
+         # 'disp': True,  # |F(x)| is max abs diff
+         'maxiter': 2000,
+         'line_search': 'wolfe',  # armijo, wolfe, None
+         'jac_options': {
+             'reduction_method': 'svd',  # restart, simple, svd
+             'max_rank': 100,  # infinity
+          }
+       }
+     }
+opts_b2
+
+opts_dfs = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'solver': 'df-sane',
+    'jac': None,
+    'callback': callback,
+     'solver_opts': {
+         'disp': False,  # boolean
+         'maxfev': 6000,  # `1000
+         'sigma_eps': .00001,  # 1e-10, 5 best but doesn't make sense
+         'sigma_0': -1.0,   # 1.0
+         'M': 30,  # 10
+         'line_search': 'cruz'  # cruz, cheng
+        }
+     }
+opts_dfs
+
+# %% opts_jfnk
+opts_jfnk = {
+    'method': 'poisson-jfnk',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'callback': callback,
+    'maxiter': 200,
+    'line_search': 'armijo', # armijo, wolfe, None
+    'verbose': True
+     }
+opts_jfnk
+
+
+# %% opts_kry
+opts_kry = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0, # 0.0,
+    'solver': 'krylov',
+    'jac': None,
+    'callback': callback,
+     'solver_opts': {
+         # 'disp': True,
+         'maxiter': 4000,
+         'fatol': 1e-2,  # 6e-6
+         'xatol': 1e-2,
+         'line_search': 'wolfe',  # armijo, wolfe, None
+         'jac_options': {
+             # 'inner_M': 'kjac',
+          'rdiff': 1e-8,  # not sure default
+          'inner_maxiter': 100,  # 30
+          'method': 'lgmres'
+            }
+        }
+     }
+opts_kry
+
+# %% opts_lm
+opts_lm = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': ibeta,  # 0.0,
+    'solver': 'lm',
+    'jac': 'jac',  # False, jac
+    'callback': None, # lm cannot use callback function
+    'solver_opts': {
+         'maxiter': 10,  #  100*(N+1)
+         'factor': 10,  # 100  5 mins, 10 is 3 mins, 1 is 2.5 mins
+         # 'ftol': 1e-6,  # relative error desired in the sum of squares
+         # 'xtol': 1e-10,  # 1.49e-8 relative error desired in the approximate solution
+         # 'eps': 1e-10,
+         # 'epsfcn': 1e-1, # suitable step length forward diff
+         'col_deriv': False
+        }
+     }
+opts_lm
+
+opts_lm2 = {
+    'method': 'poisson-lsq',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'jac': 'jac',  # False, jac
+    'stepmethod': 'jac',  # vjp, jvp, full, finite-diff
+    'max_nfev': 30,
+    'gtol': 1e-2,
+    'x_scale': 'jac',
+    'callback': None, # lm cannot use callback function
+     }
+opts_lm2
+
+
+# %% opts_newt
+opts_newt = {
+    'method': 'poisson-newton',
+    'max_iter': 40,  # 20 default
+    'maxp_tol': .01,  # .01 default, 1/100 of 1% max % difference from target
+    'init_beta': 0.0,  # 0.0,  # 0.0 default, can be scalar or vector
+    'scaling': True,  # True default
+    'scale_goal': 10.0,  # 10.0 default, goal for sum of each scaled column of xmat
+    'stepmethod': 'auto',
+    'search_iter': 30,  # 20 default steps for linesearch optimization
+    'base_stepmethod': 'jac',  # jac default, or jvp, jac faster/better but less robust
+    'jac_min_improvement': 0.05,  # .10 default, min proportionate improvement in l2norm to continue with jac
+    'jvp_precondition': False,
+    'jvp_reset_steps': 4,  # 5 default, num of jvp steps to do before retrying jac step
+    'jac_threshold': 1e9,  # default 5.0; try to use jac when rmse is below this
+    'lgmres_maxiter': 30, # 20 default, maxiter for solving for jvp step
+    'no_improvement_proportion': 1e-3,
+    'notes': False
+    }
+opts_newt
+
+# best options
+opts_newt.update({'base_stepmethod': 'jvp'})
+opts_newt.update({'jac_threshold': 0})
+opts_newt.update({'jac_min_improvement': 100.25})
+opts_newt.update({'jvp_reset_steps': 4})
+opts_newt.update({'jvp_precondition': False})
+opts_newt.update({'lgmres_maxiter': 60})
+opts_newt.update({'max_iter': 40})
+opts_newt.update({'no_improvement_proportion': 1e-3})
+opts_newt.update({'search_iter': 30})
+opts_newt.update({'stepmethod': 'auto'})
+
+
+# test options
+opts_newt.update({'base_stepmethod': 'jvp'})
+opts_newt.update({'jac_threshold': 0})
+opts_newt.update({'jac_min_improvement': 100.0})
+opts_newt.update({'jvp_precondition': False})
+opts_newt.update({'jvp_reset_steps': 2})
+opts_newt.update({'notes': True})
+opts_newt.update({'init_beta': 0.5})
+
+# GOOD!:
+# stub2 26.5319 sspd:  1189.6837829245314
+# Elapsed minutes:  5.51
+# opts.update({'solver': 'krylov', 'jac': None,
+#   'solver_opts': {
+#       'disp': True,
+#       'maxiter': 300,
+#       'fatol': 1e-4,  # 6e-6
+#       'jac_options': {
+#           # 'inner_M': 'kjac',
+#           'rdiff': 1e-5,
+#           'inner_maxiter': 80,
+#           'method': 'lgmres'},  # lgmres
+#       'line_search': 'wolfe'  # armijo, wolfe, None
+#       }})
+
+
+# %% ..10d. Loop through all stubs and save results
+# %% opts-set
+opts = opts_andy
+opts = opts_b2
+opts = opts_dfs
+opts = opts_jfnk
+opts = opts_kry
+opts = opts_lm
+opts = opts_lm2
+opts = opts_newt
+
+opts
+
+# %% stubs
 
 stubs = (1,)
+stubs = (2,)
+stubs = (3,)
+stubs = (4,)
+stubs = (5,)
+stubs = (6,)
+stubs = (7,)
+stubs = (8,)
+stubs = (9,)
 stubs = (10,)
 stubs = tuple(range(1, 11))
 
-gwp.runstubs(stubs, pufsub,
+
+opts.update({'init_beta': 0.0})
+opts.update({'init_beta': ibeta})
+opts.update({'jac_min_improvement': 0.0005,})
+
+# opts.update({'line_search': 'wolfe'})  # armijo
+# opts.update({'line_search': 'armijo'})  # armijo
+
+
+# %% run
+niter = 0
+l2norm_best = 1e99
+beta_best = 0.0
+
+gwp.runstubs(
+    stubs,
+    pufsub,
     weightdf=weights_georeweight,
     targvars=targvars,
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
-    method='poisson-newton',
+    method=opts['method'],  # poisson-newton poisson-root
     options=opts,
-    outdir=OUTSTUBDIR,
+    outdir=OUTSTUBDIR,  # OUTSTUBDIR SCRATCHDIR
     write_logfile=False,  # boolean
     parallel=False)  # boolean
 
+# ibeta = np.load(OUTSTUBDIR + 'stub02_betaopt.npy').flatten()
+# ibeta.shape
+# ibeta = beta_best.copy()
+# l2b = l2norm_best.copy()
 
 # %% 11. Assemble file of weights from individual stubs
 def f(stub):
@@ -1081,3 +1334,7 @@ qx
 
 drops_lsq = pdiff_init.query(qx).copy()
 drops_lsq
+
+
+# %% scratch
+tmp = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', engine='pyarrow')
