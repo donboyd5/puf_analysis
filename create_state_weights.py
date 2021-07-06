@@ -602,6 +602,29 @@ opts_andy = {
 opts_andy
 
 
+# %% opts_b1
+opts_b1 = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'solver': 'broyden1',
+    'jac': None,
+    'callback': callback,
+     'solver_opts': {
+         # 'disp': True,  # |F(x)| is max abs diff
+         'maxiter': 1000,
+         'line_search': 'wolfe',  # armijo, wolfe, None
+         'jac_options': {
+            #  'alpha': -0.1
+            'reduction_method': 'svd',  # restart, simple, svd
+           # 'max_rank': 1e3  # infinity
+          }
+       }
+     }
+opts_b1
+
+# %% opts_b2
 opts_b2 = {
     'method': 'poisson-root',
     'scaling': True,
@@ -622,6 +645,7 @@ opts_b2 = {
      }
 opts_b2
 
+# %% opts_dfs
 opts_dfs = {
     'method': 'poisson-root',
     'scaling': True,
@@ -666,7 +690,7 @@ opts_kry = {
     'callback': callback,
      'solver_opts': {
          # 'disp': True,
-         'maxiter': 4000,
+         'maxiter': 530,
          'fatol': 1e-2,  # 6e-6
          'xatol': 1e-2,
          'line_search': 'wolfe',  # armijo, wolfe, None
@@ -685,12 +709,12 @@ opts_lm = {
     'method': 'poisson-root',
     'scaling': True,
     'scale_goal': 1e1,
-    'init_beta': ibeta,  # 0.0,
+    'init_beta': 0.0,  # 0.0,
     'solver': 'lm',
     'jac': 'jac',  # False, jac
     'callback': None, # lm cannot use callback function
     'solver_opts': {
-         'maxiter': 10,  #  100*(N+1)
+         'maxiter': 100,  #  100*(N+1)
          'factor': 10,  # 100  5 mins, 10 is 3 mins, 1 is 2.5 mins
          # 'ftol': 1e-6,  # relative error desired in the sum of squares
          # 'xtol': 1e-10,  # 1.49e-8 relative error desired in the approximate solution
@@ -704,7 +728,7 @@ opts_lm
 opts_lm2 = {
     'method': 'poisson-lsq',
     'scaling': True,
-    'scale_goal': 1e1,
+    'scale_goal': 10,
     'init_beta': 0.0,
     'jac': 'jac',  # False, jac
     'stepmethod': 'jac',  # vjp, jvp, full, finite-diff
@@ -759,6 +783,9 @@ opts_newt.update({'jvp_reset_steps': 2})
 opts_newt.update({'notes': True})
 opts_newt.update({'init_beta': 0.5})
 
+opts_newt.update({'scale_goal': 1e6})
+opts_newt.update({'scaling': True})
+
 # GOOD!:
 # stub2 26.5319 sspd:  1189.6837829245314
 # Elapsed minutes:  5.51
@@ -779,6 +806,7 @@ opts_newt.update({'init_beta': 0.5})
 # %% ..10d. Loop through all stubs and save results
 # %% opts-set
 opts = opts_andy
+opts = opts_b1
 opts = opts_b2
 opts = opts_dfs
 opts = opts_jfnk
@@ -788,6 +816,9 @@ opts = opts_lm2
 opts = opts_newt
 
 opts
+
+opts.update({'scale_goal': 1e3})
+opts.update({'scaling': True})
 
 # %% stubs
 
@@ -803,10 +834,15 @@ stubs = (9,)
 stubs = (10,)
 stubs = tuple(range(1, 11))
 
+stubs = tuple((1, tuple(range(3, 11))))
+stubs = (1, 3, 4, 5, 6, 7, 8, 9, 10)
 
 opts.update({'init_beta': 0.0})
 opts.update({'init_beta': ibeta})
-opts.update({'jac_min_improvement': 0.0005,})
+opts.update({'jac_min_improvement': 0.0})
+opts.update({'max_iter': 2000})
+opts_newt.update({'base_stepmethod': 'jac'})
+opts_newt.update({'jac_threshold': 1e9})
 
 # opts.update({'line_search': 'wolfe'})  # armijo
 # opts.update({'line_search': 'armijo'})  # armijo
@@ -826,7 +862,7 @@ gwp.runstubs(
     dropsdf_wide=drops_states_updated,
     method=opts['method'],  # poisson-newton poisson-root
     options=opts,
-    outdir=OUTSTUBDIR,  # OUTSTUBDIR SCRATCHDIR
+    outdir=SCRATCHDIR,  # OUTSTUBDIR SCRATCHDIR
     write_logfile=False,  # boolean
     parallel=False)  # boolean
 
