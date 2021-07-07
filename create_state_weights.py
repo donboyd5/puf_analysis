@@ -847,11 +847,22 @@ opts_newt.update({'jac_threshold': 1e9})
 # opts.update({'line_search': 'wolfe'})  # armijo
 # opts.update({'line_search': 'armijo'})  # armijo
 
+opts = {}
+opts['method_names'] = ('jac', 'krylov', 'jvp')
+opts['method_maxiter_values'] = (40, 1000, 5)
+opts['method_improvement_minimums'] = (0.1, 1e-6, 0.001)
+# opts['method'] = ('krylov',)
+opts['krylov_tol'] = 1e-3  # 1e-3
+opts['pbounds'] = (.01, 0.99)
+opts['notes'] = True
+
+
+# opts['method'] = 'poisson-newton'
 
 # %% run
-niter = 0
-l2norm_best = 1e99
-beta_best = 0.0
+# niter = 0
+# l2norm_best = 1e99
+# beta_best = 0.0
 
 gwp.runstubs(
     stubs,
@@ -860,10 +871,10 @@ gwp.runstubs(
     targvars=targvars,
     ht2wide=ht2wide_updated,
     dropsdf_wide=drops_states_updated,
-    method=opts['method'],  # poisson-newton poisson-root
+    approach='poisson-newton',  # poisson-newton poisson-root
     options=opts,
     outdir=SCRATCHDIR,  # OUTSTUBDIR SCRATCHDIR
-    write_logfile=False,  # boolean
+    write_logfile=True,  # boolean
     parallel=False)  # boolean
 
 # ibeta = np.load(OUTSTUBDIR + 'stub02_betaopt.npy').flatten()

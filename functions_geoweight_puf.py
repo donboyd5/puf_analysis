@@ -416,7 +416,7 @@ def runstubs(
     targvars,
     ht2wide,
     dropsdf_wide,
-    method,
+    approach,
     options,
     outdir,
     write_logfile,
@@ -436,7 +436,7 @@ def runstubs(
             targvars,
             ht2wide,
             dropsdf_wide,
-            method,
+            approach,
             options,
             outdir,
             write_logfile)
