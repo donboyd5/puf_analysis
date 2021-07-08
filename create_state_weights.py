@@ -460,7 +460,7 @@ open_file.close()
 
 # %% 5. Get state weights
 
-# %% ..5.1 retrieve pickled data for state weighting
+# %% ..5.1 Retrieve pickled data for state weighting
 save_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
 open_file = open(save_name, "rb")
 pkl = pickle.load(open_file)
@@ -542,7 +542,7 @@ opts['method_maxiter_values'] = (100,)
 
 # opts['method'] = 'poisson-newton'
 
-# %% ..5.3 Run the stub(s)
+# %% ..5.2.3 Run the stub(s)
 gwp.runstubs(
     stubs,
     pufsub,
@@ -556,7 +556,7 @@ gwp.runstubs(
     write_logfile=True,  # boolean
     parallel=False)  # boolean
 
-# %% ..5.4 Assemble file of weights from individual stubs
+# %% ..5.3 Assemble file of weights from individual stubs
 def f(stub):
     fname = OUTSTUBDIR + 'stub' + str(stub).zfill(2) + '_whs.csv'
     df = pd.read_csv(fname)
@@ -572,8 +572,8 @@ allweights2017_geo_restricted.to_csv(
 del(frames)
 
 
-# %% ..5.6 Examine quality of state optimization results
-# %% ..5.6.1. Summarize puf by state and ht2_stub and save
+# %% ..5.4 Examine quality of state optimization results
+# %% ..5.4.1. Summarize puf by state and ht2_stub and save
 
 a = timer()
 vars = pufsub.columns.to_list()
@@ -588,7 +588,7 @@ b = timer()
 b - a  # ~ 4 mins
 
 
-# %% ..5.6.2 Report
+# %% ..5.4.2 Report on quality
 
 # reload(rpt)
 rpt.state_puf_vs_targets_report(
@@ -632,9 +632,7 @@ opts.update({'scale_goal': 1e3})
 opts.update({'scaling': True})
 
 
-
-
-# %% scratch
+# %% get parquet file
 
 tmp = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', engine='pyarrow')
 
