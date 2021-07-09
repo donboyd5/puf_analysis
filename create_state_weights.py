@@ -86,9 +86,12 @@ import puf_utilities as pu
 
 # microweight - apparently we have to tell python where to find this
 # sys.path.append('c:/programs_python/weighting/')  # needed
-weighting_dir = Path.home() / 'Documents/python_projects/weighting'
-# weighting_dir.exists()
-sys.path.append(str(weighting_dir))  # needed
+WEIGHTING_DIR = Path.home() / 'Documents/python_projects/weighting'
+# WEIGHTING_DIR.exists()
+sys.path.append(str(WEIGHTING_DIR))  # needed
+import src.microweight as mw
+
+from timeit import default_timer as timer
 
 
 # %% reimports
@@ -158,15 +161,7 @@ qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
 
 # %% BEGIN
 
-# Preliminary preparation of national data file
-# Prepare state targets
-# Revise national weights to be more-consistent with state targets
-# Apportion each record’s national weight to the states
-# Extrapolate to later years and analyze reforms (TBD)
-
-
-
-# %% 1. Get IRS summary data for national & state targets
+# %% 1. Download & parse IRS summary data for national & state targets
 
 # National:
 #   puf_download_national_target_files.py
@@ -175,6 +170,7 @@ qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
 # State:
 #   puf_download_state_HT2target_files.py
 #   puf_ht2_shares.py
+
 
 # %% 2. Preliminary preparation of national data file
 # %% ..2.1 Advance puf.csv to a future year, save as parquet file
@@ -196,7 +192,7 @@ fsw.advance_and_save_puf(
 # should have variables:
 #   common_stub	incrange, pufvar, irsvar, irs, table_description, column_description, src	excel_column
 ptargets = fsw.get_potential_national_targets(
-    targets_fname=POSSIBLE_TARGETS)  # targs.ptargets, .ptarget_names
+    targets_fname=POSSIBLE_TARGETS)
 
 
 # %% ..2.3 Create puf subset and examine quality of puf with initial weights
@@ -205,6 +201,7 @@ ptargets = fsw.get_potential_national_targets(
 # adds pid, filer, stubs, and target variables
 pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
 
+# %% ..2.4 Examine how close initial data are to IRS targets
 # % get differences from targets at initial weights and produce report
 weights_initial = fsw.get_pufweights(
     wtpath=WEIGHTS_USE, year=2017)  # adds pid and shortname
@@ -218,12 +215,13 @@ rpt.wtdpuf_national_comp_report(
     title='2017 puf values using official weights, growfactors, and puf_ratios versus IRS targets.')
 
 
-# %% ..2.4 Reweight national puf to come closer to targets
+# %% ..2.5 Reweight national puf to come closer to targets
 drops_national = fpa.get_drops_national(pdiff_init)
 weights_reweight = rwp.puf_reweight(
     pufsub, weights_initial, ptargets, method='ipopt', drops=drops_national)
 
-# %% ..2.5 Examine quality of reweighted puf
+
+# %% ..2.6 Examine quality of reweighted puf
 pdiff_reweighted = rwp.get_pctdiffs(pufsub, weights_reweight, ptargets)
 np.round(np.nanquantile(pdiff_reweighted.abspdiff, qtiles), 2)
 
