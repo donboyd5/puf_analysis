@@ -9,6 +9,7 @@ Created on Mon Nov 16 11:58:25 2020
 import sys
 import numpy as np
 import pandas as pd
+import dask
 import dask.dataframe as dd
 from pathlib import Path
 from timeit import default_timer as timer

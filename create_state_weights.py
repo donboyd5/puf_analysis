@@ -187,6 +187,7 @@ fsw.advance_and_save_puf(
 # Alternative: advance by "regrowing" with custom growfactors and without puf_ratios
 # Not currently implemented
 
+
 # %% ..2.2 Get potential national targets for 2017, previously created
 # from common_stub	incrange	pufvar	irsvar	irs	table_description	column_description	src	excel_column
 # should have variables:
@@ -200,6 +201,7 @@ ptargets = fsw.get_potential_national_targets(
 # from puf{year}.parquet file; only includes filer records
 # adds pid, filer, stubs, and target variables
 pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
+
 
 # %% ..2.4 Examine how close initial data are to IRS targets
 # % get differences from targets at initial weights and produce report
@@ -378,18 +380,20 @@ rpt.calc_save_statesums(
 b = timer()
 b - a  # ~ 4 mins
 
+
 # %% ..4.3.2 Report on quality of these unrestricted state weights
 rpt.state_puf_vs_targets_report(
     state_targets=ht2targets,
     state_sums=OUTDATADIR + 'state_sums_wunrestricted.csv',
     title='State calculated values vs. state targets',
-    reportfile=OUTTABDIR + 'state_comparison_wunrestricted.txt'
-)
+    reportfile=OUTTABDIR + 'state_comparison_wunrestricted.txt')
+
 
 # %% ..4.4 Reweight these tentative national weights to come closer to IRS targets
 drops_national_geo = fpa.get_drops_national(pdiff_geosums)
 weights_georeweight = rwp.puf_reweight(
     pufsub, weights_geosums, ptargets, method='ipopt', drops=drops_national_geo)
+
 
 # %% ..4.5 Examine quality of the reweighted sums-of-unrestricted-state-weights
 pdiff_georeweighted = rwp.get_pctdiffs(pufsub, weights_georeweight, ptargets)
@@ -490,55 +494,54 @@ stubs = tuple((1, tuple(range(3, 11))))
 stubs = (1, 3, 4, 5, 6, 7, 8, 9, 10)
 
 # %% ..5.2.2 Define options for the run
-opts = {}
-opts['method_names'] = ('jac', 'krylov', 'jvp')
-opts['method_maxiter_values'] = (20, 1000, 5)
-opts['method_improvement_minimums'] = (0.05, 1e-9, 0.001)
-opts['jac_lgmres_maxiter'] = 30
-opts['jvp_lgmres_maxiter'] = 30
+# opts = {}
+# opts['method_names'] = ('jac', 'krylov', 'jvp')
+# opts['method_maxiter_values'] = (20, 1000, 5)
+# opts['method_improvement_minimums'] = (0.05, 1e-9, 0.001)
+# opts['jac_lgmres_maxiter'] = 30
+# opts['jvp_lgmres_maxiter'] = 30
 
-# opts['method'] = ('krylov',)
-opts['max_search_iter'] = 30  # 20 default
-opts['krylov_tol'] = 1e-9  # 1e-3
-opts['pbounds'] = (.0001, 1.0)
-opts['notes'] = True
-opts['notes'] = False
-opts['maxseconds'] = 10 * 60
+# # opts['method'] = ('krylov',)
+# opts['max_search_iter'] = 30  # 20 default
+# opts['krylov_tol'] = 1e-9  # 1e-3
+# opts['pbounds'] = (.0001, 1.0)
+# opts['notes'] = True
+# opts['notes'] = False
+# opts['maxseconds'] = 10 * 60
 
-opts['method_names'] = ('krylov',)
-opts['method_maxiter_values'] = (1000,)
-opts['method_improvement_minimums'] = (1e-4,)
+# opts['method_names'] = ('krylov',)
+# opts['method_maxiter_values'] = (1000,)
+# opts['method_improvement_minimums'] = (1e-4,)
 
-opts['method_names'] = ('jac',)
-opts['method_maxiter_values'] = (100,)
+# opts['method_names'] = ('jac',)
+# opts['method_maxiter_values'] = (100,)
 
-opts['method_names'] = ('jac', 'jvp')
-opts['method_maxiter_values'] = (100, 10)
+# opts['method_names'] = ('jac', 'jvp')
+# opts['method_maxiter_values'] = (100, 10)
 
 opts['method_names'] = ('krylov', 'jac')
 opts['method_maxiter_values'] = (1000, 10)
 
-opts['method_names'] = ('jac', 'krylov')
-opts['method_maxiter_values'] = (20, 1000)
+# opts['method_names'] = ('jac', 'krylov')
+# opts['method_maxiter_values'] = (20, 1000)
 
-opts['method_names'] = ('jac', 'jvp',  'krylov')
-opts['method_maxiter_values'] = (10, 5, 1000)
+# opts['method_names'] = ('jac', 'jvp',  'krylov')
+# opts['method_maxiter_values'] = (10, 5, 1000)
 
-opts['method_names'] = ('jvp',)
-opts['method_maxiter_values'] = (100,)
+# opts['method_names'] = ('jvp',)
+# opts['method_maxiter_values'] = (100,)
 
-# {'method_names': ('krylov', 'jac'),
-#  'method_maxiter_values': (1000, 10),
-#  'method_improvement_minimums': (1e-06,),
-#  'krylov_tol': 1e-09,
-#  'pbounds': (0.0001, 1.0),
-#  'notes': False,
-#  'max_search_iter': 30,
-#  'maxseconds': 600,
-#  'jac_lgmres_maxiter': 30,
-#  'jvp_lgmres_maxiter': 30}
+opts = {'method_names': ('krylov', 'jac'),
+ 'method_maxiter_values': (1000, 10),
+ 'method_improvement_minimums': (1e-06,),
+ 'krylov_tol': 1e-09,
+ 'pbounds': (0.0001, 1.0),
+ 'notes': False,
+ 'max_search_iter': 30,
+ 'maxseconds': 600,
+ 'jac_lgmres_maxiter': 30,
+ 'jvp_lgmres_maxiter': 30}
 
-# opts['method'] = 'poisson-newton'
 
 # %% ..5.2.3 Run the stub(s)
 gwp.runstubs(
@@ -552,7 +555,7 @@ gwp.runstubs(
     options=opts,
     outdir=SCRATCHDIR,  # OUTSTUBDIR SCRATCHDIR
     write_logfile=True,  # boolean
-    parallel=False)  # boolean
+    parallel=True)  # boolean
 
 # %% ..5.3 Assemble file of weights from individual stubs
 def f(stub):
@@ -593,8 +596,7 @@ rpt.state_puf_vs_targets_report(
     state_targets=ht2targets_updated,
     state_sums=OUTDATADIR + 'state_sums_wrestricted.csv',
     title='State calculated values vs. state targets',
-    reportfile=OUTTABDIR + 'state_comparison_wrestricted.txt'
-)
+    reportfile=OUTTABDIR + 'state_comparison_wrestricted.txt')
 
 
 # %% 6. Advance file to years after 2017
