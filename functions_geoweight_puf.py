@@ -9,6 +9,7 @@ Created on Mon Nov 16 11:58:25 2020
 import sys
 import numpy as np
 import pandas as pd
+import dask
 import dask.dataframe as dd
 from pathlib import Path
 from timeit import default_timer as timer
@@ -293,14 +294,28 @@ def get_geo_weights_stub(
 
     print(f'\nIncome stub {stub:3d}', file=f)
     df = df.loc[df['ht2_stub']==stub]
-    print(f'Solving geo weights for {df.shape[0]} records...', file=f)
-
     sub = ht2wide.loc[ht2wide.ht2_stub==stub, :]
+
+    numrecs = df.shape[0]
+    numgeo = sub.shape[0]
+    numtargs = len(targvars)
+    tottargs = numtargs * numgeo
+
+
+    print(f'\nSolving geo weights for:', file=f)
+    print(f'  {numrecs:10,d} records', file=f)
+    print(f'  {numgeo:10,d} geographic areas', file=f)
+    print(f'  {numtargs:10,d} targets per area', file=f)
+    print(f'  {tottargs:10,d} targets in total', file=f)
+
     good = sub.loc[:, (sub.sum(axis=0) != 0)]
 
     if good.shape[1] < sub.shape[1]:
         dropcols = [var for var in targvars if not var in good.columns]
-        print('\nWARNING: dropping the following targets where ht2 sum is ZERO:\n', dropcols, '\n', file=f)
+        numdrops = len(dropcols)
+        totdrops = numdrops * numgeo
+        print(f'\nWARNING: dropping {numdrops:d} targets where ht2 sum over all {numgeo:d} areas is ZERO:\n', dropcols, file=f)
+        print(f'Total number dropped is {totdrops:,d}, leaving {tottargs - totdrops:,d}.', file=f)
         targvars = [var for var in targvars if var in good.columns]
 
     qx = '(ht2_stub == @stub)'
@@ -329,7 +344,7 @@ def get_geo_weights_stub(
     if nzvalues < targets.size:
         print(f"\nWARNING: {zvalues:3d} of {targets.size:3d} targets are ZERO!", file=f)
         print('Replacing zeros with targets calculated using per-return value', file=f)
-        print('for geo area with smallest nonzero per-return value target...\n', file=f)
+        print('for geo area with smallest nonzero per-return value target...', file=f)
         # https://stackoverflow.com/questions/18689235/numpy-array-replace-nan-values-with-average-of-columns
         # this relies on column zero having the number of returns for each state
         # we compute the per-return value for each target, by state
@@ -362,7 +377,7 @@ def get_geo_weights_stub(
     b = timer()
 
     # print summary info to stdout no matter what
-    print(f'stub: {stub: 4d};  sspd: {gw.sspd: 11.3f};  seconds: {b - a: 8.2f}')
+    print(f'stub: {stub: 4d};  l2norm: {np.sqrt(gw.sspd): 11.3f};  seconds: {b - a: 8.2f}')
 
     # create a named tuple of items to return
     fields = ('elapsed_seconds',
@@ -416,7 +431,7 @@ def runstubs(
     targvars,
     ht2wide,
     dropsdf_wide,
-    method,
+    approach,
     options,
     outdir,
     write_logfile,
@@ -436,7 +451,7 @@ def runstubs(
             targvars,
             ht2wide,
             dropsdf_wide,
-            method,
+            approach,
             options,
             outdir,
             write_logfile)

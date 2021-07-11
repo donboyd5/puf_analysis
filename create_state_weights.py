@@ -34,22 +34,24 @@
 # %% about this program
 
 # this program does the following:
-    # create unweighted national puf for 2017 using custom growfactors for 2011 to 2017
-    # create weights for this 2017 national puf to come close to IRS national targets
-    # create tentative state weights for this regrown-reweighted national puf, without constraining them to national record weights
-    # use sum of tentative state weights as initial weights for 2nd round of national reweighting
-    # create new national reweights starting from the sums of state weights
-    # create state weights where sums are constrained to these new national weights
-    # advance this 2017 file to 2018 using default puf growfactors for 2017 to 2018 and estimate of weight growth
+from timeit import default_timer as timer
+import src.microweight as mw
+# create unweighted national puf for 2017 using custom growfactors for 2011 to 2017
+# create weights for this 2017 national puf to come close to IRS national targets
+# create tentative state weights for this regrown-reweighted national puf, without constraining them to national record weights
+# use sum of tentative state weights as initial weights for 2nd round of national reweighting
+# create new national reweights starting from the sums of state weights
+# create state weights where sums are constrained to these new national weights
+# advance this 2017 file to 2018 using default puf growfactors for 2017 to 2018 and estimate of weight growth
 
 # the resulting 2018-income puf is used by puf_tax_analysis.py for NY project policy simulations
 
 # it does NOT do target preparation needed for this program; for that, see the following:
-    # get IRS national reported values for targeting -- see puf_download_national_target_files.py
-    # create new (combination) IRS variables -- also see puf_download_national_target_files.py
-    # map puf variables to IRS targets -- see puf_ONETIME_create_puf_irs_mappings_and_targets.py
-    # get IRS Historical Table 2 state values to be used in state targeting -- see puf_download_state_HT2target_files.py
-    # create new (combination) HT2 variables and get each state's share of the total -- see puf_ht2_shares.py
+# get IRS national reported values for targeting -- see puf_download_national_target_files.py
+# create new (combination) IRS variables -- also see puf_download_national_target_files.py
+# map puf variables to IRS targets -- see puf_ONETIME_create_puf_irs_mappings_and_targets.py
+# get IRS Historical Table 2 state values to be used in state targeting -- see puf_download_state_HT2target_files.py
+# create new (combination) HT2 variables and get each state's share of the total -- see puf_ht2_shares.py
 
 
 # %% imports
@@ -84,9 +86,9 @@ import puf_utilities as pu
 
 # microweight - apparently we have to tell python where to find this
 # sys.path.append('c:/programs_python/weighting/')  # needed
-weighting_dir = Path.home() / 'Documents/python_projects/weighting'
-# weighting_dir.exists()
-sys.path.append(str(weighting_dir))  # needed
+WEIGHTING_DIR = Path.home() / 'Documents/python_projects/weighting'
+# WEIGHTING_DIR.exists()
+sys.path.append(str(WEIGHTING_DIR))  # needed
 import src.microweight as mw
 
 from timeit import default_timer as timer
@@ -105,7 +107,8 @@ reload(rwp)
 
 
 # %% physical locations
-WINDATADIR = '/media/don/ignore/data/' # files that were created in Windows version of this
+# files that were created in Windows version of this
+WINDATADIR = '/media/don/ignore/data/'
 DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
 DIR_FOR_BOYD_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'
 
@@ -158,12 +161,21 @@ qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
 
 # %% BEGIN
 
-# get initial national weights, divide by 100, add pid, and save a csv file for each year we will work with
-# fsw.save_pufweights(wtpath=WEIGHTS_USE, outdir=OUTWEIGHTDIR, years=(2017, 2018))
+# %% 1. Download & parse IRS summary data for national & state targets
 
-# %% 1. Advance puf.csv to a future year, save as parquet file
+# National:
+#   puf_download_national_target_files.py
+#   puf_ONETIME_create_puf_irs_mappings_and_targets.py
+
+# State:
+#   puf_download_state_HT2target_files.py
+#   puf_ht2_shares.py
+
+
+# %% 2. Preliminary preparation of national data file
+# %% ..2.1 Advance puf.csv to a future year, save as parquet file
 # add pid and filer, and save as puf+str(year).parquet
-# 1.a) advance official puf.csv with official weights, grow factors, and ratios
+# advance official puf.csv with official weights, grow factors, and ratios
 fsw.advance_and_save_puf(
     year=2017,
     pufpath=PUF_USE,
@@ -172,25 +184,30 @@ fsw.advance_and_save_puf(
     ratiopath=RATIOS_USE,
     outdir=OUTDATADIR)
 
-# 1.b) Alternative: advance by "regrowing" with custom growfactors and without puf_ratios
+# Alternative: advance by "regrowing" with custom growfactors and without puf_ratios
 # Not currently implemented
 
-# %% 2. Get potential national targets for 2017, previously created
+
+# %% ..2.2 Get potential national targets for 2017, previously created
 # from common_stub	incrange	pufvar	irsvar	irs	table_description	column_description	src	excel_column
 # should have variables:
 #   common_stub	incrange, pufvar, irsvar, irs, table_description, column_description, src	excel_column
-ptargets = fsw.get_potential_national_targets(targets_fname=POSSIBLE_TARGETS)  # targs.ptargets, .ptarget_names
-# targs._fields
-# targs.ptarget_names
-# targs.ptargets.columns.str.contains('_nnz')
+ptargets = fsw.get_potential_national_targets(
+    targets_fname=POSSIBLE_TARGETS)
 
-# %% 3. Create pufsub -- puf subset of filers, with just those variables needed for potential targets
+
+# %% ..2.3 Create puf subset and examine quality of puf with initial weights
+# -- pufsub is subset of filers, with just those variables needed for potential targets
 # from puf{year}.parquet file; only includes filer records
 # adds pid, filer, stubs, and target variables
 pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
 
+
+# %% ..2.4 Examine how close initial data are to IRS targets
 # % get differences from targets at initial weights and produce report
-weights_initial = fsw.get_pufweights(wtpath=WEIGHTS_USE, year=2017)  # adds pid and shortname
+weights_initial = fsw.get_pufweights(
+    wtpath=WEIGHTS_USE, year=2017)  # adds pid and shortname
+
 pdiff_init = rwp.get_pctdiffs(pufsub, weights_initial, ptargets)
 np.round(np.nanquantile(pdiff_init.abspdiff, qtiles), 2)
 
@@ -200,12 +217,13 @@ rpt.wtdpuf_national_comp_report(
     title='2017 puf values using official weights, growfactors, and puf_ratios versus IRS targets.')
 
 
-# %% 4. Reweight national puf to come closer to targets
+# %% ..2.5 Reweight national puf to come closer to targets
 drops_national = fpa.get_drops_national(pdiff_init)
-weights_reweight = rwp.puf_reweight(pufsub, weights_initial, ptargets, method='ipopt', drops=drops_national)
-# stub 1 gives some trouble
+weights_reweight = rwp.puf_reweight(
+    pufsub, weights_initial, ptargets, method='ipopt', drops=drops_national)
 
-# report on percent differences
+
+# %% ..2.6 Examine quality of reweighted puf
 pdiff_reweighted = rwp.get_pctdiffs(pufsub, weights_reweight, ptargets)
 np.round(np.nanquantile(pdiff_reweighted.abspdiff, qtiles), 2)
 
@@ -215,22 +233,28 @@ rpt.wtdpuf_national_comp_report(
     title='Reweighted 2017 puf values versus IRS targets.',
     ipdiff_df=pdiff_init)
 
-# %% BREAK: define which states are of interest - MUST stay the same from here forward
+
+# %% 3. Prepare state target data
+
+# %% ..3.1 Define states to target
 # choose or modify ONE of the following
-compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
+# compstates = ['NY', 'AR', 'CA', 'CT', 'FL', 'MA', 'PA', 'NJ', 'TX']
 # see pc.STATES, STATES_DCPROA, STATES_DCPROAUS
-compstates= pc.STATES[0:40]
+# compstates = pc.STATES[0:40]
 compstates = pc.STATES
 
+# %% ..3.2 Calculate state targets for states of interest
+# Collapse non-targeted states into other category, and apply shares to puf sums
 
-# %% 5. Prepare state targets and drop combinations for the states of interest
+# # Prepare state targets and drop combinations for the states of interest
 # get df with ht2 shares
 ht2targets = fpa.get_potential_state_targets(
     pufsub,
     weightdf=weights_reweight,
-    ht2sharespath=HT2_SHARES,  # currently this is from the old Windows run, need to update
+    ht2sharespath=HT2_SHARES,  # currently shares are from the old Windows run, need to update
     compstates=compstates)
 
+# %% ..3.3 Examine quality
 # report on:
 #  (a) any HT2 state shares that don't add to 100%
 #  (b) HT2 targets vs. puf targets
@@ -249,13 +273,15 @@ rpt.ht2target_report(
     title='Comparison of Historical Table 2 shares by group to shares for # of returns',
     outpath=OUTDATADIR + 'state_shares.csv')
 
+# %% ..3.4 Compute potential drops and a reformatted targets file
 drops_states = fpa.get_drops_states(ht2targets)
 ht2wide = fpa.get_ht2wide_states(ht2targets)
 
 
-# %% 6. WORK AREA to define target variables
-# targvars are the variables we will target -- must be in ht2_possible
+# %% 4.Prepare national PUF data for state targeting
 
+# %% ..4.1 Define which subset of the possible state targets we will target
+# targvars are the variables we will target -- must be in ht2_possible
 targvars = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
             'c00100',   # AGI
             'e00200', 'e00200_nnz',  # wages
@@ -263,9 +289,13 @@ targvars = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing sta
             'e00600', 'e00600_nnz',  # ordinary dividends
             'e00900',  # business and professional income
             'e26270',  # partnership/S Corp income
-            'c01000',  # capital gains (tc doc says see .py file, though)
+            # added c01000_nnz 7/7/2021
+            # capital gains (tc doc says see .py file, though)
+            'c01000', 'c01000_nnz',
+            'c02500', 'c02500_nnz',  # taxable Social Security added 7/7/2021
             # deductions
-            'c17000','c17000_nnz',  # medical expenses deducted
+            'c17000', 'c17000_nnz',  # medical expenses deducted
+            'c19700', 'c19700_nnz',  # contribution deductions added 7/7/2021
             'c18300', 'c18300_nnz']  # SALT amount deducted
 
 # for testing purposes, here are some useful subsets of targvars
@@ -276,33 +306,20 @@ targvars = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing sta
 # targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
 # targvars2 = ['nret_all', 'c00100', 'e00200', 'c18300']
 
-# targstub1 = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
-#             'c00100',   # AGI
-#             'e00200', 'e00200_nnz',  # wages
-#             'e00300', 'e00300_nnz',  # taxable interest income
-#             'e00600', 'e00600_nnz',  # ordinary dividends
-#             'e00900',  # business and professional income
-#             'e26270',  # partnership/S Corp income
-#             'c01000']
-
-# set targvars = one of the above during test runs
-
 # verify that targvars are in the data
-
 len(targvars)
 ['good' for var in targvars if var in ht2wide.columns]
 
-# %% how to identify all-zero variables
-sub = ht2wide.loc[ht2wide.ht2_stub==1, :]
+# scratch area: identifying all-zero variables
+sub = ht2wide.loc[ht2wide.ht2_stub == 1, :]
 good = sub.loc[:, (sub.sum(axis=0) != 0)]
 # dropcols = sub.columns.difference(good.columns).tolist()
 dropcols = [var for var in targvars if not var in good.columns]
 keepcols = [var for var in targvars if var in good.columns]
 keepcols
-print('WARNING: dropping the following columns where ht2 sum is ZERO: ', dropcols)
 
 
-# %% 7. Construct national weights as sums of unrestricted state weights
+# %% ..4.2. Construct national weights as sums of unrestricted state weights
 
 # how many records in each HT2 stub? ranges from 5,339 in stub 1 to 41,102 in stub 4
 # pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
@@ -310,12 +327,12 @@ print('WARNING: dropping the following columns where ht2 sum is ZERO: ', dropcol
 # now we are going to iterate through the HT2 agi ranges (grouped.apply)
 #   and within each range iterate through the states  (gwp.get_geo_weights)
 # because we are NOT imposing an adding-up restriction:
-    #  independent=True
+#  independent=True
 # this will be fairly fast
 # nat_geo_weights will have 1 record per return, with id info plus:
-    # weight: the initial national weight for the record
-    # geoweight_sum: the record's sum of the weights over the solved-for
-    # a column for each solved-for state, with the record's weight for the state
+# weight: the initial national weight for the record
+# geoweight_sum: the record's sum of the weights over the solved-for
+# a column for each solved-for state, with the record's weight for the state
 # while geoweight_sum will not equal weight (our initial national weight), for
 # most records it will be quite close
 
@@ -330,12 +347,13 @@ weights_geosums = gwp.get_geoweight_sums(
     ht2wide=ht2wide,
     dropsdf_wide=drops_states,
     outpath=OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv',
-    stubs = None)  # None, or list or tuple of stubs
+    stubs=None)  # None, or list or tuple of stubs
 
 # To get weights_geosums from the file, run the following 2 lines
 # weights_geosums = pd.read_csv(OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv')
 # weights_geosums = weights_geosums.loc[:,['pid', 'geoweight_sum']].rename(columns={'geoweight_sum': 'weight'})
 
+# %% ..4.3 Examine quality of tentative national weights that are sums of unrestricted state weights
 pdiff_geosums = rwp.get_pctdiffs(pufsub, weights_geosums, ptargets)
 np.round(np.nanquantile(pdiff_geosums.abspdiff, qtiles), 2)
 
@@ -346,34 +364,38 @@ rpt.wtdpuf_national_comp_report(
     ipdiff_df=pdiff_reweighted)
 
 
-# %% ..7a. Prepare data for report on initial state weights
-
-allweights2017_geo_unrestricted = pd.read_csv(OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv')
+# %% ..4.3.1 Prepare data for report on unrestricted state weights (takes a while)
+allweights2017_geo_unrestricted = pd.read_csv(
+    OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv')
 
 a = timer()
 vars = pufsub.columns.to_list()
-calcvars = [x for x in vars if x not in ['pid', 'filer', 'common_stub', 'ht2_stub']]
+calcvars = [x for x in vars if x not in [
+    'pid', 'filer', 'common_stub', 'ht2_stub']]
 rpt.calc_save_statesums(
     pufsub,
     state_weights=allweights2017_geo_unrestricted,
     pufvars=calcvars,
     outfile=OUTDATADIR + 'state_sums_wunrestricted.csv')
 b = timer()
-b - a #  ~ 4 mins
+b - a  # ~ 4 mins
 
-# %% ..7b. Report on initial state weights
+
+# %% ..4.3.2 Report on quality of these unrestricted state weights
 rpt.state_puf_vs_targets_report(
     state_targets=ht2targets,
     state_sums=OUTDATADIR + 'state_sums_wunrestricted.csv',
     title='State calculated values vs. state targets',
-    reportfile=OUTTABDIR + 'state_comparison_wunrestricted.txt'
-    )
+    reportfile=OUTTABDIR + 'state_comparison_wunrestricted.txt')
 
-# %% 8. Reweight the national file to come closer to targets
+
+# %% ..4.4 Reweight these tentative national weights to come closer to IRS targets
 drops_national_geo = fpa.get_drops_national(pdiff_geosums)
-weights_georeweight = rwp.puf_reweight(pufsub, weights_geosums, ptargets, method='ipopt', drops=drops_national_geo)
+weights_georeweight = rwp.puf_reweight(
+    pufsub, weights_geosums, ptargets, method='ipopt', drops=drops_national_geo)
 
-# report on percent differences
+
+# %% ..4.5 Examine quality of the reweighted sums-of-unrestricted-state-weights
 pdiff_georeweighted = rwp.get_pctdiffs(pufsub, weights_georeweight, ptargets)
 np.round(np.nanquantile(pdiff_georeweighted.abspdiff, qtiles), 2)
 
@@ -384,7 +406,7 @@ rpt.wtdpuf_national_comp_report(
     ipdiff_df=pdiff_geosums)
 
 
-# %% 9. Update state-stub targets to reflect new slightly-revised pufsums
+# %% ..4.6 Update state-stub targets to reflect new slightly-revised pufsums, report on quality
 # remember that new pufsums won't be exactly like old so we should recalibrate
 # state targets
 ht2targets_updated = fpa.get_potential_state_targets(
@@ -415,7 +437,7 @@ drops_states_updated = fpa.get_drops_states(ht2targets_updated)
 ht2wide_updated = fpa.get_ht2wide_states(ht2targets_updated)
 
 
-# %% BREAK: pickle everything needed to create state weights
+# %% ..4.7 Pickle results to this point that we will need for creating state weights
 # to avoid running all of the code above each time we test state weighting,
 # pickle the data needed for state weighting once and retrieve when needed
 save_list = [
@@ -435,7 +457,12 @@ pickle.dump(save_list, open_file)
 open_file.close()
 
 
-# %% BREAK: retrieve pickled data for state weighting
+
+
+
+# %% 5. Get state weights
+
+# %% ..5.1 Retrieve pickled data for state weighting
 save_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
 open_file = open(save_name, "rb")
 pkl = pickle.load(open_file)
@@ -447,8 +474,185 @@ pufsub, ptargets, ht2targets, ht2targets_updated, \
     compstates, targvars, drops_states_updated = pkl
 del(pkl)
 
+# %% ..5.2. Loop through stubs and save results
+# %% ..5.2.1 Choose stub(s) to run
 
-# %% 10. Get state weights
+stubs = (1,)
+stubs = (2,)
+stubs = (3,)
+stubs = (4,)
+stubs = (5,)
+stubs = (6,)
+stubs = (7,)
+stubs = (8,)
+stubs = (9,)
+stubs = (10,)
+stubs = tuple(range(1, 11))
+stubs = tuple(range(2, 11))
+
+stubs = tuple((1, tuple(range(3, 11))))
+stubs = (1, 3, 4, 5, 6, 7, 8, 9, 10)
+
+# %% ..5.2.2 Define options for the run
+# opts = {}
+# opts['method_names'] = ('jac', 'krylov', 'jvp')
+# opts['method_maxiter_values'] = (20, 1000, 5)
+# opts['method_improvement_minimums'] = (0.05, 1e-9, 0.001)
+# opts['jac_lgmres_maxiter'] = 30
+# opts['jvp_lgmres_maxiter'] = 30
+
+# # opts['method'] = ('krylov',)
+# opts['max_search_iter'] = 30  # 20 default
+# opts['krylov_tol'] = 1e-9  # 1e-3
+# opts['pbounds'] = (.0001, 1.0)
+# opts['notes'] = True
+# opts['notes'] = False
+# opts['maxseconds'] = 10 * 60
+
+opts['method_names'] = ('krylov',)
+opts['method_maxiter_values'] = (1000,)
+opts['method_improvement_minimums'] = (1e-8,)
+
+# opts['method_names'] = ('jac',)
+# opts['method_maxiter_values'] = (100,)
+
+# opts['method_names'] = ('jac', 'jvp')
+# opts['method_maxiter_values'] = (100, 10)
+
+opts['method_names'] = ('krylov', 'jac')
+opts['method_maxiter_values'] = (1000, 10)
+
+# opts['method_names'] = ('jac', 'krylov')
+# opts['method_maxiter_values'] = (20, 1000)
+
+# opts['method_names'] = ('jac', 'jvp',  'krylov')
+# opts['method_maxiter_values'] = (10, 5, 1000)
+
+# opts['method_names'] = ('jvp',)
+# opts['method_maxiter_values'] = (100,)
+
+opts['pbounds'] = (-1.0, 1.0)
+opts['notes'] = True
+opts['max_search_iter'] = 50
+
+
+# opts = {'method_names': ('krylov', 'jac'),
+#  'method_maxiter_values': (1000, 10),
+#  'method_improvement_minimums': (1e-06,),
+#  'krylov_tol': 1e-09,
+#  'pbounds': (0.0001, 1.0),
+#  'notes': False,
+#  'max_search_iter': 30,
+#  'maxseconds': 600,
+#  'jac_lgmres_maxiter': 30,
+#  'jvp_lgmres_maxiter': 30}
+
+# used for PSL demo
+ opts = {'method_names': ('krylov', 'jac'),
+ 'method_maxiter_values': (1000, 1),
+ 'method_improvement_minimums': (1e-9,),
+ 'krylov_tol': 1e-09,
+ 'pbounds': (-1.0, 1.0),
+ 'notes': True,
+ 'max_search_iter': 50,
+ 'maxseconds': 12 * 60,
+ 'jac_lgmres_maxiter': 30,
+ 'jvp_lgmres_maxiter': 30}
+
+
+# %% ..5.2.3 Run the stub(s)
+gwp.runstubs(
+    stubs,
+    pufsub,
+    weightdf=weights_georeweight,
+    targvars=targvars,
+    ht2wide=ht2wide_updated,
+    dropsdf_wide=drops_states_updated,
+    approach='poisson-newton',  # poisson-newton poisson-root
+    options=opts,
+    outdir=SCRATCHDIR,  # OUTSTUBDIR SCRATCHDIR
+    write_logfile=True,  # boolean
+    parallel=False)  # boolean
+
+# %% ..5.3 Assemble file of weights from individual stubs
+def f(stub):
+    fname = OUTSTUBDIR + 'stub' + str(stub).zfill(2) + '_whs.csv'
+    df = pd.read_csv(fname)
+    return df
+
+frames = [f(stub) for stub in range(1, 11)]
+
+allweights2017_geo_restricted = pd.concat(frames).sort_values(by='pid')
+allweights2017_geo_restricted
+
+allweights2017_geo_restricted.to_csv(
+    OUTWEIGHTDIR + 'allweights2017_geo_restricted.csv', index=False)
+del(frames)
+
+
+# %% ..5.4 Examine quality of state optimization results
+# %% ..5.4.1. Summarize puf by state and ht2_stub and save
+
+a = timer()
+vars = pufsub.columns.to_list()
+calcvars = [x for x in vars if x not in [
+    'pid', 'filer', 'common_stub', 'ht2_stub']]
+rpt.calc_save_statesums(
+    pufsub,
+    state_weights=allweights2017_geo_restricted,
+    pufvars=calcvars,
+    outfile=OUTDATADIR + 'state_sums_wrestricted.csv')
+b = timer()
+b - a  # ~ 4 mins
+
+
+# %% ..5.4.2 Report on quality
+
+# reload(rpt)
+rpt.state_puf_vs_targets_report(
+    state_targets=ht2targets_updated,
+    state_sums=OUTDATADIR + 'state_sums_wrestricted.csv',
+    title='State calculated values vs. state targets',
+    reportfile=OUTTABDIR + 'state_comparison_wrestricted.txt')
+
+
+# %% 6. Advance file to years after 2017
+
+# TBD
+
+# %% DEADWOOD AND MISCELLANEOUS ISSUES UNDER EXPLORATION
+
+# niter = 0
+# l2norm_best = 1e99
+# beta_best = 0.0
+
+# ibeta = np.load(OUTSTUBDIR + 'stub02_betaopt.npy').flatten()
+# ibeta.shape
+# ibeta = beta_best.copy()
+# l2b = l2norm_best.copy()
+
+
+# %% opts-set
+opts = opts_andy
+opts = opts_b1
+opts = opts_b2
+opts = opts_dfs
+opts = opts_jfnk
+opts = opts_kry
+opts = opts_lm
+opts = opts_lm2
+opts = opts_newt
+
+opts
+
+opts.update({'scale_goal': 1e3})
+opts.update({'scaling': True})
+
+
+# %% get parquet file
+
+tmp = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', engine='pyarrow')
+
 
 
 # %% callback function
@@ -462,7 +666,8 @@ def callback(x, f):
         l2norm_best = l2norm
         beta_best = x
     maxpdiff = np.max(np.abs(f))
-    print(f'iter: {niter: 5};  l2norm: {l2norm: 9.2f};  max abs diff: {maxpdiff: 9.3f}')
+    print(
+        f'iter: {niter: 5};  l2norm: {l2norm: 9.2f};  max abs diff: {maxpdiff: 9.3f}')
     niter += 1
     return
 
@@ -513,9 +718,6 @@ def callback(x, f):
 # opts.update({'max_iter': 30})
 # opts.update({'lgmres_maxiter': 20})
 # opts.update({'search_iter': 50})
-
-
-
 
 
 # %% ..10a. Verify that individual stubs can run
@@ -569,7 +771,6 @@ def callback(x, f):
 # sspd
 # np.round(np.quantile(pdiff, qtiles), 2)
 # np.round(np.nanquantile(pdiff, qtiles), 2)
-
 # %% ..10c. ALT setup df-sane
 # opts = {
 #     'scaling': True,
@@ -577,8 +778,6 @@ def callback(x, f):
 #     'init_beta': 0.0,
 #     'quiet': True}
 # opts
-
-
 opts_andy = {
     'method': 'poisson-root',
     'scaling': True,
@@ -588,20 +787,43 @@ opts_andy = {
     'solver': 'anderson',
     'jac': None,
     'callback': callback,
-     'solver_opts': {
-         'disp': False,
-         'maxiter': 2000,
-         'line_search': 'wolfe',  # armijo, wolfe, None
-         'jac_options': {
-             #  'alpha': 1e6,
-             'M': 50,  # 5
-             'w0': .75
-                        }
-     }
-     }
+    'solver_opts': {
+        'disp': False,
+        'maxiter': 2000,
+        'line_search': 'wolfe',  # armijo, wolfe, None
+        'jac_options': {
+            #  'alpha': 1e6,
+            'M': 50,  # 5
+            'w0': .75
+        }
+    }
+}
 opts_andy
 
 
+# %% opts_b1
+opts_b1 = {
+    'method': 'poisson-root',
+    'scaling': True,
+    'scale_goal': 1e1,
+    'init_beta': 0.0,
+    'solver': 'broyden1',
+    'jac': None,
+    'callback': callback,
+    'solver_opts': {
+        # 'disp': True,  # |F(x)| is max abs diff
+        'maxiter': 1000,
+        'line_search': 'wolfe',  # armijo, wolfe, None
+        'jac_options': {
+            #  'alpha': -0.1
+            'reduction_method': 'svd',  # restart, simple, svd
+            # 'max_rank': 1e3  # infinity
+        }
+    }
+}
+opts_b1
+
+# %% opts_b2
 opts_b2 = {
     'method': 'poisson-root',
     'scaling': True,
@@ -610,18 +832,19 @@ opts_b2 = {
     'solver': 'broyden2',
     'jac': None,
     'callback': callback,
-     'solver_opts': {
-         # 'disp': True,  # |F(x)| is max abs diff
-         'maxiter': 2000,
-         'line_search': 'wolfe',  # armijo, wolfe, None
-         'jac_options': {
-             'reduction_method': 'svd',  # restart, simple, svd
-             'max_rank': 100,  # infinity
-          }
-       }
-     }
+    'solver_opts': {
+        # 'disp': True,  # |F(x)| is max abs diff
+        'maxiter': 2000,
+        'line_search': 'wolfe',  # armijo, wolfe, None
+        'jac_options': {
+            'reduction_method': 'svd',  # restart, simple, svd
+            'max_rank': 100,  # infinity
+        }
+    }
+}
 opts_b2
 
+# %% opts_dfs
 opts_dfs = {
     'method': 'poisson-root',
     'scaling': True,
@@ -630,15 +853,15 @@ opts_dfs = {
     'solver': 'df-sane',
     'jac': None,
     'callback': callback,
-     'solver_opts': {
-         'disp': False,  # boolean
-         'maxfev': 6000,  # `1000
-         'sigma_eps': .00001,  # 1e-10, 5 best but doesn't make sense
-         'sigma_0': -1.0,   # 1.0
-         'M': 30,  # 10
-         'line_search': 'cruz'  # cruz, cheng
-        }
-     }
+    'solver_opts': {
+        'disp': False,  # boolean
+        'maxfev': 6000,  # `1000
+        'sigma_eps': .00001,  # 1e-10, 5 best but doesn't make sense
+        'sigma_0': -1.0,   # 1.0
+        'M': 30,  # 10
+        'line_search': 'cruz'  # cruz, cheng
+    }
+}
 opts_dfs
 
 # %% opts_jfnk
@@ -649,9 +872,9 @@ opts_jfnk = {
     'init_beta': 0.0,
     'callback': callback,
     'maxiter': 200,
-    'line_search': 'armijo', # armijo, wolfe, None
+    'line_search': 'armijo',  # armijo, wolfe, None
     'verbose': True
-     }
+}
 opts_jfnk
 
 
@@ -660,24 +883,24 @@ opts_kry = {
     'method': 'poisson-root',
     'scaling': True,
     'scale_goal': 1e1,
-    'init_beta': 0.0, # 0.0,
+    'init_beta': 0.0,  # 0.0,
     'solver': 'krylov',
     'jac': None,
     'callback': callback,
-     'solver_opts': {
-         # 'disp': True,
-         'maxiter': 4000,
-         'fatol': 1e-2,  # 6e-6
-         'xatol': 1e-2,
-         'line_search': 'wolfe',  # armijo, wolfe, None
-         'jac_options': {
-             # 'inner_M': 'kjac',
-          'rdiff': 1e-8,  # not sure default
-          'inner_maxiter': 100,  # 30
-          'method': 'lgmres'
-            }
+    'solver_opts': {
+        # 'disp': True,
+        'maxiter': 530,
+        'fatol': 1e-2,  # 6e-6
+        'xatol': 1e-2,
+        'line_search': 'wolfe',  # armijo, wolfe, None
+        'jac_options': {
+            # 'inner_M': 'kjac',
+            'rdiff': 1e-8,  # not sure default
+            'inner_maxiter': 100,  # 30
+            'method': 'lgmres'
         }
-     }
+    }
+}
 opts_kry
 
 # %% opts_lm
@@ -685,34 +908,34 @@ opts_lm = {
     'method': 'poisson-root',
     'scaling': True,
     'scale_goal': 1e1,
-    'init_beta': ibeta,  # 0.0,
+    'init_beta': 0.0,  # 0.0,
     'solver': 'lm',
     'jac': 'jac',  # False, jac
-    'callback': None, # lm cannot use callback function
+    'callback': None,  # lm cannot use callback function
     'solver_opts': {
-         'maxiter': 10,  #  100*(N+1)
-         'factor': 10,  # 100  5 mins, 10 is 3 mins, 1 is 2.5 mins
-         # 'ftol': 1e-6,  # relative error desired in the sum of squares
-         # 'xtol': 1e-10,  # 1.49e-8 relative error desired in the approximate solution
-         # 'eps': 1e-10,
-         # 'epsfcn': 1e-1, # suitable step length forward diff
-         'col_deriv': False
-        }
-     }
+        'maxiter': 100,  # 100*(N+1)
+        'factor': 10,  # 100  5 mins, 10 is 3 mins, 1 is 2.5 mins
+        # 'ftol': 1e-6,  # relative error desired in the sum of squares
+        # 'xtol': 1e-10,  # 1.49e-8 relative error desired in the approximate solution
+        # 'eps': 1e-10,
+        # 'epsfcn': 1e-1, # suitable step length forward diff
+        'col_deriv': False
+    }
+}
 opts_lm
 
 opts_lm2 = {
     'method': 'poisson-lsq',
     'scaling': True,
-    'scale_goal': 1e1,
+    'scale_goal': 10,
     'init_beta': 0.0,
     'jac': 'jac',  # False, jac
     'stepmethod': 'jac',  # vjp, jvp, full, finite-diff
     'max_nfev': 30,
     'gtol': 1e-2,
     'x_scale': 'jac',
-    'callback': None, # lm cannot use callback function
-     }
+    'callback': None,  # lm cannot use callback function
+}
 opts_lm2
 
 
@@ -727,14 +950,15 @@ opts_newt = {
     'stepmethod': 'auto',
     'search_iter': 30,  # 20 default steps for linesearch optimization
     'base_stepmethod': 'jac',  # jac default, or jvp, jac faster/better but less robust
-    'jac_min_improvement': 0.05,  # .10 default, min proportionate improvement in l2norm to continue with jac
+    # .10 default, min proportionate improvement in l2norm to continue with jac
+    'jac_min_improvement': 0.05,
     'jvp_precondition': False,
     'jvp_reset_steps': 4,  # 5 default, num of jvp steps to do before retrying jac step
     'jac_threshold': 1e9,  # default 5.0; try to use jac when rmse is below this
-    'lgmres_maxiter': 30, # 20 default, maxiter for solving for jvp step
+    'lgmres_maxiter': 30,  # 20 default, maxiter for solving for jvp step
     'no_improvement_proportion': 1e-3,
     'notes': False
-    }
+}
 opts_newt
 
 # best options
@@ -759,6 +983,9 @@ opts_newt.update({'jvp_reset_steps': 2})
 opts_newt.update({'notes': True})
 opts_newt.update({'init_beta': 0.5})
 
+opts_newt.update({'scale_goal': 1e6})
+opts_newt.update({'scaling': True})
+
 # GOOD!:
 # stub2 26.5319 sspd:  1189.6837829245314
 # Elapsed minutes:  5.51
@@ -776,565 +1003,12 @@ opts_newt.update({'init_beta': 0.5})
 #       }})
 
 
-# %% ..10d. Loop through all stubs and save results
-# %% opts-set
-opts = opts_andy
-opts = opts_b2
-opts = opts_dfs
-opts = opts_jfnk
-opts = opts_kry
-opts = opts_lm
-opts = opts_lm2
-opts = opts_newt
-
-opts
-
-# %% stubs
-
-stubs = (1,)
-stubs = (2,)
-stubs = (3,)
-stubs = (4,)
-stubs = (5,)
-stubs = (6,)
-stubs = (7,)
-stubs = (8,)
-stubs = (9,)
-stubs = (10,)
-stubs = tuple(range(1, 11))
-
-
 opts.update({'init_beta': 0.0})
 opts.update({'init_beta': ibeta})
-opts.update({'jac_min_improvement': 0.0005,})
+opts.update({'jac_min_improvement': 0.0})
+opts.update({'max_iter': 2000})
+opts_newt.update({'base_stepmethod': 'jac'})
+opts_newt.update({'jac_threshold': 1e9})
 
 # opts.update({'line_search': 'wolfe'})  # armijo
 # opts.update({'line_search': 'armijo'})  # armijo
-
-
-# %% run
-niter = 0
-l2norm_best = 1e99
-beta_best = 0.0
-
-gwp.runstubs(
-    stubs,
-    pufsub,
-    weightdf=weights_georeweight,
-    targvars=targvars,
-    ht2wide=ht2wide_updated,
-    dropsdf_wide=drops_states_updated,
-    method=opts['method'],  # poisson-newton poisson-root
-    options=opts,
-    outdir=OUTSTUBDIR,  # OUTSTUBDIR SCRATCHDIR
-    write_logfile=False,  # boolean
-    parallel=False)  # boolean
-
-# ibeta = np.load(OUTSTUBDIR + 'stub02_betaopt.npy').flatten()
-# ibeta.shape
-# ibeta = beta_best.copy()
-# l2b = l2norm_best.copy()
-
-# %% 11. Assemble file of weights from individual stubs
-def f(stub):
-    fname = OUTSTUBDIR + 'stub' + str(stub).zfill(2) + '_whs.csv'
-    df = pd.read_csv(fname)
-    return df
-frames = [f(stub) for stub in range(1, 11)]
-
-allweights2017_geo_restricted = pd.concat(frames).sort_values(by='pid')
-allweights2017_geo_restricted
-
-allweights2017_geo_restricted.to_csv(OUTWEIGHTDIR + 'allweights2017_geo_restricted.csv', index=False)
-del(frames)
-
-
-# %% 12. Report on state results
-# %% 12a. Summarize puf by state and ht2_stub and save
-# pufsub, ht2wide_updated, allweights2017_geo_restricted
-# ht2targets  15147 x 12 stub, 2 vars, 2 sums, share, sharesum, ht2, target coldescription, ht2description
-# ht2targets_updated same
-# ht2wide 510 x 29 (14.8k) pufvar , stgroup, each var; cells are $
-# ht2wide_updated
-
-    # m_single_lt65 = puf.MARS.eq(1) \
-    #     & puf.age_head.lt(65) \
-    #     & gross_income.ge(s_inc_lt65)
-
-reload(rpt)
-
-a = timer()
-vars = pufsub.columns.to_list()
-calcvars = [x for x in vars if x not in ['pid', 'filer', 'common_stub', 'ht2_stub']]
-rpt.calc_save_statesums(
-    pufsub,
-    state_weights=allweights2017_geo_restricted,
-    pufvars=calcvars,
-    outfile=OUTDATADIR + 'state_sums_wrestricted.csv')
-b = timer()
-b - a #  ~ 4 mins
-
-
-# %% 12b. Report
-
-reload(rpt)
-rpt.state_puf_vs_targets_report(
-    state_targets=ht2targets_updated,
-    state_sums=OUTDATADIR + 'state_sums_wrestricted.csv',
-    title='State calculated values vs. state targets',
-    reportfile=OUTTABDIR + 'state_comparison_wrestricted.txt'
-    )
-
-
-# %% end
-gapminder.rename(columns={'pop':'population',
-                          'lifeExp':'life_exp',
-                          'gdpPercap':'gdp_per_cap'},
-                 inplace=True)
-
-df = pd.DataFrame([[0, 1, -2, -1], [1, 1, 1, 1]]) # 2 rows
-dcnames = {0: 'A', 1: 'B', 2: 'C', 3: 'D'}
-df.rename(columns=dcnames, inplace=True)
-
-s = pd.Series([1, 1, 2, 1]) # 1 column
-df
-s
-df.shape
-s.shape
-df.dot(s) # sum of each multiplied
-other = pd.DataFrame([[0, 1], [1, 2], [-1, -1], [2, 0]])
-other # 3 rows, 2 cols
-df.dot(other)
-
-
-rpt.ht2target_report(
-    ht2targets,
-    outfile=OUTTABDIR + 'ht2target_analysis.txt',
-    title='Comparison of Historical Table 2 shares by group to shares for # of returns',
-    outpath=OUTDATADIR + 'state_shares.csv')
-
-
-# %% 13. Advance file to 2018 (Discuss with Matt)
-
-# %% scratch
-geomethod = 'qmatrix-ipopt'
-opts_q = {'qmax_iter': 50,
-           'quiet': True,
-           'qshares': None,  # qshares or None
-           'xlb': 0.1,
-           'xub': 100,
-           'crange': .0001,
-           'linear_solver': 'ma57'
-           }
-
-grouped = pufsub.loc[pufsub['ht2_stub']==3].groupby('ht2_stub')
-grouped = pufsub[(pufsub["ht2_stub"] == 3) | (pufsub["ht2_stub"] == 7)]
-grouped = pufsub.loc[pufsub['ht2_stub'].isin((3, 7))].groupby('ht2_stub')
-
-a = timer()
-final_geo_weights = grouped.apply(gwp.get_geo_weights,
-                                weightdf=weights_georeweight,
-                                targvars=targvars2,
-                                ht2wide=ht2wide_updated,
-                                dropsdf_wide=drops_states_updated,
-                                independent=False,
-                                geomethod = geomethod,
-                                options=opts_q,
-                                intermediate_path=SCRATCHDIR)
-b = timer()
-b - a
-(b - a) / 60
-
-
-
-
-
-weights_states = gwp.get_geoweight_sums(
-    pufsub,
-    weightdf=weights_reweight,
-    targvars=targvars,
-    ht2wide=ht2wide,
-    dropsdf_wide=dropsdf_wide,
-    outpath=OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv',
-    stubs = 'all')  # 'all', or list or tuple of stubs
-
-
-pdiff_geosums = rwp.get_pctdiffs(pufsub, weights_geosums, ptargets)
-np.round(np.nanquantile(pdiff_geosums.abspdiff, qtiles), 2)
-
-rpt.wtdpuf_national_comp_report(
-    pdiff_geosums,
-    outfile=OUTTABDIR + 'geosums_national.txt',
-    title='Unrestricted geosum weighted 2017 puf values versus IRS targets.',
-    ipdiff_df=pdiff_reweighted)
-
-opts.update({'stepmethod': 'jac', 'x_scale': 'jac'})
-opts.update({'stepmethod': 'jvp', 'x_scale': 'jac'})
-opts.update({'stepmethod': 'vjp', 'x_scale': 'jac'})
-opts.update({'stepmethod': 'jvp-linop', 'x_scale': 1.0})  # may not work well on real problems
-opts.update({'stepmethod': 'findiff', 'x_scale': 'jac'})
-opts.update({'x_scale': 'jac'})
-opts.update({'x_scale': 1.0})
-opts.update({'max_nfev': 200})
-
-options_defaults = {
-    'scaling': True,
-    'scale_goal': 10.0,  # this is an important parameter!
-    'init_beta': 0.5,
-    'stepmethod': 'jvp',  # vjp, jvp, full, finite-diff
-    'max_nfev': 100,
-    'ftol': 1e-7,
-    'x_scale': 'jac',
-    'quiet': True}
-
-
-
-options_defaults = {
-    'scaling': True,
-    'scale_goal': 10.0,  # this is an important parameter!!
-    'init_beta': 0.5,
-    'stepmethod': 'jac',  # jvp or jac, jac seems to work better
-    'max_iter': 20,
-    'linesearch': True,
-    'init_p': 0.75,  # less than 1 seems important
-    'maxp_tol': .01,  # .01 is 1/100 of 1% for the max % difference from target
-    'startup_period': True,  # should we have a separate startup period?
-    'startup_imaxpdiff': 1e6,  # if initial maxpdiff is greater than this go into startup mode
-    'startup_iter': 8,  # number of iterations for the startup period
-    'startup_p': .25,  # p, the step multiplier in the startup period
-    'quiet': True}
-
-
-
-
-# djb stopped here 6/4/2021
-
-# %% END
-
-
-# %%
-# %% OLD below here
-# %% PLAY AREA (To be removed)
-
-# %% create report on results with the geo revised national weights
-
-
-# %% construct new state targets for geoweighting geoweight: get revised national weights based on independent state weights
-
-# get NATIONAL weights to use as starting point for ht2 stubs -- from step above
-wfname = OUTDATADIR + 'weights2017_georwt1.csv'
-weights = pd.read_csv(wfname)
-
-# get NATIONAL pufsums with these weights, by ht2 stub
-# these are the amounts we will share across states
-pufsums_ht2 = rwp.get_wtdsums(pufsub, ptarget_names, weights, stubvar='ht2_stub')
-pufsums_ht2.columns
-pufsums_ht2long = pd.melt(pufsums_ht2, id_vars='ht2_stub', var_name='pufvar', value_name='pufsum')
-
-# collapse ht2 shares to the states we want (should be the same as before)
-ht2_collapsed = gwp.collapse_ht2(HT2_SHARES, compstates)
-pu.uvals(ht2_collapsed.pufvar)  # the variables available for targeting
-
-# create targets by state and ht2_stub from pufsums and collapsed shares
-ht2_collapsed
-
-# merge in the puf sums with the new (final) NATIONAL weights so that we can
-# share the NATIONAL sums to the states, to be our state targets
-ht2targets = pd.merge(ht2_collapsed, pufsums_ht2long, on=['pufvar', 'ht2_stub'])
-ht2targets.info()
-ht2targets['target'] = ht2targets.pufsum * ht2targets.share
-ht2targets['diff'] = ht2targets.target - ht2targets.ht2
-ht2targets['pdiff'] = ht2targets['diff'] / ht2targets.ht2 * 100
-ht2targets['abspdiff'] = np.abs(ht2targets['pdiff'])
-ht2targets.to_csv(SCRATCHDIR + 'ht2targets_temp.csv', index=None)  # temporary
-
-
-# %% explore the updated state-variable-stub targets
-check = ht2targets.sort_values(by='abspdiff', axis=0, ascending=False)
-np.nanquantile(check.abspdiff, qtiles)
-
-# let's look at some targets vs their HT2 values
-# what's true of one state is true of all
-var = "c04800"
-st = "AR"
-temp = check.query('pufvar == @var & stgroup==@st ').sort_values(by='ht2_stub', axis=0, ascending=True)
-
-
-# %% create a wide boolean dataframe indicating whether a target will be dropped
-qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
-dropsdf = ht2targets.query(qxnan)[['stgroup', 'ht2_stub', 'pufvar']]
-dropsdf['drop'] = True
-dropsdf_stubs = ht2_collapsed.query('ht2_stub > 0')[['stgroup', 'ht2_stub', 'pufvar']]
-dropsdf_full = pd.merge(dropsdf_stubs, dropsdf, how='left', on=['stgroup', 'ht2_stub', 'pufvar'])
-dropsdf_full.fillna(False, inplace=True)
-dropsdf_wide = dropsdf_full.pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='drop').reset_index()
-
-keepvars = ['stgroup', 'ht2_stub', 'pufvar', 'target']
-ht2wide = ht2targets[keepvars].pivot(index=['stgroup', 'ht2_stub'], columns='pufvar', values='target').reset_index()
-
-ht2_vars = pu.uvals(ht2_collapsed.pufvar)
-ptarget_names  # possible targets, if in ht2
-ht2_possible = [var for var in ptarget_names if var in ht2_vars]
-
-pufsub.columns
-pufsub[['ht2_stub', 'nret_all']].groupby(['ht2_stub']).agg(['count'])
-
-targvars = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing status
-            'c00100',   # AGI
-            'e00200', 'e00200_nnz',  # wages
-            'e00300', 'e00300_nnz',  # taxable interest income
-            'e00600', 'e00600_nnz',  # ordinary dividends
-            'e00900',  # business and professional income
-            'e26270',  # partnership/S Corp income
-            'c01000',  # capital gains (tc doc says see .py file, though)
-            # deductions
-            'c17000','c17000_nnz',  # medical expenses deducted
-            'c18300', 'c18300_nnz']  # SALT amount deducted
-['good' for var in targvars if var in ht2_possible]
-
-targvars2 = ['nret_all', 'mars1', 'c00100', 'e00200']
-
-
-# %% Use independent weights as starting point
-wfname = OUTDATADIR + 'allweights2017_geo_unrestricted.csv'
-qshares = pd.read_csv(wfname)
-qshares.info()
-
-# stvars = [s for s in qshares.columns if s not in ['pid', 'ht2_stub', 'weight', 'geoweight_sum']]
-stvars = compstates + ['other']
-qshares = qshares[['pid', 'ht2_stub'] + stvars]
-qshares[stvars] = qshares[stvars].div(qshares[stvars].sum(axis=1), axis=0)
-
-# we will form the initial Q matrix for each ht2_stub from qshares
-
-# check
-qshares[stvars].sum(axis=1).sum()
-
-# %% save before running final loop
-# targvars
-# ht2wide
-# pufsub
-# dropsdf_wide
-
-save_list = [targvars, ht2wide, pufsub, dropsdf_wide]
-save_name = SCRATCHDIR + 'pickle.pkl'
-
-open_file = open(save_name, "wb")
-pickle.dump(save_list, open_file)
-open_file.close()
-
-
-# %% run the final loop
-#geomethod = 'qmatrix-ipopt'  # qmatrix-ipopt or qmatrix-lsq
-#reweight_method = 'ipopt'  # ipopt or lsq
-#wfname_national = PUFDIR + 'weights_georwt1_' + geomethod + '_' + reweight_method + '.csv'
-wfname_national = WEIGHTDIR + 'weights2017_georwt1.csv'
-wfname_national
-final_national_weights = pd.read_csv(wfname_national)
-# final_national_weights.head(20)
-
-grouped = pufsub.groupby('ht2_stub')
-# targvars, ht2wide, dropsdf_wide, independent=False
-
-# choose one of the following combinations of geomethod and options
-# geomethod = 'qmatrix'  # does not work well
-# options = {'qmax_iter': 50,
-#            'qshares': qshares }  # qshares or None
-
-# ipopt took 31 mins
-geomethod = 'qmatrix-ipopt'
-options = {'qmax_iter': 50,
-           'quiet': True,
-           'qshares': qshares,  # qshares or None
-           'xlb': 0.1,
-           'xub': 100,
-           'crange': .0001,
-           'linear_solver': 'ma57'
-           }
-
-# geomethod = 'qmatrix-lsq'
-# options = {'qmax_iter': 50,
-#            'qshares': qshares,
-#            'verbose': 0,
-#            'xlb': 0.2,
-#            'scaling': True,
-#            'method': 'bvls',  # bvls (default) or trf - bvls usually faster, better
-#            'lsmr_tol': 'auto' # auto'  # 'auto'  # 'auto' or None
-#            }
-
-
-a = timer()
-final_geo_weights = grouped.apply(gwp.get_geo_weights,
-                                weightdf=final_national_weights,
-                                targvars=targvars,
-                                ht2wide=ht2wide,
-                                dropsdf_wide=dropsdf_wide,
-                                independent=False,
-                                geomethod=geomethod,
-                                options=options,
-                                intermediate_path=TEMPDIR)
-b = timer()
-b - a
-(b - a) / 60
-
-final_geo_weights.sum()
-
-# geo_weights[list(compstates) + ['other']].sum(axis=1)
-# note that the method here is lsq
-# wfname = PUFDIR + 'weights_geo_rwt.csv'
-# nat_geo_weights[['pid', 'geo_rwt']].to_csv(wfname, index=None)
-final_geo_name = WEIGHTDIR + 'allweights2017_geo_restricted.csv'
-final_geo_name
-final_geo_weights.to_csv(final_geo_name, index=None)
-
-
-# %% create report on results with the state weights
-date_id = date.today().strftime("%Y-%m-%d")
-
-ht2_compare = pd.read_csv(IGNOREDIR + 'ht2targets_temp.csv')  # temporary
-pu.uvals(ht2_compare.pufvar)
-sweights = pd.read_csv(WEIGHTDIR + 'allweights2017_geo_restricted.csv')
-
-asl = fht.get_allstates_wsums(pufsub, sweights)
-pu.uvals(asl.pufvar)
-comp = fht.get_compfile(asl, ht2_compare)
-pu.uvals(comp.pufvar)
-
-outfile = TABDIR + 'comparison_state_values_vs_state_puf-based targets_' + date_id +'.txt'
-title = 'Comparison of state results to puf-based state targets'
-fht.comp_report(comp, outfile, title)
-
-
-
-# %% create file with multiple national weights
-# basenames of weight csv files
-weight_filenames = [
-    'weights2017_default',  # weights from tax-calculator
-    'weights2017_reweight1',  # weights_regrown reweighted to national totals, with ipopt -- probably final
-    'weights2017_geo_unrestricted',  # sum of state weights, developed using weights_rwt1_ipopt as starting point
-    'weights2017_georwt1',  # the above sum of state weights reweighted to national totals, with ipopt
-    # the weights immediately above are the weights apportioned to states
-    ]
-
-# in addition, there are two files of national weights that have been apportioned to states
-#   that have state weights as well as the national weight, with an "all" prefix:
-#     allweights_geo_unrestricted_qmatrix-ipopt -- counterpart to geo_unrestricted_qmatrix-ipopt
-#     allweights_geo_restricted_qmatrix-ipopt -- counterpart to weights_georwt1_qmatrix-ipopt_ipopt
-#       this latter file has the final state weights
-
-def f(fnames, dir):
-    fullfnames = [s + '.csv' for s in fnames]  # keep this separately
-    paths = [dir + s for s in fullfnames]
-
-    pdlist = []
-    for p, f in zip(paths, fullfnames):
-        # CAUTION: ASSUMES the file has only 2 columns, pid and a weight
-        df = pd.read_csv(p)
-        df['file_source'] = f
-        pdlist.append(df)
-
-    weights_stacked = pd.concat(pdlist)
-    return weights_stacked
-
-national_weights = f(weight_filenames, WEIGHTDIR)
-national_weights.to_csv(WEIGHTDIR + 'national_weights_stacked.csv', index=None)
-
-# weight_df = rwp.merge_weights(weight_filenames, PUFDIR)  # they all must be in the same directory
-
-# weight_df.to_csv(PUFDIR + 'all_weights.csv', index=None)
-# weight_df.sum()
-
-# take a look
-nat_wide = national_weights.drop(columns='file_source').pivot(index=['pid'], columns='shortname', values='weight').reset_index()
-col_order = ['pid', 'weights2017_default', 'reweight1', 'geoweight_sum', 'georeweight1']
-nat_wide = nat_wide[col_order]
-nat_wide.sort_values(by='pid', inplace=True)
-nat_wide.to_csv(WEIGHTDIR + 'national_weights_wide.csv', index=None)
-
-
-# %% get weights for 2018 and save puf2018_weighted
- # Create a base 2018 puf as follows:
- #     - start with the previously created puf for 2018, which is simply the
- #       puf2017_regrown extrapolated to 2018 with default growfactors, with
- #       taxdata weights for 2018, and WITHOUT adjust_ratios applied
- #     - get the best set of national weights we have for 2017 grow them
- #       based on how the sum of default weights grows
- #     - use these weights where we have them; where not, use default weights
-
-default_weights = pd.read_csv(DIR_FOR_OFFICIAL_PUF + 'puf_weights.csv')
-dw2017 = default_weights.sum().WT2017
-dw2018 = default_weights.sum().WT2018
-wtgrowfactor = dw2018 / dw2017
-
-# get best national weights
-# 'weights_georwt1_qmatrix-ipopt_ipopt'
-
-sweights2017 = pd.read_csv(WEIGHTDIR + 'allweights2017_geo_restricted.csv')
-
-puf2018 = pd.read_parquet(TCOUTDIR + 'puf2018.parquet', engine='pyarrow')
-
-puf2018_weighted = puf2018.copy().rename(columns={'s006': 's006_default'})
-puf2018_weighted = pd.merge(puf2018_weighted,
-                            sweights2017.loc[:, ['pid', 'weight']],
-                            how='left',
-                            on='pid')
-puf2018_weighted['weight2018_2017filers'] = puf2018_weighted.weight * wtgrowfactor
-puf2018_weighted['s006'] = puf2018_weighted.weight2018_2017filers
-puf2018_weighted.s006.fillna(puf2018_weighted.s006_default, inplace=True)
-puf2018_weighted[['pid', 's006_default', 'weight', 'weight2018_2017filers', 's006']].head(20)
-
-puf2018_weighted.drop(columns=['weight', 'weight2018_2017filers'], inplace=True)
-pu.uvals(puf2018_weighted.columns)
-
-puf2018_weighted.to_parquet(TCOUTDIR + 'puf2018_weighted' + '.parquet', engine='pyarrow')
-
-
-# finally, create state weights for 2018 using the shares we have for 2017
-# we know this isn't really right, but shouldn't be too bad (for now) for a single year
-# this should be as simple as multiplying all weights by wtgrowfactor
-wtvars = [s for s in sweights2017.columns if s not in ['pid', 'ht2_stub']]
-sweights2018 = sweights2017.copy()
-sweights2018[wtvars] = sweights2018[wtvars] * wtgrowfactor
-
-sweights2018.to_csv(WEIGHTDIR + 'allweights2018_geo2017_grown.csv', index=None)
-
-
-# %% djb experiment 2021: poisson
-
-
-
-# %% OLD BELOW HERE -- VARIANT: drops for lsq: define any variable-stub combinations to drop via a drops dataframe
-# create drops data frame for when we use lsq for targeting instead of ipopt
-
-goodvars = ['nret_all', 'mars1', 'mars2', 'mars4',
-            'c00100',
-            'e00200', 'e00200_nnz',
-            'e00300', 'e00300_nnz',
-            'e00600', 'e00600_nnz',
-            'c01000pos', 'c01000pos_nnz',
-            'c01000neg', 'c01000neg_nnz',
-            'e01500', 'e01500_nnz',
-            'c02500', 'c02500_nnz',
-            'e26270pos', 'e26270pos_nnz',
-            'e26270neg', 'e26270neg_nnz',
-            # 'c17000',
-            'c18300', 'c18300_nnz',
-            'c19200',  # 'c19200_nnz',
-            'c19700'  # , 'c19700_nnz'
-            ]
-
-qxnan = "(abspdiff != abspdiff)"  # hack to identify nan values
-qx1 = '(pufvar not in @goodvars)'
-
-bad_stub1_4_vars = ['c17000', 'c17000_nnz', 'c19700', 'c19700_nnz']
-qx2 = "(common_stub in [1, 2, 3, 4] and pufvar in @bad_stub1_4_vars)"
-
-qx = qxnan + " or " + qx1 + " or " + qx2
-qx
-
-drops_lsq = pdiff_init.query(qx).copy()
-drops_lsq
-
-
-# %% scratch
-tmp = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', engine='pyarrow')
