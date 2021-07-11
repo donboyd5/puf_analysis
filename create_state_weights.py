@@ -509,9 +509,9 @@ stubs = (1, 3, 4, 5, 6, 7, 8, 9, 10)
 # opts['notes'] = False
 # opts['maxseconds'] = 10 * 60
 
-# opts['method_names'] = ('krylov',)
-# opts['method_maxiter_values'] = (1000,)
-# opts['method_improvement_minimums'] = (1e-4,)
+opts['method_names'] = ('krylov',)
+opts['method_maxiter_values'] = (1000,)
+opts['method_improvement_minimums'] = (1e-8,)
 
 # opts['method_names'] = ('jac',)
 # opts['method_maxiter_values'] = (100,)
@@ -531,14 +531,31 @@ opts['method_maxiter_values'] = (1000, 10)
 # opts['method_names'] = ('jvp',)
 # opts['method_maxiter_values'] = (100,)
 
-opts = {'method_names': ('krylov', 'jac'),
- 'method_maxiter_values': (1000, 10),
- 'method_improvement_minimums': (1e-06,),
+opts['pbounds'] = (-1.0, 1.0)
+opts['notes'] = True
+opts['max_search_iter'] = 50
+
+
+# opts = {'method_names': ('krylov', 'jac'),
+#  'method_maxiter_values': (1000, 10),
+#  'method_improvement_minimums': (1e-06,),
+#  'krylov_tol': 1e-09,
+#  'pbounds': (0.0001, 1.0),
+#  'notes': False,
+#  'max_search_iter': 30,
+#  'maxseconds': 600,
+#  'jac_lgmres_maxiter': 30,
+#  'jvp_lgmres_maxiter': 30}
+
+# used for PSL demo
+ opts = {'method_names': ('krylov', 'jac'),
+ 'method_maxiter_values': (1000, 1),
+ 'method_improvement_minimums': (1e-9,),
  'krylov_tol': 1e-09,
- 'pbounds': (0.0001, 1.0),
- 'notes': False,
- 'max_search_iter': 30,
- 'maxseconds': 600,
+ 'pbounds': (-1.0, 1.0),
+ 'notes': True,
+ 'max_search_iter': 50,
+ 'maxseconds': 12 * 60,
  'jac_lgmres_maxiter': 30,
  'jvp_lgmres_maxiter': 30}
 
@@ -555,7 +572,7 @@ gwp.runstubs(
     options=opts,
     outdir=SCRATCHDIR,  # OUTSTUBDIR SCRATCHDIR
     write_logfile=True,  # boolean
-    parallel=True)  # boolean
+    parallel=False)  # boolean
 
 # %% ..5.3 Assemble file of weights from individual stubs
 def f(stub):
