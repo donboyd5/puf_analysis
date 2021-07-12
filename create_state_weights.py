@@ -108,7 +108,11 @@ reload(rwp)
 
 # %% physical locations
 # files that were created in Windows version of this
-WINDATADIR = '/media/don/ignore/data/'
+# WINDATADIR = '/media/don/ignore/data/'
+
+# I set the following directory up so that target data can be included in this module, avoiding step 1
+TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA = '/home/donboyd/Documents/python_projects/puf_analysis/data/'
+
 DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
 DIR_FOR_BOYD_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'
 
@@ -143,11 +147,14 @@ RATIOS_USE = PUFDIR + 'puf_ratios.csv'
 # paths to target files previously created in other programs
 
 # created in:  puf_ONETIME_create_puf_irs_mappings_and_targets.py
-POSSIBLE_TARGETS = OUTDATADIR + 'targets2017_possible.csv'
+# TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA
+# POSSIBLE_TARGETS = OUTDATADIR + 'targets2017_possible.csv'
+POSSIBLE_TARGETS = TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA + 'targets2017_possible.csv'
 
 # created in: puf_ht2_shares.py
 # windows version is in /media/don/ignore/data
-HT2_SHARES = WINDATADIR + 'ht2_shares.csv'  # rebuild this
+# HT2_SHARES = WINDATADIR + 'ht2_shares.csv'  # rebuild this
+HT2_SHARES = TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA + 'ht2_shares.csv'  # rebuild this
 
 
 # %% names of files to create
@@ -548,13 +555,14 @@ opts['max_search_iter'] = 50
 #  'jvp_lgmres_maxiter': 30}
 
 # used for PSL demo
- opts = {'method_names': ('krylov', 'jac'),
- 'method_maxiter_values': (1000, 1),
- 'method_improvement_minimums': (1e-9,),
+opts = {'maxiter': 3000,
+ 'method_names': ('krylov', 'jac'),
+ 'method_maxiter_values': (2000, 1),
+ 'method_improvement_minimums': (0,),
  'krylov_tol': 1e-09,
  'pbounds': (-1.0, 1.0),
  'notes': True,
- 'max_search_iter': 50,
+ 'max_search_iter': 30,
  'maxseconds': 12 * 60,
  'jac_lgmres_maxiter': 30,
  'jvp_lgmres_maxiter': 30}
