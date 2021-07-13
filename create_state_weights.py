@@ -108,7 +108,11 @@ reload(rwp)
 
 # %% physical locations
 # files that were created in Windows version of this
-WINDATADIR = '/media/don/ignore/data/'
+# WINDATADIR = '/media/don/ignore/data/'
+
+# I set the following directory up so that target data can be included in this module, avoiding step 1
+TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA = '/home/donboyd/Documents/python_projects/puf_analysis/data/'
+
 DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
 DIR_FOR_BOYD_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'
 
@@ -143,11 +147,14 @@ RATIOS_USE = PUFDIR + 'puf_ratios.csv'
 # paths to target files previously created in other programs
 
 # created in:  puf_ONETIME_create_puf_irs_mappings_and_targets.py
-POSSIBLE_TARGETS = OUTDATADIR + 'targets2017_possible.csv'
+# TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA
+# POSSIBLE_TARGETS = OUTDATADIR + 'targets2017_possible.csv'
+POSSIBLE_TARGETS = TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA + 'targets2017_possible.csv'
 
 # created in: puf_ht2_shares.py
 # windows version is in /media/don/ignore/data
-HT2_SHARES = WINDATADIR + 'ht2_shares.csv'  # rebuild this
+# HT2_SHARES = WINDATADIR + 'ht2_shares.csv'  # rebuild this
+HT2_SHARES = TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA + 'ht2_shares.csv'  # rebuild this
 
 
 # %% names of files to create
@@ -243,6 +250,7 @@ rpt.wtdpuf_national_comp_report(
 # compstates = pc.STATES[0:40]
 compstates = pc.STATES
 
+
 # %% ..3.2 Calculate state targets for states of interest
 # Collapse non-targeted states into other category, and apply shares to puf sums
 
@@ -289,13 +297,11 @@ targvars = ['nret_all', 'mars1', 'mars2',  # num returns total and by filing sta
             'e00600', 'e00600_nnz',  # ordinary dividends
             'e00900',  # business and professional income
             'e26270',  # partnership/S Corp income
-            # added c01000_nnz 7/7/2021
-            # capital gains (tc doc says see .py file, though)
-            'c01000', 'c01000_nnz',
-            'c02500', 'c02500_nnz',  # taxable Social Security added 7/7/2021
+            'c01000', 'c01000_nnz',  # capital gains (tc doc says see .py file, though)
+            'c02500', 'c02500_nnz',  # taxable Social Security
             # deductions
             'c17000', 'c17000_nnz',  # medical expenses deducted
-            'c19700', 'c19700_nnz',  # contribution deductions added 7/7/2021
+            'c19700', 'c19700_nnz',  # contribution deductions
             'c18300', 'c18300_nnz']  # SALT amount deducted
 
 # for testing purposes, here are some useful subsets of targvars
@@ -352,6 +358,7 @@ weights_geosums = gwp.get_geoweight_sums(
 # To get weights_geosums from the file, run the following 2 lines
 # weights_geosums = pd.read_csv(OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv')
 # weights_geosums = weights_geosums.loc[:,['pid', 'geoweight_sum']].rename(columns={'geoweight_sum': 'weight'})
+
 
 # %% ..4.3 Examine quality of tentative national weights that are sums of unrestricted state weights
 pdiff_geosums = rwp.get_pctdiffs(pufsub, weights_geosums, ptargets)
@@ -437,45 +444,11 @@ drops_states_updated = fpa.get_drops_states(ht2targets_updated)
 ht2wide_updated = fpa.get_ht2wide_states(ht2targets_updated)
 
 
-# %% ..4.7 Pickle results to this point that we will need for creating state weights
-# to avoid running all of the code above each time we test state weighting,
-# pickle the data needed for state weighting once and retrieve when needed
-save_list = [
-    pufsub,
-    ptargets, ht2targets, ht2targets_updated,
-    ht2wide, ht2wide_updated,
-    # national weights
-    weights_initial, weights_reweight, weights_georeweight,
-    weights_geosums,
-    compstates,
-    targvars,
-    drops_states_updated]
-save_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
-
-open_file = open(save_name, "wb")
-pickle.dump(save_list, open_file)
-open_file.close()
-
-
-
-
-
 # %% 5. Get state weights
 
-# %% ..5.1 Retrieve pickled data for state weighting
-save_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
-open_file = open(save_name, "rb")
-pkl = pickle.load(open_file)
-open_file.close()
 
-pufsub, ptargets, ht2targets, ht2targets_updated, \
-    ht2wide, ht2wide_updated, \
-    weights_initial, weights_reweight, weights_georeweight, weights_geosums, \
-    compstates, targvars, drops_states_updated = pkl
-del(pkl)
-
-# %% ..5.2. Loop through stubs and save results
-# %% ..5.2.1 Choose stub(s) to run
+# %% ..5.1 Loop through stubs and save results
+# %% ..5.1.1 Choose stub(s) to run
 
 stubs = (1,)
 stubs = (2,)
@@ -493,7 +466,7 @@ stubs = tuple(range(2, 11))
 stubs = tuple((1, tuple(range(3, 11))))
 stubs = (1, 3, 4, 5, 6, 7, 8, 9, 10)
 
-# %% ..5.2.2 Define options for the run
+# %% ..5.1.2 Define options for the run
 # opts = {}
 # opts['method_names'] = ('jac', 'krylov', 'jvp')
 # opts['method_maxiter_values'] = (20, 1000, 5)
@@ -513,8 +486,8 @@ opts['method_names'] = ('krylov',)
 opts['method_maxiter_values'] = (1000,)
 opts['method_improvement_minimums'] = (1e-8,)
 
-# opts['method_names'] = ('jac',)
-# opts['method_maxiter_values'] = (100,)
+opts['method_names'] = ('jac',)
+opts['method_maxiter_values'] = (100,)
 
 # opts['method_names'] = ('jac', 'jvp')
 # opts['method_maxiter_values'] = (100, 10)
@@ -548,19 +521,20 @@ opts['max_search_iter'] = 50
 #  'jvp_lgmres_maxiter': 30}
 
 # used for PSL demo
- opts = {'method_names': ('krylov', 'jac'),
- 'method_maxiter_values': (1000, 1),
- 'method_improvement_minimums': (1e-9,),
+opts = {'maxiter': 3000,
+ 'method_names': ('krylov', 'jac'),
+ 'method_maxiter_values': (2000, 1),
+ 'method_improvement_minimums': (0,),
  'krylov_tol': 1e-09,
  'pbounds': (-1.0, 1.0),
  'notes': True,
- 'max_search_iter': 50,
+ 'max_search_iter': 30,
  'maxseconds': 12 * 60,
  'jac_lgmres_maxiter': 30,
  'jvp_lgmres_maxiter': 30}
 
 
-# %% ..5.2.3 Run the stub(s)
+# %% ..5.1.3 Run the stub(s)
 gwp.runstubs(
     stubs,
     pufsub,
@@ -571,10 +545,10 @@ gwp.runstubs(
     approach='poisson-newton',  # poisson-newton poisson-root
     options=opts,
     outdir=SCRATCHDIR,  # OUTSTUBDIR SCRATCHDIR
-    write_logfile=True,  # boolean
+    write_logfile=False,  # boolean
     parallel=False)  # boolean
 
-# %% ..5.3 Assemble file of weights from individual stubs
+# %% ..5.2 Assemble file of weights from individual stubs
 def f(stub):
     fname = OUTSTUBDIR + 'stub' + str(stub).zfill(2) + '_whs.csv'
     df = pd.read_csv(fname)
@@ -590,8 +564,8 @@ allweights2017_geo_restricted.to_csv(
 del(frames)
 
 
-# %% ..5.4 Examine quality of state optimization results
-# %% ..5.4.1. Summarize puf by state and ht2_stub and save
+# %% ..5.3 Examine quality of state optimization results
+# %% ..5.3.1. Summarize puf by state and ht2_stub and save
 
 a = timer()
 vars = pufsub.columns.to_list()
@@ -606,7 +580,7 @@ b = timer()
 b - a  # ~ 4 mins
 
 
-# %% ..5.4.2 Report on quality
+# %% ..5.3.2 Report on quality
 
 # reload(rpt)
 rpt.state_puf_vs_targets_report(
@@ -619,6 +593,48 @@ rpt.state_puf_vs_targets_report(
 # %% 6. Advance file to years after 2017
 
 # TBD
+
+
+# %% APPENDIX
+
+
+# %% ..A.1 Retrieve pickled data for state weighting
+pkl_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
+pkl_file = open(pkl_name, "rb")
+pkl_input = pickle.load(pkl_file)
+pkl_file.close()
+
+pufsub, ptargets, ht2targets, ht2targets_updated, \
+    ht2wide, ht2wide_updated, \
+    weights_initial, weights_reweight, weights_georeweight, weights_geosums, \
+    allweights2017_geo_restricted, \
+    compstates, targvars, drops_states_updated = pkl_input
+del(pkl_input)
+
+
+
+# %% ..A.2 Pickle results that we need for creating state weights
+# to avoid running all of the code above each time we test state weighting,
+# pickle the data needed for state weighting once and retrieve when needed
+save_list = [
+    pufsub,
+    ptargets, ht2targets, ht2targets_updated,
+    ht2wide, ht2wide_updated,
+    # national weights
+    weights_initial, weights_reweight, weights_georeweight,
+    weights_geosums,
+    # state weights
+    allweights2017_geo_restricted,
+    compstates,
+    targvars,
+    drops_states_updated]
+save_name = SCRATCHDIR + 'pufsub_state_weighting_package.pkl'
+
+open_file = open(save_name, "wb")
+pickle.dump(save_list, open_file)
+open_file.close()
+
+
 
 # %% DEADWOOD AND MISCELLANEOUS ISSUES UNDER EXPLORATION
 
