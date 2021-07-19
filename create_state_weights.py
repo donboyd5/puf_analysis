@@ -545,7 +545,7 @@ gwp.runstubs(
     approach='poisson-newton',  # poisson-newton poisson-root
     options=opts,
     outdir=SCRATCHDIR,  # OUTSTUBDIR SCRATCHDIR
-    write_logfile=False,  # boolean
+    write_logfile=True,  # boolean
     parallel=False)  # boolean
 
 # %% ..5.2 Assemble file of weights from individual stubs
