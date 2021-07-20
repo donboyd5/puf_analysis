@@ -1,4 +1,9 @@
 
+# %% imports
+from importlib import reload
+
+import sys
+from pathlib import Path
 
 from collections import namedtuple
 import numpy as np
@@ -6,9 +11,25 @@ import pandas as pd
 
 import functions_advance_puf as adv
 import puf_constants as pc
-import taxcalc as tc
 import puf_utilities as pu
 
+
+# importing taxcalc -- source code version
+# soon use with the following
+# TC_PATH = '/home/donboyd/Documents/python_projects/Tax-Calculator'
+# TC_PATH = Path.home() / 'Documents/python_projects/taxcalc_boyd'
+# TC_DIR.exists()  # if not sure, check whether directory exists
+# if TC_PATH not in sys.path:
+#     sys.path.insert(0, str(TC_PATH))
+import taxcalc as tc
+
+
+# %% reimports
+reload(adv)
+reload(tc)
+
+
+# %% functions
 
 def advance_and_save_puf(year, pufpath, growpath, wtpath, ratiopath, outdir):
     savepath=outdir + 'puf' + str(year) + '.parquet'
@@ -121,7 +142,8 @@ def prep_puf(pufpath, targets):
     keep_vars = idvars + numvars + target_names
     keep_vars = ulist(keep_vars)  # keeps unique names in case there is overlap with idvars
 
-    return puf.loc[puf['filer'], keep_vars]
+    # puf.loc[puf['filer'], keep_vars]  # old return was just filers
+    return puf.loc[:, keep_vars]  # keep filers
 
 
 def save_pufweights(wtpath, outdir, years):

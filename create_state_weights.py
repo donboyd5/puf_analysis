@@ -67,7 +67,7 @@ import os
 import pickle
 from collections import OrderedDict
 
-import taxcalc as tc
+# import taxcalc as tc
 import pandas as pd
 import numpy as np
 from datetime import date
@@ -103,6 +103,7 @@ reload(mw)
 reload(pc)
 reload(rpt)
 reload(rwp)
+# reload(tc)
 # reload(gwp)
 
 
@@ -207,7 +208,9 @@ ptargets = fsw.get_potential_national_targets(
 # -- pufsub is subset of filers, with just those variables needed for potential targets
 # from puf{year}.parquet file; only includes filer records
 # adds pid, filer, stubs, and target variables
-pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
+pufprep = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
+pufsub = pufprep.loc[pufprep['filer'], :]
+nonfilers = pufprep.loc[pufprep['filer'] == False, :]
 
 
 # %% ..2.4 Examine how close initial data are to IRS targets
