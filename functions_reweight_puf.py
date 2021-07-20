@@ -11,9 +11,9 @@ import puf_utilities as pu
 
 # microweight - we have to tell python where to find this
 # sys.path.append('c:/programs_python/weighting/')  # needed
-weighting_dir = Path.home() / 'Documents/python_projects/weighting'
-# weighting_dir.exists()
-sys.path.append(str(weighting_dir))  # needed
+WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+if WEIGHTING_DIR not in sys.path:
+    sys.path.append(str(WEIGHTING_DIR))
 
 import src.microweight as mw
 

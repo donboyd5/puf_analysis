@@ -30,6 +30,16 @@
 #    export NUMBA_NUM_THREADS=10
 #
 
+# notes about resetting my local Tax-Calculator to be identical to the remote psl version
+# from within my LOCAL Tax-Calculator folder:
+# git status
+# git remote -v  # shows which is remote and which is upstream
+# git remote add upstream https://github.com/PSLmodels/Tax-Calculator  # if not already done
+# git fetch upstream
+# git checkout master
+# git reset --hard upstream/master
+# git push origin master --force
+
 
 # %% about this program
 
@@ -85,16 +95,18 @@ import puf_utilities as pu
 
 
 # microweight - apparently we have to tell python where to find this
-# sys.path.append('c:/programs_python/weighting/')  # needed
-WEIGHTING_DIR = Path.home() / 'Documents/python_projects/weighting'
-# WEIGHTING_DIR.exists()
-sys.path.append(str(WEIGHTING_DIR))  # needed
+WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+if WEIGHTING_DIR not in sys.path:
+    sys.path.append(str(WEIGHTING_DIR))
 import src.microweight as mw
 
 from timeit import default_timer as timer
 
 
 # %% reimports
+# if 'taxcalc' in sys.modules:
+#     del sys.modules["taxcalc"]
+
 reload(adv)
 reload(fsw)
 reload(fpa)
@@ -194,6 +206,9 @@ fsw.advance_and_save_puf(
 
 # Alternative: advance by "regrowing" with custom growfactors and without puf_ratios
 # Not currently implemented
+
+# DistributionNotFound                      Traceback (most recent call last)
+# ~/anaconda3/envs/analysis/lib/python3.8/site-packages/taxcalc
 
 
 # %% ..2.2 Get potential national targets for 2017, previously created

@@ -7,11 +7,15 @@ Created on Wed Oct 21 07:40:08 2020
 
 # %% imports
 import sys
+from pathlib import Path
 import os
 import numpy as np
 
 # this is sufficient
-sys.path.append('c:/programs_python/weighting/')  # needed
+# from pathlib import Path
+WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+if WEIGHTING_DIR not in sys.path:
+    sys.path.append(str(WEIGHTING_DIR))
 import src.microweight as mw
 import src.make_test_problems as mtp
 # not needed:
