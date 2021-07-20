@@ -84,11 +84,11 @@ from datetime import date
 
 import functions_advance_puf as adv
 import functions_puf_analysis as fpa
-import functions_reports as rpt
-import functions_reweight_puf as rwp
-import functions_geoweight_puf as gwp
 import functions_ht2_analysis as fht
 import functions_state_weights as fsw
+import functions_geoweight_puf as gwp
+import functions_reports as rpt
+import functions_reweight_puf as rwp
 
 import puf_constants as pc
 import puf_utilities as pu
@@ -108,11 +108,13 @@ from timeit import default_timer as timer
 #     del sys.modules["taxcalc"]
 
 reload(adv)
-reload(fsw)
 reload(fpa)
+reload(fht)
+reload(fsw)
 reload(gwp)
 reload(mw)
 reload(pc)
+reload(pu)
 reload(rpt)
 reload(rwp)
 # reload(tc)
