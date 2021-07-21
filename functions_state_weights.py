@@ -9,11 +9,15 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 
-import functions_advance_puf as adv
+# import functions_advance_puf as adv
 import puf_constants as pc
 import puf_utilities as pu
 
 
+# DO NOT TRY TO RELOAD taxcalc - it is a full package, not a module
+# it has many imports in its __init__.py
+# INSTEAD, restart the interpreter that is calling these functions
+# that does mean losing all objects in that interpreter and rerunning everything
 # importing taxcalc -- source code version
 # soon use with the following
 # TC_PATH = '/home/donboyd/Documents/python_projects/Tax-Calculator'
@@ -29,7 +33,7 @@ import taxcalc as tc
 # %% reimports
 
 # reload(adv)
-reload(tc)
+# reload(tc)
 
 
 # %% functions

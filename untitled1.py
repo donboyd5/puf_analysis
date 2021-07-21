@@ -1,38 +1,57 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Nov  2 09:24:24 2020
 
-@author: donbo
-"""
+# %% imports
 
+from importlib import reload
 
-a = np.array([1,1,2,3,4,5,6,7])
-b = np.array([1,1,2,3,4,5,6,7])
-b = np.array([1,1,2,3,4,5,6,7])
+import sys
+from pathlib import Path
 
-c = a + b
-d = a
-d = a + b
-d[:] = a + b
+import pandas as pd
 
-a
-b
-type(a)
-type(a[:])
+# importing taxcalc -- source code version
+# soon use with the following
+# TC_PATH = '/home/donboyd/Documents/python_projects/Tax-Calculator'
+# if 'taxcalc' in sys.modules:
+#     del sys.modules["taxcalc"]
+TC_PATH = Path.home() / 'Documents/python_projects/Tax-Calculator'
+# TC_DIR.exists()  # if not sure, check whether directory exists
+if str(TC_PATH) not in sys.path:
+    sys.path.insert(0, str(TC_PATH))
 
-a[:] = np.where(a > 2, a * 10, a *2)
-a
-
-b = np.where(b > 2, b * 10, b *2)
-b
+import taxcalc as tc
 
 
+# %% reimports
+# reload(tc)  # reload will not work with taxcalc because it is a package with imports
 
-#  pufx.e00900[:] = pufx.e00900p + pufx.e00900s
 
-    # pufx.e00900p[:] = np.where(pufx.e00900p >= 0,
-    #                         pufx.e00900p * gfv.at[year - 2011, 'ASCHCI'],
-    #                         pufx.e00900p * gfv.at[year - 2011, 'ASCHCL'])
+# %% constants
+PUFDIR = r'/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'
+WEIGHTDIR = PUFDIR
+PUF_USE = PUFDIR + 'puf.csv'
+GF_USE = PUFDIR + 'growfactors.csv'
+WEIGHTS_USE = WEIGHTDIR + 'puf_weights.csv'
+RATIOS_USE = PUFDIR + 'puf_ratios.csv'
 
-d = np.where(b > 1)
 
+# %% get data
+puf = pd.read_csv(PUF_USE)
+gfactors_object = tc.GrowFactors(GF_USE)
+
+# %% test
+recs = tc.Records(data=puf,
+                start_year=2011,
+                gfactors=gfactors_object,
+                weights=WEIGHTS_USE,
+                adjust_ratios=RATIOS_USE)
+
+# %% test 2
+recs = taxcalc.Records(data=puf,
+                start_year=2011,
+                gfactors=gfactors_object,
+                weights=WEIGHTS_USE,
+                adjust_ratios=RATIOS_USE)
+
+
+
+# %%
