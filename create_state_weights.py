@@ -610,7 +610,74 @@ rpt.state_puf_vs_targets_report(
     reportfile=OUTTABDIR + 'state_comparison_wrestricted.txt')
 
 
-# %% 6. Advance file to years after 2017
+# %% 6. Create weights for nonfilers
+# get filer weights
+fweights = pd.read_csv(OUTWEIGHTDIR + 'allweights2017_geo_restricted.csv')
+
+# we need taxdata national weight for nonfilers
+tmp = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', \
+    columns=['pid', 's006'], engine='pyarrow').rename(columns={'s006': 'weight'})
+
+# use pickled betas from stub 2, $1-$10k
+pkl_name = OUTSTUBDIR + 'stub02_betaopt.pkl'
+pkl_file = open(pkl_name, "rb")
+beta = pickle.load(pkl_file)
+pkl_file.close()
+
+beta
+beta.shape # s x k = 51 x 22
+
+# get national weights and xmat
+# put the national weight on the nonfilers file
+nf2 = nonfilers.merge(tmp, how='left', on='pid')
+nf2 = nf2[['pid', 'ht2_stub', 'weight'] + targvars]
+nf2.describe()
+
+sts = compstates + ['other']
+
+wh = nf2.weight.to_numpy()
+xmat = np.asarray(nf2[targvars], dtype=float)
+betax = beta.dot(xmat.T)
+pd.DataFrame(betax.T, columns=sts).describe()
+# adjust betax to make exponentiation more stable numerically
+# subtract column-specific constant (the max) from each column of betax
+const = betax.max(axis=0)
+betax = np.subtract(betax, const)
+ebetax = np.exp(betax)  # 51 x 25107
+ebetax.sum(axis=1)
+np.quantile(ebetax, q=qtiles)
+# ebetax.min()
+# np.log(ebetax)
+logdiffs = betax - np.log(ebetax.sum(axis=0))
+np.quantile(logdiffs, q=qtiles)
+shares.shape  # 51 x 25107
+shares = np.exp(logdiffs)
+shares.sum(axis=0) # sum of shares for each person
+shares.sum(axis=1) # sum of shares for each state (not esp. meaningful)
+np.quantile(shares, q=qtiles)
+
+whs = np.multiply(wh, shares).T
+whs.shape  # 25107 x 51
+whs.sum(axis=0)  # sum of weights for each state, quite a few are zero
+whs.sum(axis=1) # sum of weights for each person, looks right
+wh
+np.quantile(wh - whs.sum(axis=1), q=qtiles)  # good
+np.quantile(whs, q=qtiles)
+
+geotargets_calc = np.dot(whs.T, xmat)
+geotargets_calc.shape
+
+# create data frame of geotargets_calc, with state and target names
+
+# pufsub, ptargets, ht2targets, ht2targets_updated, \
+#     ht2wide, ht2wide_updated, \
+#     weights_initial, weights_reweight, weights_georeweight, weights_geosums, \
+#     allweights2017_geo_restricted, \
+#     compstates, targvars, drops_states_updated = pkl_input
+# del(pkl_input)
+
+
+# %% 7. Advance file to years after 2017
 
 # TBD
 
