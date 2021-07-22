@@ -635,6 +635,23 @@ nf2.describe()
 
 sts = compstates + ['other']
 
+def get_state_weights(nonfilers, targvars, beta, wh, states):
+    # wh is national weight vector
+    xmat = np.asarray(nonfilers[targvars], dtype=float)
+    betax = beta.dot(xmat.T)
+    # adjust betax to make exponentiation more stable numerically
+    # subtract column-specific constant (the max) from each column of betax
+    const = betax.max(axis=0)
+    betax = np.subtract(betax, const)
+    ebetax = np.exp(betax)  # 51 x 25107
+    logdiffs = betax - np.log(ebetax.sum(axis=0))
+    shares = np.exp(logdiffs)
+    whs = np.multiply(wh, shares).T
+    return whs
+
+# return to this djb
+whsdf = get_state_weights(nonfilers)
+
 wh = nf2.weight.to_numpy()
 xmat = np.asarray(nf2[targvars], dtype=float)
 betax = beta.dot(xmat.T)
