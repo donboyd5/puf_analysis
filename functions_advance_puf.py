@@ -1,10 +1,31 @@
+# %% imports
+from importlib import reload
+import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import taxcalc as tc
 import puf_extrapolate_custom as xc
 import puf_utilities as pu
 
+# import taxcalc_boyd as tc
+# importing taxcalc -- source code version
+# soon use with the following
+TC_PATH = '/home/donboyd/Documents/python_projects/Tax-Calculator'
+# TC_PATH = Path.home() / 'Documents/python_projects/Tax-Calculator'
+# TC_DIR.exists()  # if not sure, check whether directory exists
+# print("sys path before: ", sys.path)
+if TC_PATH not in sys.path:
+    sys.path.insert(0, str(TC_PATH))
+# print("sys path after: ", sys.path)
+import taxcalc as tc
+
+
+# %% reimports
+reload(tc)
+
+
+# %% functions
 def advance_puf2(puf, year, gfactors, weights, adjust_ratios, savepath):
     print('creating records object...')
     # gfactors_object = tc.GrowFactors(pd.read_csv(gfactors))

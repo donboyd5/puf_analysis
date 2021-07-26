@@ -30,6 +30,16 @@
 #    export NUMBA_NUM_THREADS=10
 #
 
+# notes about resetting my local Tax-Calculator to be identical to the remote psl version
+# from within my LOCAL Tax-Calculator folder:
+# git status
+# git remote -v  # shows which is remote and which is upstream
+# git remote add upstream https://github.com/PSLmodels/Tax-Calculator  # if not already done
+# git fetch upstream
+# git checkout master
+# git reset --hard upstream/master
+# git push origin master --force
+
 
 # %% about this program
 
@@ -67,42 +77,47 @@ import os
 import pickle
 from collections import OrderedDict
 
-import taxcalc as tc
+# import taxcalc as tc
 import pandas as pd
 import numpy as np
 from datetime import date
 
 import functions_advance_puf as adv
 import functions_puf_analysis as fpa
-import functions_reports as rpt
-import functions_reweight_puf as rwp
-import functions_geoweight_puf as gwp
 import functions_ht2_analysis as fht
 import functions_state_weights as fsw
+import functions_geoweight_puf as gwp
+import functions_reports as rpt
+import functions_reweight_puf as rwp
 
 import puf_constants as pc
 import puf_utilities as pu
 
 
 # microweight - apparently we have to tell python where to find this
-# sys.path.append('c:/programs_python/weighting/')  # needed
-WEIGHTING_DIR = Path.home() / 'Documents/python_projects/weighting'
-# WEIGHTING_DIR.exists()
-sys.path.append(str(WEIGHTING_DIR))  # needed
+WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+if WEIGHTING_DIR not in sys.path:
+    sys.path.append(str(WEIGHTING_DIR))
 import src.microweight as mw
 
 from timeit import default_timer as timer
 
 
 # %% reimports
+# if 'taxcalc' in sys.modules:
+#     del sys.modules["taxcalc"]
+
 reload(adv)
-reload(fsw)
 reload(fpa)
+reload(fht)
+reload(fsw)
 reload(gwp)
 reload(mw)
 reload(pc)
+reload(pu)
 reload(rpt)
 reload(rwp)
+# reload(tc)
 # reload(gwp)
 
 
@@ -194,6 +209,9 @@ fsw.advance_and_save_puf(
 # Alternative: advance by "regrowing" with custom growfactors and without puf_ratios
 # Not currently implemented
 
+# DistributionNotFound                      Traceback (most recent call last)
+# ~/anaconda3/envs/analysis/lib/python3.8/site-packages/taxcalc
+
 
 # %% ..2.2 Get potential national targets for 2017, previously created
 # from common_stub	incrange	pufvar	irsvar	irs	table_description	column_description	src	excel_column
@@ -207,7 +225,9 @@ ptargets = fsw.get_potential_national_targets(
 # -- pufsub is subset of filers, with just those variables needed for potential targets
 # from puf{year}.parquet file; only includes filer records
 # adds pid, filer, stubs, and target variables
-pufsub = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
+pufprep = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
+pufsub = pufprep.loc[pufprep['filer'], :]
+nonfilers = pufprep.loc[pufprep['filer'] == False, :]
 
 
 # %% ..2.4 Examine how close initial data are to IRS targets
@@ -590,7 +610,91 @@ rpt.state_puf_vs_targets_report(
     reportfile=OUTTABDIR + 'state_comparison_wrestricted.txt')
 
 
-# %% 6. Advance file to years after 2017
+# %% 6. Create weights for nonfilers
+# get filer weights
+fweights = pd.read_csv(OUTWEIGHTDIR + 'allweights2017_geo_restricted.csv')
+
+# we need taxdata national weight for nonfilers
+tmp = pd.read_parquet(OUTDATADIR + 'puf2017.parquet', \
+    columns=['pid', 's006'], engine='pyarrow').rename(columns={'s006': 'weight'})
+
+# use pickled betas from stub 2, $1-$10k
+pkl_name = OUTSTUBDIR + 'stub02_betaopt.pkl'
+pkl_file = open(pkl_name, "rb")
+beta = pickle.load(pkl_file)
+pkl_file.close()
+
+beta
+beta.shape # s x k = 51 x 22
+
+# get national weights and xmat
+# put the national weight on the nonfilers file
+nf2 = nonfilers.merge(tmp, how='left', on='pid')
+nf2 = nf2[['pid', 'ht2_stub', 'weight'] + targvars]
+nf2.describe()
+
+sts = compstates + ['other']
+
+def get_state_weights(nonfilers, targvars, beta, wh, states):
+    # wh is national weight vector
+    xmat = np.asarray(nonfilers[targvars], dtype=float)
+    betax = beta.dot(xmat.T)
+    # adjust betax to make exponentiation more stable numerically
+    # subtract column-specific constant (the max) from each column of betax
+    const = betax.max(axis=0)
+    betax = np.subtract(betax, const)
+    ebetax = np.exp(betax)  # 51 x 25107
+    logdiffs = betax - np.log(ebetax.sum(axis=0))
+    shares = np.exp(logdiffs)
+    whs = np.multiply(wh, shares).T
+    return whs
+
+# return to this djb
+whsdf = get_state_weights(nonfilers)
+
+wh = nf2.weight.to_numpy()
+xmat = np.asarray(nf2[targvars], dtype=float)
+betax = beta.dot(xmat.T)
+pd.DataFrame(betax.T, columns=sts).describe()
+# adjust betax to make exponentiation more stable numerically
+# subtract column-specific constant (the max) from each column of betax
+const = betax.max(axis=0)
+betax = np.subtract(betax, const)
+ebetax = np.exp(betax)  # 51 x 25107
+ebetax.sum(axis=1)
+np.quantile(ebetax, q=qtiles)
+# ebetax.min()
+# np.log(ebetax)
+logdiffs = betax - np.log(ebetax.sum(axis=0))
+np.quantile(logdiffs, q=qtiles)
+shares.shape  # 51 x 25107
+shares = np.exp(logdiffs)
+shares.sum(axis=0) # sum of shares for each person
+shares.sum(axis=1) # sum of shares for each state (not esp. meaningful)
+np.quantile(shares, q=qtiles)
+
+whs = np.multiply(wh, shares).T
+whs.shape  # 25107 x 51
+whs.sum(axis=0)  # sum of weights for each state, quite a few are zero
+whs.sum(axis=1) # sum of weights for each person, looks right
+wh
+np.quantile(wh - whs.sum(axis=1), q=qtiles)  # good
+np.quantile(whs, q=qtiles)
+
+geotargets_calc = np.dot(whs.T, xmat)
+geotargets_calc.shape
+
+# create data frame of geotargets_calc, with state and target names
+
+# pufsub, ptargets, ht2targets, ht2targets_updated, \
+#     ht2wide, ht2wide_updated, \
+#     weights_initial, weights_reweight, weights_georeweight, weights_geosums, \
+#     allweights2017_geo_restricted, \
+#     compstates, targvars, drops_states_updated = pkl_input
+# del(pkl_input)
+
+
+# %% 7. Advance file to years after 2017
 
 # TBD
 

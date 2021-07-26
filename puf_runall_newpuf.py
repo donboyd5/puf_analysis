@@ -72,10 +72,11 @@ import puf_constants as pc
 import puf_utilities as pu
 
 # microweight - apparently we have to tell python where to find this
-# sys.path.append('c:/programs_python/weighting/')  # needed
-weighting_dir = Path.home() / 'Documents/python_projects/weighting'
-# weighting_dir.exists()
-sys.path.append(str(weighting_dir))  # needed
+from pathlib import Path
+WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+if WEIGHTING_DIR not in sys.path:
+    sys.path.append(str(WEIGHTING_DIR))
+
 import src.microweight as mw
 
 from timeit import default_timer as timer

@@ -72,10 +72,11 @@ import puf_constants as pc
 import puf_utilities as pu
 
 # microweight - apparently we have to tell python where to find this
-# sys.path.append('c:/programs_python/weighting/')  # needed
-weighting_dir = Path.home() / 'Documents/python_projects/weighting'
-# weighting_dir.exists()
-sys.path.append(str(weighting_dir))  # needed
+from pathlib import Path
+WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+if WEIGHTING_DIR not in sys.path:
+    sys.path.append(str(WEIGHTING_DIR))
+
 import src.microweight as mw
 
 from timeit import default_timer as timer
@@ -164,7 +165,7 @@ pd.DataFrame(pufvars, columns=['pufvar']).to_csv(DATADIR + 'pufvars.csv', index=
 adv.advance_puf(puf, 2017, PUF_DEFAULT)
 
 # djb I had to extract puf_weights from puf_weights.csv.gz due to:
-# FileNotFoundError: [Errno 2] No such file or directory: 
+# FileNotFoundError: [Errno 2] No such file or directory:
 # '/home/donboyd/anaconda3/envs/analysis/lib/python3.8/site-packages/taxcalc/puf_weights.csv'
 # apparently it needs to be out of the gz file
 adv.advance_puf_custom(puf, 2017,
@@ -522,7 +523,7 @@ geomethod = 'qmatrix-ipopt'
 options = {'quiet': True,
            # xlb, xub: lower and upper bounds on ratio of new state weights to initial state weights
            'xlb': 0.1,
-           'xub': 100,           
+           'xub': 100,
            # crange is desired constraint tolerance
            # 0.0001 means try to come within 0.0001 x the target
            # i.e., within 0.01% of the target
@@ -654,7 +655,7 @@ weights_save.to_csv(wfname, index=None)
 # pid, the second will be the weight of interest
 
 # DJB 5/3/3031
-# FileNotFoundError: [Errno 2] No such file or directory: 
+# FileNotFoundError: [Errno 2] No such file or directory:
 # '/media/don/ignore/puf_versions/weights/weights_reweight1.csv'
 
 wfname_base = WEIGHTDIR + 'weights2017_geo_unrestricted.csv'

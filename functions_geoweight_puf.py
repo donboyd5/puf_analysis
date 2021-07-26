@@ -7,6 +7,7 @@ Created on Mon Nov 16 11:58:25 2020
 
 # %% imports
 import sys
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import dask
@@ -20,8 +21,9 @@ from collections import namedtuple
 import puf_utilities as pu
 
 # microweight - apparently we have to tell python where to find this
-weighting_dir = Path.home() / 'Documents/python_projects/weighting'
-sys.path.append(str(weighting_dir))  # needed
+WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+if WEIGHTING_DIR not in sys.path:
+    sys.path.append(str(WEIGHTING_DIR))
 import src.microweight as mw
 import src.utilities as ut
 
