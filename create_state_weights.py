@@ -128,7 +128,9 @@ reload(rwp)
 # I set the following directory up so that target data can be included in this module, avoiding step 1
 TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA = '/home/donboyd/Documents/python_projects/puf_analysis/data/'
 
-DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
+# DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
+DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2021-07-20/'
+
 DIR_FOR_BOYD_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'
 
 
@@ -142,8 +144,8 @@ OUTDIR = '/media/don/pufanalysis_output/'
 # PUFDIR = DIR_FOR_OFFICIAL_PUFCSV
 # WEIGHTDIR = DIR_FOR_OFFICIAL_PUFCSV
 
-PUFDIR = DIR_FOR_BOYD_PUFCSV
-WEIGHTDIR = DIR_FOR_BOYD_PUFCSV
+PUFDIR = DIR_FOR_OFFICIAL_PUFCSV
+WEIGHTDIR = DIR_FOR_OFFICIAL_PUFCSV
 
 # output locations
 OUTDATADIR = OUTDIR + 'data/'
@@ -552,6 +554,21 @@ opts = {'maxiter': 3000,
  'maxseconds': 12 * 60,
  'jac_lgmres_maxiter': 30,
  'jvp_lgmres_maxiter': 30}
+
+# used for new puf.csv 2021-07-26
+opts = {'maxiter': 2000,
+ 'method_names': ('jac', 'krylov'),
+ 'method_maxiter_values': (50, 2000),
+ 'method_improvement_minimums': (0.10, 1e-6),  # (0.10, 1e-6), pretty good
+ 'krylov_tol': 1e-09,
+ 'pbounds': (-1.0, 1.5),
+ 'notes': True,
+ 'max_search_iter': 30,
+ 'maxseconds': 12 * 60,
+ 'jac_lgmres_maxiter': 30,
+ 'jvp_lgmres_maxiter': 30}
+
+
 
 
 # %% ..5.1.3 Run the stub(s)
