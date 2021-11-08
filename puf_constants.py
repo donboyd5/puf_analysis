@@ -12,12 +12,14 @@ from pathlib import Path
 
 
 # %%  locations
-# machine = 'windows'
-machine = 'linux'
+machine = 'windows'
+# machine = 'linux'
 
 if machine == 'windows':
     DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
-    DATADIR = r'C:\programs_python\puf_analysis\data/'
+    # DATADIR = Path(r'C:\programs_python\puf_analysis\data/')
+    # DATADIR = Path(r'C:\Users\donbo\Documents\python_projects\puf_analysis\data/')
+    DATADIR = Path(r'C:\Users\donbo\Dropbox\puf_analysis_materials_from_linux\ignore\data/')
     # the following locations store files not saved in git
     IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
 elif machine == 'linux':
