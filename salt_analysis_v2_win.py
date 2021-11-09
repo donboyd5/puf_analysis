@@ -40,19 +40,17 @@ import taxcalc as tc
 # PATH=%PATH%;C:\Users\donbo\anaconda3;C:\Users\donbo\anaconda3\Scripts
 # conda init cmd.exe
 # %% locations
-# djb here
-# DIR = '/media/don/pufanalysis_output/'
-# SCRATCHDIR = '/media/don/scratch/salt_v2/'  # changed from original salt analysis
-# REFORM_DIR = '/home/donboyd/Documents/python_projects/puf_analysis/reforms/'
-# PWDIR = '/media/don/data/puf_files/puf_csv_related_files/PSL/2021-07-20/'
+# inputs
+#.. official puf weights
+PUFWEIGHTS_DIR = r'E:\data\puf_files\puf_csv_related_files\PSL\2021-07-20/'
 
-DIR = r'E:\pufanalysis_output/'
-SCRATCHDIR = r'E:\scratch\salt_v2/'  # changed from original salt analysis
+# my data, my state weights, and my reform files
+INDATA_DIR = r'E:\puf_analysis_inputs\data/'
+STATEWEIGHTS_DIR = r'E:\puf_analysis_inputs\weights/'
 REFORM_DIR = 'C:/Users/donbo/Documents/python_projects/puf_analysis/reforms/'
-PWDIR = r'E:\data\puf_files\puf_csv_related_files\PSL\2021-07-20/'
 
-DDIR = DIR + 'data/'
-WDIR = DIR + 'weights/'
+# outputs
+OUTDIR = r'E:\pufanalysis_outputs\salt_tc3.2.1/'
 
 
 # %% constants
@@ -69,13 +67,13 @@ qtiles = (0, .01, .05, .1, .25, .5, .75, .9, .95, .99, 1)
 # we will use this alt weights file to grow the puf to 2021, and never look at any other years
 
 
-pufweights = pd.read_csv(PWDIR + 'puf_weights.csv')
+pufweights = pd.read_csv(PUFWEIGHTS_DIR + 'puf_weights.csv')
 # create a RECID column
 pufweights['RECID'] = np.arange(pufweights.shape[0]) + 1
 pufweights.head()
 
 # bring in my 2017 weights as REWT2017
-weights2017 = pd.read_csv(WDIR + 'allweights2017_geo_restricted.csv') # 227766, filers only
+weights2017 = pd.read_csv(STATEWEIGHTS_DIR + 'allweights2017_geo_restricted.csv') # 227766, filers only
 weights2017['RECID'] = weights2017.pid + 1
 
 weights2021 = pd.merge(pufweights.loc[:, ['RECID', 'WT2017', 'WT2021']], \
@@ -113,7 +111,7 @@ wsums
 
 # %% get my 2017 version of puf, advance to 2021
 # columns=['pid', 's006']  .rename(columns={'s006': 'weight'}
-puf_base = pd.read_parquet(DDIR + 'puf2017.parquet', engine='pyarrow')  # 252868
+puf_base = pd.read_parquet(INDATA_DIR + 'puf2017.parquet', engine='pyarrow')  # 252868
 puf_base.filer.value_counts()  # 227766 filers, 25102 nonfilers
 puf_base.loc[puf_base.filer, ['pid', 'filer', 's006']]  # take a look at s006
 
@@ -197,7 +195,6 @@ itax_rev4 / 1e9
 # 11/8/2021 master gives 1139.3866531364406
 
 
-
 # %% comparison
 # print('{}_CLP_itax_rev($B) = {:.3f}'.format(CYR, itax_rev1 * 1e-9))
 # print('{}_REF_itax_rev($B) = {:.3f}'.format(CYR, itax_rev2 * 1e-9))
@@ -221,7 +218,7 @@ print('{}_DIFF_itax_rev($B) = {:.3f}'.format(CYR, (itax_rev2 - itax_rev1) * 1e-9
 
 
 # %% save all files
-weights2021.to_csv(SCRATCHDIR + 'weights2021.csv', index=False)
+weights2021.to_csv(OUTDIR + 'weights2021.csv', index=False)
 
 basedf = calc1.dataframe(variable_list=[], all_vars=True)
 basedf.loc[:, ['RECID', 's006']] # this has the initial 2021 weights!
@@ -235,78 +232,7 @@ repeal_df.loc[:, ['RECID', 's006']] # this has the initial 2021 weights!
 cap72500_df = calc3.dataframe(variable_list=[], all_vars=True)
 cap80000_df = calc4.dataframe(variable_list=[], all_vars=True)
 
-basedf.to_parquet(SCRATCHDIR + 'base2021_2021.parquet', engine='pyarrow')
-repeal_df.to_parquet(SCRATCHDIR + 'repeal_2021.parquet', engine='pyarrow')
-cap72500_df.to_parquet(SCRATCHDIR + 'cap72500_2021.parquet', engine='pyarrow')
-cap80000_df.to_parquet(SCRATCHDIR + 'cap80000_2021.parquet', engine='pyarrow')
-
-
-# %% quick check: what happened to e18400, which should have grown by ATXPY between 2017 and 2021
-temp = calc1.dataframe(variable_list=[], all_vars=True)
-
-puf_base.loc[range(10), 'e18400']
-temp.loc[range(10), 'e18400']
-
-temp.loc[range(10), 'e18400'] / puf_base.loc[range(10), 'e18400']
-
-puf_base.loc[range(10), 'e18400']
-
-# %% checks
-recs0 = tc.Records(adjust_ratios=None)
-pol0 = tc.Policy()
-calc0 = tc.Calculator(policy=pol0, records=recs0)
-calc0.advance_to_year(2021)
-calc0.calc_all()
-itax_rev0 = calc0.weighted_total('iitax')
-
-# how much does salt-cap removal cost increase from 2020 to 2021 with all defaults?
-params2020 = tc.Calculator.read_json_param_objects(REFORM_DIR + 'reform_salt_2020.json', None)
-params2021 = tc.Calculator.read_json_param_objects(REFORM_DIR + 'reform_salt.json', None)
-
-# baseline data
-recs0 = tc.Records()
-pol0 = tc.Policy()
-calc0 = tc.Calculator(policy=pol0, records=recs0)
-
-# 2020 baseline all defaults
-calc0.advance_to_year(2020)
-calc0.calc_all()
-itax_rev2020_base = calc0.weighted_total('iitax')
-
-# 2021 baseline all defaults
-calc0.advance_to_year(2021)
-calc0.calc_all()
-itax_rev2021_base = calc0.weighted_total('iitax')
-
-# 2020 reform all defaults
-pol0.implement_reform(params2020['policy'])
-calcref = tc.Calculator(policy=pol0, records=recs0)
-calcref.advance_to_year(2020)
-calcref.calc_all()
-itax_rev2020_reform = calcref.weighted_total('iitax')
-
-# 2021 reform all defaults
-pol0.implement_reform(params2021['policy'])
-calcref = tc.Calculator(policy=pol0, records=recs0)
-calcref.advance_to_year(2021)
-calcref.calc_all()
-itax_rev2021_reform = calcref.weighted_total('iitax')
-
-# reform costs
-cost2020 = itax_rev2020_reform - itax_rev2020_base
-cost2021 = itax_rev2021_reform - itax_rev2021_base
-
-# show results
-print('Cost 2020($B) = {:.6f}'.format(cost2020 * 1e-9))
-print('Cost 2021($B) = {:.6f}'.format(cost2021 * 1e-9))
-print('$b change cost = {:.2f}'.format((cost2021 - cost2020) * 1e-9))
-print('% change cost = {:.2f}'.format(cost2021 / cost2020 * 100 - 100))
-
-
-# c18300 in 2011
-recs0 = tc.Records()
-pol0 = tc.Policy()
-calc0 = tc.Calculator(policy=pol0, records=recs0)
-calc0.calc_all()
-salt2011 = calc0.weighted_total('c18300')
-print('salt 2011 ($B) = {:.6f}'.format(salt2011 * 1e-9))
+basedf.to_parquet(OUTDIR + 'base2021_2021.parquet', engine='pyarrow')
+repeal_df.to_parquet(OUTDIR + 'repeal_2021.parquet', engine='pyarrow')
+cap72500_df.to_parquet(OUTDIR + 'cap72500_2021.parquet', engine='pyarrow')
+cap80000_df.to_parquet(OUTDIR + 'cap80000_2021.parquet', engine='pyarrow')
