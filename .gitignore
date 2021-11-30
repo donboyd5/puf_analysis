@@ -3,3 +3,7 @@ downloads/
 *.out
 *.h5
 *.pyc
+ma77_delay
+ma77_int
+ma77_real
+ma77_work

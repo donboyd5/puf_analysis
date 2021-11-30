@@ -44,8 +44,6 @@
 # %% about this program
 
 # this program does the following:
-from timeit import default_timer as timer
-import src.microweight as mw
 # create unweighted national puf for 2017 using custom growfactors for 2011 to 2017
 # create weights for this 2017 national puf to come close to IRS national targets
 # create tentative state weights for this regrown-reweighted national puf, without constraining them to national record weights
@@ -72,6 +70,13 @@ import sys
 # sys.path.append('C:/programs_python/Tax-Calculator/build/lib/')  # needed
 # sys.path.insert(0, 'C:/programs_python/Tax-Calculator/build/lib/') # this is close
 from pathlib import Path
+
+# from timeit import default_timer as timer
+# WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+# if WEIGHTING_DIR not in sys.path:
+#     sys.path.append(str(WEIGHTING_DIR))
+# import src.microweight as mw
+
 from collections import namedtuple
 import os
 import pickle
@@ -126,15 +131,24 @@ reload(rwp)
 # WINDATADIR = '/media/don/ignore/data/'
 
 # I set the following directory up so that target data can be included in this module, avoiding step 1
-TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA = '/home/donboyd/Documents/python_projects/puf_analysis/data/'
+# TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA = '/home/donboyd/Documents/python_projects/puf_analysis/data/'  # dual boot
+# DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'  # dual boot
+# DIR_FOR_BOYD_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'  # dual boot
 
-DIR_FOR_OFFICIAL_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'
-DIR_FOR_BOYD_PUFCSV = r'/media/don/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'
-
+# TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA = '/home/donboyd5/Documents/data/puf_projects/targets/'  # wsl
+TEMPORARY_DIR_WITH_TARGET_SOURCE_DATA = '/mnt/c/Users/donbo/Documents/python_projects/puf_analysis_windows/data/'  # wsl
+# C:\Users\donbo\Documents\python_projects\puf_analysis_windows\data
+# E:\data\puf_files\puf_csv_related_files
+# /mnt/e/data/puf_files
+DIR_FOR_OFFICIAL_PUFCSV = r'/mnt/e/data/puf_files/puf_csv_related_files/PSL/2020-08-20/'  # wsl
+DIR_FOR_BOYD_PUFCSV = r'/mnt/e/data/puf_files/puf_csv_related_files/Boyd/2021-07-02/'  # wsl
 
 # working storage
-SCRATCHDIR = '/media/don/scratch/'
-OUTDIR = '/media/don/pufanalysis_output/'
+# SCRATCHDIR = '/media/don/scratch/'
+# OUTDIR = '/media/don/pufanalysis_output/'
+SCRATCHDIR = '/mnt/e/scratch/'
+OUTDIR = '/mnt/e/pufanalysis_outputs/state_weighting/'
+
 
 # %%  relative locations to use
 
@@ -226,8 +240,9 @@ ptargets = fsw.get_potential_national_targets(
 # from puf{year}.parquet file; only includes filer records
 # adds pid, filer, stubs, and target variables
 pufprep = fsw.prep_puf(OUTDATADIR + 'puf2017.parquet', ptargets)
-pufsub = pufprep.loc[pufprep['filer'], :]
-nonfilers = pufprep.loc[pufprep['filer'] == False, :]
+# pufprep.replace({False: 0, True: 1}, inplace=True) # boolean to integer
+pufsub = pufprep.loc[pufprep['filer'], :]  # no longer boolean
+nonfilers = pufprep.loc[pufprep['filer'] == False, :] # was == False
 
 
 # %% ..2.4 Examine how close initial data are to IRS targets
@@ -344,7 +359,6 @@ dropcols = [var for var in targvars if not var in good.columns]
 keepcols = [var for var in targvars if var in good.columns]
 keepcols
 
-
 # %% ..4.2. Construct national weights as sums of unrestricted state weights
 
 # how many records in each HT2 stub? ranges from 5,339 in stub 1 to 41,102 in stub 4
@@ -394,6 +408,10 @@ rpt.wtdpuf_national_comp_report(
 # %% ..4.3.1 Prepare data for report on unrestricted state weights (takes a while)
 allweights2017_geo_unrestricted = pd.read_csv(
     OUTWEIGHTDIR + 'allweights2017_geo_unrestricted.csv')
+
+# inputs for rpt.calc_save_statesums
+# pufsub.to_csv(SCRATCHDIR+'pufsub.csv', index=False)
+# allweights2017_geo_unrestricted.to_csv(SCRATCHDIR+'state_weights.csv', index=False)
 
 a = timer()
 vars = pufsub.columns.to_list()
@@ -541,7 +559,7 @@ opts['max_search_iter'] = 50
 #  'jvp_lgmres_maxiter': 30}
 
 # used for PSL demo
-opts = {'maxiter': 3000,
+ opts = {'maxiter': 3000,
  'method_names': ('krylov', 'jac'),
  'method_maxiter_values': (2000, 1),
  'method_improvement_minimums': (0,),
@@ -552,6 +570,45 @@ opts = {'maxiter': 3000,
  'maxseconds': 12 * 60,
  'jac_lgmres_maxiter': 30,
  'jvp_lgmres_maxiter': 30}
+
+
+# alternatives
+ opts = {'maxiter': 3000,
+ 'method_names': ('krylov', 'jac'),
+ 'method_maxiter_values': (20, 3),
+ 'method_improvement_minimums': (0.1, 0.1),
+ 'krylov_tol': 1e-09,
+ 'pbounds': (-1.0, 1.0),
+ 'notes': True,
+ 'max_search_iter': 30,
+ 'maxseconds': 3 * 60,
+ 'jac_lgmres_maxiter': 30,
+ 'jvp_lgmres_maxiter': 30}
+
+opts = {'maxiter': 100,
+ 'method_names': ('jvp', 'krylov'),
+ 'method_maxiter_values': (10, 10),
+ 'method_improvement_minimums': (0,),
+ 'krylov_tol': 1e-09,
+ 'pbounds': (-1.0, 1.0),
+ 'notes': True,
+ 'max_search_iter': 30,
+ 'maxseconds': 4 * 60,
+ 'jac_lgmres_maxiter': 30,
+ 'jvp_lgmres_maxiter': 30}
+
+opts = {'maxiter': 100,
+ 'method_names': ('jac', 'krylov'),
+ 'method_maxiter_values': (10, 100),
+ 'method_improvement_minimums': (0, 0),
+ 'krylov_tol': 1e-09,
+ 'pbounds': (-1.0, 1.0),
+ 'notes': True,
+ 'max_search_iter': 30,
+ 'maxseconds': 4 * 60,
+ 'jac_lgmres_maxiter': 30,
+ 'jvp_lgmres_maxiter': 30}
+
 
 
 # %% ..5.1.3 Run the stub(s)
@@ -567,6 +624,7 @@ gwp.runstubs(
     outdir=SCRATCHDIR,  # OUTSTUBDIR SCRATCHDIR
     write_logfile=True,  # boolean
     parallel=False)  # boolean
+
 
 # %% ..5.2 Assemble file of weights from individual stubs
 def f(stub):

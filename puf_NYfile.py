@@ -22,7 +22,10 @@ import puf_constants as pc
 import puf_utilities as pu
 
 # microweight - this is sufficient
-sys.path.append('c:/programs_python/weighting/')  # needed
+WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+if WEIGHTING_DIR not in sys.path:
+    sys.path.append(str(WEIGHTING_DIR))
+# sys.path.append('c:/programs_python/weighting/')  # needed
 import src.microweight as mw
 
 import src.make_test_problems as mtp

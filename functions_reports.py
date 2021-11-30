@@ -266,12 +266,19 @@ def calc_save_statesums(
     geos = [s for s in geos if s not in nonstates]
 
     # make a long puf file
-    puflong = pufsub.loc[:, idvars + pufvars] \
+    # BEFORE making the long file, convert boolean to integer
+    # pufsub = pufsub * 1  # bool to integer
+    # pufsub.replace({False: 0, True: 1}, inplace=True)
+    # https://stackoverflow.com/questions/17383094/how-can-i-map-true-false-to-1-0-in-a-pandas-dataframe/27362540
+    # pufsub.replace({False: 0, True: 1}, inplace=True)
+    puflocal = pufsub.replace({False: 0, True: 1}).copy()
+    puflong = puflocal.loc[:, idvars + pufvars] \
         .melt(id_vars=idvars, var_name='pufvar', value_name='pufvalue')
 
     puflong = pd.merge(puflong, state_weights.drop(columns='weight'), on=['pid', 'ht2_stub'], how='left')
 
     # multiply all geoweight_sum and state weight columns by the pufvalue column
+    # this next line is the problem
     puflong.loc[:, geos] = puflong.loc[:, geos].mul(puflong.pufvalue, axis=0)
 
     # collapse by ht2_stub

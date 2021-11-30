@@ -35,7 +35,12 @@ import sys
 import requests
 import pandas as pd
 import numpy as np
+
+WEIGHTING_DIR = str(Path.home() / 'Documents/python_projects/weighting')
+if WEIGHTING_DIR not in sys.path:
+    sys.path.append(str(WEIGHTING_DIR))
 import src.microweight as mw
+
 import src.make_test_problems as mtp
 
 import scipy as sp

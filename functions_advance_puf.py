@@ -11,8 +11,8 @@ import puf_utilities as pu
 # import taxcalc_boyd as tc
 # importing taxcalc -- source code version
 # soon use with the following
-TC_PATH = '/home/donboyd/Documents/python_projects/Tax-Calculator'
-# TC_PATH = Path.home() / 'Documents/python_projects/Tax-Calculator'
+# TC_PATH = '/home/donboyd/Documents/python_projects/Tax-Calculator'
+TC_PATH = Path.home() / 'Documents/python_projects/Tax-Calculator'
 # TC_DIR.exists()  # if not sure, check whether directory exists
 # print("sys path before: ", sys.path)
 if TC_PATH not in sys.path:

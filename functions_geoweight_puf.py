@@ -11,8 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import dask
-import dask.dataframe as dd
-from pathlib import Path
+# import dask.dataframe as dd
 from timeit import default_timer as timer
 import pickle
 
@@ -144,6 +143,18 @@ def get_geoweight_sums(pufsub,
             'crange': .0001, # .0001 means within 0.01% of the target
             'linear_solver': 'ma57'
             }
+
+    options = {'quiet': True,
+            # xlb, xub: lower and upper bounds on ratio of new state weights to initial state weights
+            'xlb': 0.1,
+            'xub': 100,
+            'crange': .0001, # .0001 means within 0.01% of the target
+            'linear_solver': 'ma77',
+            'output_file': '/home/donboyd5/Documents/test.out'
+            }
+    #'output_file': '/home/donboyd5/Documents/gwpi2.out',
+    # 'print_user_options': 'yes',
+    # 'file_print_level': 5,
 
     if stubs is None:
         grouped = pufsub.groupby('ht2_stub')

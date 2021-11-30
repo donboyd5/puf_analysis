@@ -13,18 +13,22 @@ from pathlib import Path
 
 # %%  locations
 # machine = 'windows'
-machine = 'linux'
+# DATADIR = Path('~/Documents/data/puf_projects/mappings/')
+DATADIR = Path.home() / 'Documents/data/puf_projects/mappings/'
 
-if machine == 'windows':
-    DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
-    DATADIR = r'C:\programs_python\puf_analysis\data/'
+DIR_FOR_OFFICIAL_PUF = Path(r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/')
+IGNOREDIR = Path('/media/don/ignore/')
+
+#     DIR_FOR_OFFICIAL_PUF = r'C:\Users\donbo\Dropbox (Personal)\PUF files\files_based_on_puf2011/2020-08-20/'
+    # DATADIR = r'C:\programs_python\puf_analysis\data/'
+  #   DATADIR = "~/Documents/data/puf_projects/mappings/"
     # the following locations store files not saved in git
-    IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
-elif machine == 'linux':
-    # /home/donboyd/Dropbox/PUF files/files_based_on_puf2011
-    DIR_FOR_OFFICIAL_PUF = Path(r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/')
-    DATADIR = Path('/media/don/ignore/data/')
-    IGNOREDIR = Path('/media/don/ignore/')
+#     IGNOREDIR = r'C:\programs_python\puf_analysis\ignore/'
+# elif machine == 'linux':
+#     # /home/donboyd/Dropbox/PUF files/files_based_on_puf2011
+#     DIR_FOR_OFFICIAL_PUF = Path(r'~/Dropbox/PUF files/files_based_on_puf2011/2020-08-20/')
+#     DATADIR = Path('/media/don/ignore/data/')
+#     IGNOREDIR = Path('/media/don/ignore/')
 
 # print(DATADIR)
 
@@ -93,7 +97,7 @@ irspuf_target_map = pd.read_csv(TARGET_MAP)
 # get previously determined national-puf mapping
 # json.dump(pufirs_fullmap, open(DATADIR + 'pufirs_fullmap.json', 'w'))
 # this dict defines the order in which we want tables sorted, so get it
-pufirs_fullmap = json.load(open(DATADIR / 'pufirs_fullmap.json'))
+pufirs_fullmap = json.load(open(str(DATADIR / 'pufirs_fullmap.json')))
 
 ht2puf_fullmap = json.load(open(DATADIR / 'ht2puf_fullmap.json'))
 
